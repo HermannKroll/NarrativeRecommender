@@ -1,0 +1,10 @@
+{
+  "use_SQLite": false,
+  "SQLite_path": "sqlitebase.db",
+  "POSTGRES_DB": "fidpharmazie2023",
+  "POSTGRES_HOST": "127.0.0.1",
+  "POSTGRES_PORT": "5432",
+  "POSTGRES_USER": "tagginguser",
+  "POSTGRES_PW": "u3j4io1234u8-13!14",
+  "POSTGRES_SCHEMA": "public"
+}
