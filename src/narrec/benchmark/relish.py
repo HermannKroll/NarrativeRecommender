@@ -1,4 +1,3 @@
-import gzip
 import json
 import logging
 
@@ -40,7 +39,7 @@ class RelishBenchmark(Benchmark):
         logging.info(f"Loading Relish benchmark data from {RELISH_BENCHMARK_FILE}")
         self.doc2recommended.clear()
         self.doc2not_recommended.clear()
-        with gzip.open(RELISH_BENCHMARK_FILE, 'rt') as f:
+        with open(RELISH_BENCHMARK_FILE, 'rt') as f:
             relish_data = json.load(f)
 
         for rating in relish_data:

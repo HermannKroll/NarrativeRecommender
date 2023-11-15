@@ -6,7 +6,8 @@ CONFIG_DIR = os.path.join(GIT_ROOT_DIR, "config")
 
 BENCHMARK_DIR = os.path.join(RESOURCE_DIR, "benchmarks")
 
-RELISH_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "RELISH_v1.json.gz")
+RELISH_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "RELISH_v1.json")
+PM2020_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "trec_pm2020_documents.txt")
 PM2020_TOPIC_FILE = os.path.join(BENCHMARK_DIR, "trec_pm2020_topics.xml")
 
 # DB Backend
