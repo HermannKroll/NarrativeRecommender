@@ -11,9 +11,12 @@ class RecommenderDocument(NarrativeDocument):
                  metadata: NarrativeDocumentMetadata = None,
                  tags: List[TaggedEntity] = [],
                  sentences: List[DocumentSentence] = [],
-                 extracted_statements: List[StatementExtraction] = []):
+                 extracted_statements: List[StatementExtraction] = [],
+                 classification=None):
         super().__init__(document_id=document_id, title=title, abstract=abstract,
                          metadata=metadata, tags=tags, sentences=sentences, extracted_statements=extracted_statements)
+
+        self.classification = classification
 
 
 
