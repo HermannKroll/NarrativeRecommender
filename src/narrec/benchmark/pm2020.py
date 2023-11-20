@@ -1,7 +1,9 @@
 import logging
 from xml.etree import ElementTree
 
+from narrec.benchmark.benchmark import Benchmark, BenchmarkMode
 from narrec.config import PM2020_TOPIC_FILE, PM2020_BENCHMARK_FILE
+from narrec.recommender.base import RecommenderBase
 
 DRUG = "Drug"
 CHEMICAL = "Chemical"
@@ -48,15 +50,17 @@ class PrecMed2020Topic:
         return topics
 
 
-class PM2020Benchmark:
+class PM2020Benchmark(Benchmark):
 
     def __init__(self):
+        super().__init__()
         self.name = "PM2020"
         self.topics: [PrecMed2020Topic] = []
 
         logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')
         eval_topics = set()
         self.topic2relevant_docs = {}
+        self.topic2partially_relevant_docs = {}
         self.topic2not_relevant_docs = {}
         with open(PM2020_BENCHMARK_FILE, 'rt') as f:
             for line in f:
@@ -68,14 +72,14 @@ class PM2020Benchmark:
                 # First add sets
                 if q_id not in self.topic2relevant_docs:
                     self.topic2relevant_docs[q_id] = set()
+                    self.topic2partially_relevant_docs[q_id] = set()
                     self.topic2not_relevant_docs[q_id] = set()
                 # add based on rating
                 if rating == 2:
                     # relevant
                     self.topic2relevant_docs[q_id].add(pmid)
                 elif rating == 1:
-                    # Todo: how to handle 1 rated documents
-                    self.topic2relevant_docs[q_id].add(pmid)
+                    self.topic2partially_relevant_docs[q_id].add(pmid)
                 elif rating == 0:
                     self.topic2not_relevant_docs[q_id].add(pmid)
                 else:
@@ -83,6 +87,30 @@ class PM2020Benchmark:
 
         self.topics = PrecMed2020Topic.parse_topics()
         self.topics = [t for t in self.topics if t.query_id in eval_topics]
+
+    def get_evaluation_data_for_topic(self, topic: int, mode: BenchmarkMode):
+        if mode == BenchmarkMode.RELEVANT_VS_IRRELEVANT:
+            return self.topic2relevant_docs[topic], self.topic2not_relevant_docs[topic]
+        elif mode == BenchmarkMode.RELEVANT_PARTIAL_VS_IRRELEVANT:
+            relevant = set()
+            relevant.update(self.topic2relevant_docs[topic])
+            relevant.update(self.topic2partially_relevant_docs[topic])
+            return relevant, self.topic2not_relevant_docs[topic]
+        elif mode == BenchmarkMode.RELEVANT_VS_PARTIAL_IRRELEVANT:
+            irrelevant = set()
+            irrelevant.update(self.topic2partially_relevant_docs[topic])
+            irrelevant.update(self.topic2not_relevant_docs[topic])
+            return self.topic2relevant_docs[topic], irrelevant
+        else:
+            raise ValueError(f'Enum value {mode} unknown and not supported')
+
+    def perform_evaluation(self, recommender: RecommenderBase, mode: BenchmarkMode):
+
+        for topic in self.topics:
+            relevant, irrelevant = self.get_evaluation_data_for_topic(topic.query_id, mode)
+
+
+
 
     def get_documents_for_baseline(self):
         raise NotImplementedError
@@ -111,7 +139,8 @@ if __name__ == '__main__':
                         level=logging.DEBUG)
     benchmark = PM2020Benchmark()
     for t in benchmark.topics:
-        print(f'{t} => {len(benchmark.topic2relevant_docs[t.query_id])} relevant docs / {len(benchmark.topic2not_relevant_docs[t.query_id])} not relevant docs')
+        print(
+            f'{t} => {len(benchmark.topic2relevant_docs[t.query_id])} relevant docs / {len(benchmark.topic2not_relevant_docs[t.query_id])} not relevant docs')
 
     print()
     print(f'PM2020 has {len(benchmark.topics)} relevant topics')
