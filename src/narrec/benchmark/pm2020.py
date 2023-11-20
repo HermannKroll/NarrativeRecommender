@@ -126,6 +126,8 @@ class PM2020Benchmark(Benchmark):
 
             # Average over scores
 
+            # Todo: implement some statistics here
+
 
 
     def get_documents_for_baseline(self):
