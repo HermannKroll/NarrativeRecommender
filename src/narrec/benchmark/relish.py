@@ -1,11 +1,20 @@
 import json
 import logging
 
-from narrec.benchmark.benchmark import Benchmark
+from narrec.benchmark.benchmark import Benchmark, BenchmarkMode
 from narrec.config import RELISH_BENCHMARK_FILE
+from narrec.recommender.base import RecommenderBase
 
 
 class RelishBenchmark(Benchmark):
+
+    def __init__(self):
+        super().__init__()
+        self.doc2recommended = {}
+        self.doc2partial_recommended = {}
+        self.doc2not_recommended = {}
+        self.documents_with_idx = []
+        self.load_benchmark_data()
 
     def load_benchmark_data(self):
         # A relish data entry looks like this
@@ -42,25 +51,46 @@ class RelishBenchmark(Benchmark):
         with open(RELISH_BENCHMARK_FILE, 'rt') as f:
             relish_data = json.load(f)
 
-        for rating in relish_data:
-            pmid = int(rating["pmid"])
-            if pmid in self.doc2recommended:
-                logging.warning(f'Duplicated rating for PMID {pmid}')
+        for idx, rating in enumerate(relish_data):
+            doc_id = int(rating["pmid"])
+            key = idx, doc_id
+            self.documents_with_idx.append((idx, doc_id))
+            if key in self.doc2recommended:
+                logging.warning(f'Duplicated rating for PMID {key}')
             else:
-                self.doc2recommended[pmid] = set()
-                self.doc2not_recommended[pmid] = set()
+                self.doc2recommended[key] = set()
+                self.doc2partial_recommended[key] = set()
+                self.doc2not_recommended[key] = set()
 
             for doc_id in rating["response"]["relevant"]:
-                self.doc2recommended[pmid].add(int(doc_id))
-
-            # Todo: how should we treat partially relevant documents?
+                self.doc2recommended[key].add(int(doc_id))
             for doc_id in rating["response"]["partial"]:
-                self.doc2recommended[pmid].add(int(doc_id))
-
+                self.doc2partial_recommended[key].add(int(doc_id))
             for doc_id in rating["response"]["irrelevant"]:
-                self.doc2not_recommended[pmid].add(int(doc_id))
+                self.doc2not_recommended[key].add(int(doc_id))
 
         logging.info('Relish data loaded')
+
+    def get_evaluation_data_for_topic(self, idx: int, docid: int, mode: BenchmarkMode):
+        key = (idx, docid)
+        if mode == BenchmarkMode.RELEVANT_VS_IRRELEVANT:
+            return self.doc2recommended[key], self.doc2not_recommended[key]
+        elif mode == BenchmarkMode.RELEVANT_PARTIAL_VS_IRRELEVANT:
+            relevant = set()
+            relevant.update(self.doc2recommended[key])
+            relevant.update(self.doc2partial_recommended[key])
+            return relevant, self.doc2not_recommended[key]
+        elif mode == BenchmarkMode.RELEVANT_VS_PARTIAL_IRRELEVANT:
+            irrelevant = set()
+            irrelevant.update(self.doc2partial_recommended[key])
+            irrelevant.update(self.doc2not_recommended[key])
+            return self.doc2recommended[key], irrelevant
+        else:
+            raise ValueError(f'Enum value {mode} unknown and not supported')
+
+    def perform_evaluation(self, recommender: RecommenderBase, mode: BenchmarkMode):
+        for idx, docid in self.documents_with_idx:
+            relevant, irrelevant = self.get_evaluation_data_for_topic(idx, docid, mode)
 
 
 # for test purposes

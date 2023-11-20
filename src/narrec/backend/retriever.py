@@ -132,16 +132,7 @@ class DocumentRetriever:
         for doc in narrative_documents_queried:
             self.__translate_gene_ids_to_symbols(doc)
 
-        narrative_documents_queried = [
-            RecommenderDocument(document_id=d.id,
-                                title=d.title,
-                                abstract=d.abstract,
-                                metadata=d.metadata,
-                                tags=d.tags,
-                                sentences=d.sentences,
-                                extracted_statements=d.extracted_statements,
-                                classification=d.classification)
-            for d in narrative_documents_queried]
+        narrative_documents_queried = [RecommenderDocument(nd=d) for d in narrative_documents_queried]
 
         # add to cache
         for d in narrative_documents_queried:
