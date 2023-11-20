@@ -109,6 +109,22 @@ class PM2020Benchmark(Benchmark):
         for topic in self.topics:
             relevant, irrelevant = self.get_evaluation_data_for_topic(topic.query_id, mode)
 
+            # Idea: for each topic, get all relevant documents
+            # Select one of these documents
+            # perform the recommendation step
+            results = []
+            for relevant_document in relevant:
+                # Do recommendation
+                scores = []
+
+                # Needs to implement a first stage
+                #recommended_documents = recommender.recommend_documents(relevant_document, )
+
+                results.append((relevant_document, scores))
+
+                pass
+
+            # Average over scores
 
 
 
