@@ -47,11 +47,7 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
         citation_list = set()
         for citation in article.findall('./PubmedData/ReferenceList/Reference'):
             citation_id = citation.findall("./ArticleIdList/ArticleId[@IdType='pubmed']")
-            if not citation_id:
-                continue
-            if not len(citation_id):
-                continue
-            if not citation_id[0]:
+            if not citation_id or not len(citation_id):
                 continue
             # skip PMC ids
             if citation_id[0].text.startswith('PMC'):
@@ -65,11 +61,14 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
                 # only add citation if present in our DB
                 if id_candidate in document_ids:
                     citation_list.add(id_candidate)
+                else:
+                    print(f'{id_candidate} not present in DB')
             except:
                 print(f'Failed to convert "{citation_id[0].text}" into an integer ')
 
         for citation in citation_list:
-            citations_to_insert.append(dict(document_source_id=pmid, document_source_collection=document_collection,
+            citations_to_insert.append(dict(document_source_id=pmid,
+                                            document_source_collection=document_collection,
                                             document_target_id=citation,
                                             document_target_collection=document_collection))
     return citations_to_insert, pmids_processed
@@ -84,6 +83,7 @@ def pubmed_medline_load_citations_from_dictionary(directory, document_collection
     :param document_collection: the document collection to insert
     :return: None
     """
+    print('test')
     session = SessionRecommender.get()
     logging.info(f'Querying document ids for collection {document_collection}...')
     d_query = session.query(Document.id).filter(Document.collection == document_collection)
@@ -105,6 +105,7 @@ def pubmed_medline_load_citations_from_dictionary(directory, document_collection
         print_progress_with_eta("Loading PubMed Medline citation", idx, len(files), start, 1)
         citations_to_insert, pmids_processed = pubmed_medline_load_document_citations(fn, document_ids,
                                                                                       document_collection)
+        logging.info(f'Inserting {len(citations_to_insert)} ids')
         DocumentCitation.bulk_insert_values_into_table(session, citations_to_insert, check_constraints=False)
 
 
