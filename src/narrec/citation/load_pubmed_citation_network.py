@@ -49,6 +49,9 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
             citation_id = citation.findall("./ArticleIdList/ArticleId[@IdType='pubmed']")
             if not len(citation_id):
                 continue
+            # skip PMC ids
+            if citation_id[0].text.startswith('PMC'):
+                continue
             citation_list.add(int(citation_id[0].text))
 
         for citation in citation_list:
