@@ -81,7 +81,6 @@ def pubmed_medline_load_citations_from_dictionary(directory, document_collection
     :param document_collection: the document collection to insert
     :return: None
     """
-    print('test')
     session = SessionRecommender.get()
     logging.info(f'Querying document ids for collection {document_collection}...')
     d_query = session.query(Document.id).filter(Document.collection == document_collection)
