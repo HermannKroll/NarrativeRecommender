@@ -30,6 +30,7 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
             tree = etree.parse(f)
 
     citations_to_insert = []
+    citation_set = set()
     for article in tree.iterfind("PubmedArticle"):
 
         # Get PMID
@@ -42,33 +43,35 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
         if pmid not in document_ids:
             continue
 
-        citation_list = set()
         for citation in article.findall('./PubmedData/ReferenceList/Reference'):
             citation_id = citation.findall("./ArticleIdList/ArticleId[@IdType='pubmed']")
             if not citation_id or not len(citation_id):
                 continue
-            # skip PMC ids
-            if citation_id[0].text.startswith('PMC'):
-                continue
-            if citation_id[0].text == 'NOT_FOUND;INVALID_JOURNAL':
-                continue
+            try:
+                # skip PMC ids
+                if citation_id[0].text.startswith('PMC'):
+                    continue
+                if citation_id[0].text == 'NOT_FOUND;INVALID_JOURNAL':
+                    continue
+            except:
+                print(f'Could not parse: {citation_id}')
 
             try:
                 id_candidate = int(citation_id[0].text)
 
                 # only add citation if present in our DB
                 if id_candidate in document_ids:
-                    citation_list.add(id_candidate)
+                    citation_set.add((pmid, id_candidate))
                 else:
                     print(f'{id_candidate} not present in DB')
             except:
                 print(f'Failed to convert "{citation_id[0].text}" into an integer ')
 
-        for citation in citation_list:
-            citations_to_insert.append(dict(document_source_id=pmid,
-                                            document_source_collection=document_collection,
-                                            document_target_id=citation,
-                                            document_target_collection=document_collection))
+    for source, target in citation_set:
+        citations_to_insert.append(dict(document_source_id=source,
+                                        document_source_collection=document_collection,
+                                        document_target_id=target,
+                                        document_target_collection=document_collection))
     return citations_to_insert
 
 
@@ -101,7 +104,7 @@ def pubmed_medline_load_citations_from_dictionary(directory, document_collection
     for idx, fn in enumerate(files):
         print_progress_with_eta("Loading PubMed Medline citation", idx, len(files), start, 1)
         citations_to_insert = pubmed_medline_load_document_citations(fn, document_ids, document_collection)
-        DocumentCitation.bulk_insert_values_into_table(session, citations_to_insert, check_constraints=False)
+        DocumentCitation.bulk_insert_values_into_table(session, citations_to_insert, check_constraints=True)
 
 
 def main():
