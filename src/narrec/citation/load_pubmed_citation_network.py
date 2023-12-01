@@ -30,7 +30,6 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
             tree = etree.parse(f)
 
     citations_to_insert = []
-    pmids_processed = set()
     for article in tree.iterfind("PubmedArticle"):
 
         # Get PMID
@@ -40,9 +39,8 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
             continue  # BAD
 
         pmid = int(pmids[0].text)
-        if pmid not in document_ids or pmid in pmids_processed:
+        if pmid not in document_ids:
             continue
-        pmids_processed.add(pmid)
 
         citation_list = set()
         for citation in article.findall('./PubmedData/ReferenceList/Reference'):
@@ -71,7 +69,7 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
                                             document_source_collection=document_collection,
                                             document_target_id=citation,
                                             document_target_collection=document_collection))
-    return citations_to_insert, pmids_processed
+    return citations_to_insert
 
 
 def pubmed_medline_load_citations_from_dictionary(directory, document_collection='PubMed'):
@@ -103,9 +101,7 @@ def pubmed_medline_load_citations_from_dictionary(directory, document_collection
     start = datetime.now()
     for idx, fn in enumerate(files):
         print_progress_with_eta("Loading PubMed Medline citation", idx, len(files), start, 1)
-        citations_to_insert, pmids_processed = pubmed_medline_load_document_citations(fn, document_ids,
-                                                                                      document_collection)
-        logging.info(f'Inserting {len(citations_to_insert)} ids')
+        citations_to_insert = pubmed_medline_load_document_citations(fn, document_ids, document_collection)
         DocumentCitation.bulk_insert_values_into_table(session, citations_to_insert, check_constraints=False)
 
 
