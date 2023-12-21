@@ -7,10 +7,10 @@ from typing import Set, Dict, List
 
 from lxml import etree
 
-from narrec.backend.database import SessionRecommender
-from narrec.backend.models import DocumentCitation
 from kgextractiontoolbox.backend.models import Document
 from kgextractiontoolbox.progress import print_progress_with_eta
+from narrec.backend.database import SessionRecommender
+from narrec.backend.models import DocumentCitation
 
 
 def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int], document_collection: str) \
@@ -30,7 +30,7 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
             tree = etree.parse(f)
 
     citations_to_insert = []
-    pmids_processed = set()
+    citation_set = set()
     for article in tree.iterfind("PubmedArticle"):
 
         # Get PMID
@@ -40,21 +40,39 @@ def pubmed_medline_load_document_citations(filename: str, document_ids: Set[int]
             continue  # BAD
 
         pmid = int(pmids[0].text)
-        if pmid not in document_ids or pmid in pmids_processed:
+        if pmid not in document_ids:
             continue
-        pmids_processed.add(pmid)
 
-        citation_list = set()
         for citation in article.findall('./PubmedData/ReferenceList/Reference'):
             citation_id = citation.findall("./ArticleIdList/ArticleId[@IdType='pubmed']")
-            if not len(citation_id):
+            if not citation_id or not len(citation_id):
                 continue
-            citation_list.add(int(citation_id[0].text))
+            try:
+                # skip PMC ids
+                if citation_id[0].text.startswith('PMC'):
+                    continue
+                if citation_id[0].text == 'NOT_FOUND;INVALID_JOURNAL':
+                    continue
+            except:
+                print(f'Could not parse: {citation_id}')
 
-        for citation in citation_list:
-            citations_to_insert.append(dict(document_source_id=pmid, document_source_collection=document_collection,
-                                            document_target_id=citation, document_target_collection=document_collection))
-    return citations_to_insert, pmids_processed
+            try:
+                id_candidate = int(citation_id[0].text)
+
+                # only add citation if present in our DB
+                if id_candidate in document_ids:
+                    citation_set.add((pmid, id_candidate))
+                else:
+                    print(f'{id_candidate} not present in DB')
+            except:
+                print(f'Failed to convert "{citation_id[0].text}" into an integer ')
+
+    for source, target in citation_set:
+        citations_to_insert.append(dict(document_source_id=source,
+                                        document_source_collection=document_collection,
+                                        document_target_id=target,
+                                        document_target_collection=document_collection))
+    return citations_to_insert
 
 
 def pubmed_medline_load_citations_from_dictionary(directory, document_collection='PubMed'):
@@ -85,10 +103,8 @@ def pubmed_medline_load_citations_from_dictionary(directory, document_collection
     start = datetime.now()
     for idx, fn in enumerate(files):
         print_progress_with_eta("Loading PubMed Medline citation", idx, len(files), start, 1)
-        citations_to_insert, pmids_processed = pubmed_medline_load_document_citations(fn, document_ids,
-                                                                                    document_collection)
-        DocumentCitation.bulk_insert_values_into_table(session, citations_to_insert, check_constraints=False)
-        document_ids = document_ids - pmids_processed
+        citations_to_insert = pubmed_medline_load_document_citations(fn, document_ids, document_collection)
+        DocumentCitation.bulk_insert_values_into_table(session, citations_to_insert, check_constraints=True)
 
 
 def main():
