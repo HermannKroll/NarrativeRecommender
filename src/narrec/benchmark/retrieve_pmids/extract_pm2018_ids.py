@@ -2,14 +2,14 @@ import ir_datasets
 import os
 import logging
 
-from narrec.config import PMIDS_DIR
+from narrec.config import DATA_DIR
 
 
 def main():
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
-    output_file_path = os.path.join(PMIDS_DIR, "pmids_tg2005.txt")
+    output_file_path = os.path.join(DATA_DIR, "pmids_tg2005.txt")
     dataset = ir_datasets.load("medline/2004/trec-genomics-2005")
 
     with open(output_file_path, 'w') as output_file:

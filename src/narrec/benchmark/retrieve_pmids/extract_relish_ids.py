@@ -7,7 +7,7 @@ import logging
 import concurrent.futures
 import xml.etree.ElementTree as ET
 
-from narrec.config import PMIDS_DIR
+from narrec.config import DATA_DIR
 
 
 def download_data():
@@ -90,7 +90,7 @@ def main():
 
     unpack_data(data_folder, tar_files, unpacked_folder)
 
-    output_file = os.path.join(PMIDS_DIR, 'pmids_pm2018.txt')
+    output_file = os.path.join(DATA_DIR, 'pmids_pm2018.txt')
 
     process_folder(unpacked_folder, output_file)
 
