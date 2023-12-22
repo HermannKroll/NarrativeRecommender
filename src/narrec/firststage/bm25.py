@@ -1,16 +1,17 @@
 import os.path
+
 import pyterrier as pt
 
-from narrec.firststage.base import FirstStageBase
+from narrec.config import BM25_DOCUMENT_CUTOFF, RESULT_DIR
 from narrec.document.document import RecommenderDocument
-# TODO: set new index path and document cutoff
+from narrec.firststage.base import FirstStageBase
+
 
 class BM25(FirstStageBase):
 
     def __init__(self, benchmark_index):
         super().__init__()
         self.benchmark_index = benchmark_index
-
 
     def retrieve_document_for(self, document: RecommenderDocument):
         print(f'Performing BM25 Retrieval on {document}...')
@@ -26,7 +27,7 @@ class BM25(FirstStageBase):
                 scored_docs.append((row["docno"], row["score"]))
 
             scored_docs = sorted(scored_docs, key=lambda x: x[1], reverse=True)
-            scored_docs = scored_docs[:RANKED_DOCUMENT_CUTOFF]
+            scored_docs = scored_docs[:BM25_DOCUMENT_CUTOFF]
 
             max_score = scored_docs[0][1]
             rank = 0
@@ -36,20 +37,11 @@ class BM25(FirstStageBase):
                 result_lines.append(f'{topic.query_id}\tQ0\t{doc}\t{rank + 1}\t{norm_score}\tBM25')
                 rank += 1
 
-        result_file_path = os.path.join(PYTERRIER_INDEX_PATH,
-                                        f'{self.benchmark_index.name}_FirstStageBM25Own.txt')
+        result_file_path = os.path.join(RESULT_DIR,
+                                        f'{self.benchmark_index.name}_FirstStageBM25.txt')
         print(f'Writing results to {result_file_path}')
 
         with open(result_file_path, 'wt') as f:
             f.write('\n'.join([l for l in result_lines]))
 
         print('Finished')
-
-
-
-def main():
-
-
-
-if __name__ == '__main__':
-    main()
