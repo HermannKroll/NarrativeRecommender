@@ -1,18 +1,24 @@
+import logging
 import os.path
-import pyterrier as pt
+
 import pandas as pd
+import pyterrier as pt
 from tqdm import tqdm
+
 from kgextractiontoolbox.backend.database import Session
 from kgextractiontoolbox.backend.models import Document
+from narrec.benchmark.benchmark import Benchmark
+from narrec.benchmark.benchmarks import BENCHMARKS
+from narrec.config import INDEX_DIR
 
 
 class BenchmarkIndex:
 
-    def __init__(self, benchmark):
+    def __init__(self, benchmark: Benchmark):
         self.collection = 'Pubmed'
         self.benchmark = benchmark
         self.name = benchmark.name
-        self.path = os.path.join(PYTERRIER_INDEX_PATH, self.name) # TODO: set index path
+        self.path = os.path.join(INDEX_DIR, self.name)
         self.index = None
         if os.path.isdir(self.path):
             print(f'Loading index from {self.path}')
@@ -47,3 +53,19 @@ class BenchmarkIndex:
         pd_indexer = pt.DFIndexer(self.path, verbose=True)
         self.index = pd_indexer.index(df["text"], df["docno"])
         print('Finished!')
+
+
+def main():
+    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+                        datefmt='%Y-%m-%d:%H:%M:%S',
+                        level=logging.DEBUG)
+
+    logging.info('Creating benchmark pyterrier indexes...')
+    for benchmark in BENCHMARKS:
+        logging.info(f'Creating index for {benchmark.name}')
+        index = BenchmarkIndex(benchmark)
+    logging.info('Finished')
+
+
+if __name__ == '__main__':
+    main()
