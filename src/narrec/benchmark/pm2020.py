@@ -2,7 +2,7 @@ import logging
 from xml.etree import ElementTree
 
 from narrec.benchmark.benchmark import Benchmark, BenchmarkMode
-from narrec.config import PM2020_TOPIC_FILE, PM2020_BENCHMARK_FILE
+from narrec.config import PM2020_TOPIC_FILE, PM2020_BENCHMARK_FILE, PM2020_PMIDS_FILE
 from narrec.recommender.base import RecommenderBase
 
 DRUG = "Drug"
@@ -53,8 +53,7 @@ class PrecMed2020Topic:
 class PM2020Benchmark(Benchmark):
 
     def __init__(self):
-        super().__init__()
-        self.name = "PM2020"
+        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE)
         self.topics: [PrecMed2020Topic] = []
 
         logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')
@@ -118,7 +117,7 @@ class PM2020Benchmark(Benchmark):
                 scores = []
 
                 # Needs to implement a first stage
-                #recommended_documents = recommender.recommend_documents(relevant_document, )
+                # recommended_documents = recommender.recommend_documents(relevant_document, )
 
                 results.append((relevant_document, scores))
 
@@ -127,22 +126,6 @@ class PM2020Benchmark(Benchmark):
             # Average over scores
 
             # Todo: implement some statistics here
-
-
-
-    def get_documents_for_baseline(self):
-        raise NotImplementedError
-        # if self.documents_for_baseline_load:
-        #     return self.documents_for_baseline
-        # else:
-        #     if self.name in DATASET_TO_PUBMED_BASE_ID_FILE:
-        #         path = os.path.join(PUBMED_BASELINE_ID_DIR, DATASET_TO_PUBMED_BASE_ID_FILE[self.name])
-        #         self.documents_for_baseline = set()
-        #         with open(path, 'rt') as f:
-        #             for line in f:
-        #                 self.documents_for_baseline.add(int(line.strip()))
-        #         print(f'Load {len(self.documents_for_baseline)} for {self.name}')
-        #     self.documents_for_baseline_load = True
 
     def __str__(self):
         return f'<{self.name}>'

@@ -2,14 +2,14 @@ import json
 import logging
 
 from narrec.benchmark.benchmark import Benchmark, BenchmarkMode
-from narrec.config import RELISH_BENCHMARK_FILE, RELISH_BENCHMARK_JSON_FILE
+from narrec.config import RELISH_BENCHMARK_FILE, RELISH_BENCHMARK_JSON_FILE, RELISH_PMIDS_FILE
 from narrec.recommender.base import RecommenderBase
 
 
 class RelishBenchmark(Benchmark):
 
     def __init__(self):
-        super().__init__()
+        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE)
         self.doc2recommended = {}
         self.doc2partial_recommended = {}
         self.doc2not_recommended = {}
@@ -126,5 +126,4 @@ if __name__ == '__main__':
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
     benchmark = RelishBenchmark()
-    #benchmark.load_benchmark_data()
     benchmark.process_json_to_txt()
