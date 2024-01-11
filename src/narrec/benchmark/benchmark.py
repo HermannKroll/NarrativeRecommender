@@ -1,3 +1,4 @@
+import logging
 from abc import abstractmethod
 from enum import Enum
 
@@ -27,12 +28,12 @@ class Benchmark:
 
 
     def get_documents_for_baseline(self):
-        if self.documents_for_baseline_load:
-            return self.document_ids
-        else:
+        if not self.documents_for_baseline_load:
             self.document_ids = set()
+            logging.info(f'Loading ids from file: {self.path_to_document_ids}...')
             with open(self.path_to_document_ids, 'rt') as f:
                 for line in f:
                     self.document_ids.add(int(line.strip()))
-            print(f'Load {len(self.document_ids)} for {self.name}')
+            logging.info(f'Load {len(self.document_ids)} for {self.name}')
         self.documents_for_baseline_load = True
+        return self.document_ids
