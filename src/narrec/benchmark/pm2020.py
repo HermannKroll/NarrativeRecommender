@@ -61,6 +61,7 @@ class PM2020Benchmark(Benchmark):
         self.topic2relevant_docs = {}
         self.topic2partially_relevant_docs = {}
         self.topic2not_relevant_docs = {}
+        rated_documents = set()
         with open(PM2020_BENCHMARK_FILE, 'rt') as f:
             for line in f:
                 q_id, _, pmid, rating = line.split()
@@ -77,13 +78,17 @@ class PM2020Benchmark(Benchmark):
                 if rating == 2:
                     # relevant
                     self.topic2relevant_docs[q_id].add(pmid)
+                    rated_documents.add(pmid)
                 elif rating == 1:
                     self.topic2partially_relevant_docs[q_id].add(pmid)
+                    rated_documents.add(pmid)
                 elif rating == 0:
                     self.topic2not_relevant_docs[q_id].add(pmid)
+                    rated_documents.add(pmid)
                 else:
                     raise ValueError(f'Rating value {rating} not supported')
 
+        logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         self.topics = PrecMed2020Topic.parse_topics()
         self.topics = [t for t in self.topics if t.query_id in eval_topics]
 
@@ -138,10 +143,12 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
+
     benchmark = PM2020Benchmark()
     for t in benchmark.topics:
         print(
             f'{t} => {len(benchmark.topic2relevant_docs[t.query_id])} relevant docs / {len(benchmark.topic2not_relevant_docs[t.query_id])} not relevant docs')
 
     print()
-    print(f'PM2020 has {len(benchmark.topics)} relevant topics')
+    logging.info(f'PM2020 has {len(benchmark.topics)} relevant topics')
+    logging.info(f'PM2020 has {len(benchmark.get_documents_for_baseline())} considered documents')
