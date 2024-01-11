@@ -1,21 +1,22 @@
 import logging
-import os.path
+import os
+import shutil
 
 import pandas as pd
 import pyterrier as pt
 from tqdm import tqdm
 
-from kgextractiontoolbox.backend.database import Session
 from kgextractiontoolbox.backend.models import Document
+from narrec.backend.database import SessionRecommender
 from narrec.benchmark.benchmark import Benchmark
-from narrec.benchmark.benchmarks import BENCHMARKS
+from narrec.benchmark.benchmarks import Benchmarks
 from narrec.config import INDEX_DIR
 
 
 class BenchmarkIndex:
 
     def __init__(self, benchmark: Benchmark):
-        self.collection = 'Pubmed'
+        self.collection = 'PubMed'
         self.benchmark = benchmark
         self.name = benchmark.name
         self.path = os.path.join(INDEX_DIR, self.name)
@@ -28,9 +29,9 @@ class BenchmarkIndex:
 
     def create_index(self):
         values = []
-        session = Session.get()
-        print(f'Create index for {self.name} (collections = {self.collection})')
-        print(f'\nIterating over all documents in {self.collection}')
+        session = SessionRecommender.get()
+        logging.info(f'Create index for {self.name} (collections = {self.collection})')
+        logging.info(f'Iterating over all documents in {self.collection}')
 
         total = session.query(Document).filter(Document.collection == self.collection).count()
         doc_query = session.query(Document).filter(Document.collection == self.collection)
@@ -46,22 +47,26 @@ class BenchmarkIndex:
                 values.append([str(d.id), text])
 
         print()
-        print(f'{len(values)} documents retrieved...')
-        print('Creating dataframe...')
+        logging.info(f'{len(values)} documents retrieved...')
+        logging.info('Creating dataframe...')
         df = pd.DataFrame(values, columns=['docno', 'text'])
-        print('Creating index...')
+        logging.info('Creating index...')
         pd_indexer = pt.DFIndexer(self.path, verbose=True)
         self.index = pd_indexer.index(df["text"], df["docno"])
-        print('Finished!')
+        logging.info('Finished!')
 
 
 def main():
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%d:%H:%M:%S',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
 
+    logging.info('Removing old index directory...')
+    shutil.rmtree(INDEX_DIR)
     logging.info('Creating benchmark pyterrier indexes...')
-    for benchmark in BENCHMARKS:
+
+    pt.init()
+    for benchmark in Benchmarks():
         logging.info(f'Creating index for {benchmark.name}')
         index = BenchmarkIndex(benchmark)
     logging.info('Finished')
