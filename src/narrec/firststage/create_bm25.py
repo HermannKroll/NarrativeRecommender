@@ -32,6 +32,7 @@ class BenchmarkIndex:
         session = SessionRecommender.get()
         logging.info(f'Create index for {self.name} (collections = {self.collection})')
         logging.info(f'Iterating over all documents in {self.collection}')
+        logging.info(f'{len(self.benchmark.get_documents_for_baseline())} documents relevant for benchmark')
 
         total = session.query(Document).filter(Document.collection == self.collection).count()
         doc_query = session.query(Document).filter(Document.collection == self.collection)
