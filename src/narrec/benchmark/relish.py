@@ -51,7 +51,10 @@ class RelishBenchmark(Benchmark):
         with open(RELISH_BENCHMARK_JSON_FILE, 'rt') as f:
             relish_data = json.load(f)
 
+        count = 0
+        rated_documents = set()
         for idx, rating in enumerate(relish_data):
+            count += 1
             doc_id = int(rating["pmid"])
             key = idx, doc_id
             self.documents_with_idx.append((idx, doc_id))
@@ -64,11 +67,17 @@ class RelishBenchmark(Benchmark):
 
             for doc_id in rating["response"]["relevant"]:
                 self.doc2recommended[key].add(int(doc_id))
+                rated_documents.add(int(doc_id))
             for doc_id in rating["response"]["partial"]:
                 self.doc2partial_recommended[key].add(int(doc_id))
+                rated_documents.add(int(doc_id))
             for doc_id in rating["response"]["irrelevant"]:
                 self.doc2not_recommended[key].add(int(doc_id))
+                rated_documents.add(int(doc_id))
 
+
+        logging.info(f'Benchmark has {count} rated document queries')
+        logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         logging.info('Relish data loaded')
 
     def get_evaluation_data_for_topic(self, idx: int, docid: int, mode: BenchmarkMode):
@@ -126,4 +135,5 @@ if __name__ == '__main__':
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
     benchmark = RelishBenchmark()
+    logging.info(f'Benchmark has {len(benchmark.get_documents_for_baseline())} documents')
     benchmark.process_json_to_txt()
