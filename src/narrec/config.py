@@ -16,13 +16,15 @@ if not os.path.isdir(INDEX_DIR):
 
 BENCHMARK_DIR = os.path.join(RESOURCE_DIR, "benchmarks")
 
+TG2005_TOPIC_FILE = os.path.join(BENCHMARK_DIR, "trec_genomics2005_topics.txt")
+TG2005_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "trec_genomics2005_documents.txt")
 RELISH_BENCHMARK_JSON_FILE = os.path.join(BENCHMARK_DIR, "RELISH_v1.json")
 RELISH_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "RELISH_documents.txt")
 PM2020_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "trec_pm2020_documents.txt")
 PM2020_TOPIC_FILE = os.path.join(BENCHMARK_DIR, "trec_pm2020_topics.xml")
 
-RELISH_PMIDS_FILE = os.path.join(DATA_DIR, "pmids_pm2018.txt")
 TG2005_PMIDS_FILE = os.path.join(DATA_DIR, "pmids_tg2005.txt")
+RELISH_PMIDS_FILE = os.path.join(DATA_DIR, "pmids_pm2018.txt")
 PM2020_PMIDS_FILE = os.path.join(DATA_DIR, "pmids_pm2020.txt")
 # DB Backend
 BACKEND_CONFIG = os.path.join(CONFIG_DIR, "backend.json")
