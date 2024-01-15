@@ -14,7 +14,6 @@ class RelishBenchmark(Benchmark):
         self.doc2partial_recommended = {}
         self.doc2not_recommended = {}
         self.documents_with_idx = []
-        self.load_benchmark_data()
 
     def load_benchmark_data(self):
         # A relish data entry looks like this

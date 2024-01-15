@@ -57,10 +57,13 @@ class PM2020Benchmark(Benchmark):
         self.topics: [PrecMed2020Topic] = []
 
         logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')
-        eval_topics = set()
+
         self.topic2relevant_docs = {}
         self.topic2partially_relevant_docs = {}
         self.topic2not_relevant_docs = {}
+
+    def load_benchmark_data(self):
+        eval_topics = set()
         rated_documents = set()
         with open(PM2020_BENCHMARK_FILE, 'rt') as f:
             for line in f:

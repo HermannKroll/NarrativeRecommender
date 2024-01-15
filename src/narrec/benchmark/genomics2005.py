@@ -33,10 +33,12 @@ class Genomics2005(Benchmark):
         self.topics: [TrecGen2005Topic] = []
 
         logging.info(f'Loading Benchmark data from {TG2005_BENCHMARK_FILE}...')
-        eval_topics = set()
         self.topic2relevant_docs = {}
         self.topic2partially_relevant_docs = {}
         self.topic2not_relevant_docs = {}
+
+    def load_benchmark_data(self):
+        eval_topics = set()
         rated_documents = set()
         with open(TG2005_BENCHMARK_FILE, 'rt') as f:
             for line in f:
@@ -67,9 +69,6 @@ class Genomics2005(Benchmark):
         logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         self.topics = TrecGen2005Topic.parse_topics()
         self.topics = [t for t in self.topics if t.query_id in eval_topics]
-
-    def load_benchmark_data(self):
-        pass
 
 
 def main():

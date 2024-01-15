@@ -18,6 +18,7 @@ class Benchmark:
         self.document_ids = set()
         self.path_to_document_ids = path_to_document_ids
         self.documents_for_baseline_load = False
+        self.load_benchmark_data()
 
     @abstractmethod
     def load_benchmark_data(self):
@@ -25,7 +26,6 @@ class Benchmark:
 
     def perform_evaluation(self, recommender: RecommenderBase, mode: BenchmarkMode):
         raise NotImplementedError
-
 
     def get_documents_for_baseline(self):
         if not self.documents_for_baseline_load:
