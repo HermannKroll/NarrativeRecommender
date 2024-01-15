@@ -93,13 +93,13 @@ class RelishBenchmark(Benchmark):
             irrelevant = entry["response"]["irrelevant"]
 
             # Process relevant entries
-            output_lines.extend(f'{pmid} 0 {rel_id} 2' for rel_id in relevant)
+            output_lines.extend(f'{pmid}\t0\t{rel_id}\t2' for rel_id in relevant)
 
             # Process partial entries
-            output_lines.extend(f'{pmid} 0 {part_id} 1' for part_id in partial)
+            output_lines.extend(f'{pmid}\t0\t{part_id}\t1' for part_id in partial)
 
             # Process irrelevant entries
-            output_lines.extend(f'{pmid} 0 {irrel_id} 0' for irrel_id in irrelevant)
+            output_lines.extend(f'{pmid}\t0\t{irrel_id}\t0' for irrel_id in irrelevant)
 
         with open(RELISH_BENCHMARK_FILE, 'w') as txt_file:
             txt_file.write('\n'.join(output_lines))
