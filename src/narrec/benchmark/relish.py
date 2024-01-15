@@ -71,31 +71,13 @@ class RelishBenchmark(Benchmark):
                 self.topic2not_relevant_docs[key].add(int(doc_id))
                 rated_documents.add(int(doc_id))
 
-
         logging.info(f'Benchmark has {count} rated document queries')
         logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         logging.info('Relish data loaded')
 
-    def get_evaluation_data_for_topic(self, idx: int, docid: int, mode: BenchmarkMode):
-        key = (idx, docid)
-        if mode == BenchmarkMode.RELEVANT_VS_IRRELEVANT:
-            return self.topic2relevant_docs[key], self.topic2not_relevant_docs[key]
-        elif mode == BenchmarkMode.RELEVANT_PARTIAL_VS_IRRELEVANT:
-            relevant = set()
-            relevant.update(self.topic2relevant_docs[key])
-            relevant.update(self.topic2partially_relevant_docs[key])
-            return relevant, self.topic2not_relevant_docs[key]
-        elif mode == BenchmarkMode.RELEVANT_VS_PARTIAL_IRRELEVANT:
-            irrelevant = set()
-            irrelevant.update(self.topic2partially_relevant_docs[key])
-            irrelevant.update(self.topic2not_relevant_docs[key])
-            return self.topic2relevant_docs[key], irrelevant
-        else:
-            raise ValueError(f'Enum value {mode} unknown and not supported')
-
     def perform_evaluation(self, recommender: RecommenderBase, mode: BenchmarkMode):
         for idx, docid in self.documents_with_idx:
-            relevant, irrelevant = self.get_evaluation_data_for_topic(idx, docid, mode)
+            relevant, irrelevant = self.get_evaluation_data_for_topic(idx, mode)
 
     @staticmethod
     def process_json_to_txt():
