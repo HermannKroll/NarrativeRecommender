@@ -1,7 +1,7 @@
 import logging
 from xml.etree import ElementTree
 
-from narrec.benchmark.benchmark import Benchmark, BenchmarkMode
+from narrec.benchmark.benchmark import Benchmark, BenchmarkMode, BenchmarkType
 from narrec.config import PM2020_TOPIC_FILE, PM2020_BENCHMARK_FILE, PM2020_PMIDS_FILE
 from narrec.recommender.base import RecommenderBase
 
@@ -54,7 +54,7 @@ class PM2020Benchmark(Benchmark):
 
     def __init__(self):
         self.topics: [PrecMed2020Topic] = []
-        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE)
+        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
 
     def load_benchmark_data(self):

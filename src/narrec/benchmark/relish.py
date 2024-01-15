@@ -1,7 +1,7 @@
 import json
 import logging
 
-from narrec.benchmark.benchmark import Benchmark, BenchmarkMode
+from narrec.benchmark.benchmark import Benchmark, BenchmarkMode, BenchmarkType
 from narrec.config import RELISH_BENCHMARK_FILE, RELISH_BENCHMARK_JSON_FILE, RELISH_PMIDS_FILE
 from narrec.recommender.base import RecommenderBase
 
@@ -10,7 +10,7 @@ class RelishBenchmark(Benchmark):
 
     def __init__(self):
         self.documents_with_idx = []
-        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE)
+        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
     def load_benchmark_data(self):
         # A relish data entry looks like this
@@ -43,6 +43,7 @@ class RelishBenchmark(Benchmark):
         # },
         logging.info(f"Loading Relish benchmark data from {RELISH_BENCHMARK_JSON_FILE}")
         self.topic2relevant_docs.clear()
+        self.topic2partially_relevant_docs.clear()
         self.topic2not_relevant_docs.clear()
         with open(RELISH_BENCHMARK_JSON_FILE, 'rt') as f:
             relish_data = json.load(f)
@@ -53,6 +54,7 @@ class RelishBenchmark(Benchmark):
             count += 1
             doc_id = int(rating["pmid"])
             key = idx, doc_id
+            self.topics.append(doc_id)
             self.documents_with_idx.append((idx, doc_id))
             if key in self.topic2relevant_docs:
                 logging.warning(f'Duplicated rating for PMID {key}')
