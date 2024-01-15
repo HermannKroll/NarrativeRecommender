@@ -4,7 +4,10 @@ from narrec.recommender.base import RecommenderBase
 
 
 class RecommenderSimple(RecommenderBase):
-
+    
+    def __init__(self):
+        super().__init__(name="RecommenderSimple")
+    
     def recommend_documents(self, doc: RecommenderDocument, docs_from: [RecommenderDocument],
                             citation_graph: CitationGraph) -> [RecommenderDocument]:
         """

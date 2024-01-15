@@ -6,6 +6,9 @@ from narrec.document.document import RecommenderDocument
 
 class RecommenderBase:
 
+    def __init__(self, name):
+        self.name = name
+
     @abstractmethod
     def recommend_documents(self, doc: RecommenderDocument, docs_from: [RecommenderDocument],
                             citation_graph: CitationGraph) -> [RecommenderDocument]:
