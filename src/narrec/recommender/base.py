@@ -1,10 +1,10 @@
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 from narrec.citation.graph import CitationGraph
 from narrec.document.document import RecommenderDocument
 
 
-class RecommenderBase(ABCMeta):
+class RecommenderBase:
 
     @abstractmethod
     def recommend_documents(self, doc: RecommenderDocument, docs_from: [RecommenderDocument],
