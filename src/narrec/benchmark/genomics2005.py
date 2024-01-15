@@ -64,9 +64,9 @@ class Genomics2005(Benchmark):
                     else:
                         raise ValueError(f'Rating value {rating} not supported')
 
-                logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
-                self.topics = TrecGen2005Topic.parse_topics()
-                self.topics = [t for t in self.topics if t.query_id in eval_topics]
+        logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
+        self.topics = TrecGen2005Topic.parse_topics()
+        self.topics = [t for t in self.topics if t.query_id in eval_topics]
 
     def load_benchmark_data(self):
         pass
