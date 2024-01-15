@@ -18,7 +18,28 @@ class Benchmark:
         self.document_ids = set()
         self.path_to_document_ids = path_to_document_ids
         self.documents_for_baseline_load = False
+
+        self.topic2relevant_docs = {}
+        self.topic2partially_relevant_docs = {}
+        self.topic2not_relevant_docs = {}
+
         self.load_benchmark_data()
+
+    def get_evaluation_data_for_topic(self, topic: int, mode: BenchmarkMode):
+        if mode == BenchmarkMode.RELEVANT_VS_IRRELEVANT:
+            return self.topic2relevant_docs[topic], self.topic2not_relevant_docs[topic]
+        elif mode == BenchmarkMode.RELEVANT_PARTIAL_VS_IRRELEVANT:
+            relevant = set()
+            relevant.update(self.topic2relevant_docs[topic])
+            relevant.update(self.topic2partially_relevant_docs[topic])
+            return relevant, self.topic2not_relevant_docs[topic]
+        elif mode == BenchmarkMode.RELEVANT_VS_PARTIAL_IRRELEVANT:
+            irrelevant = set()
+            irrelevant.update(self.topic2partially_relevant_docs[topic])
+            irrelevant.update(self.topic2not_relevant_docs[topic])
+            return self.topic2relevant_docs[topic], irrelevant
+        else:
+            raise ValueError(f'Enum value {mode} unknown and not supported')
 
     @abstractmethod
     def load_benchmark_data(self):

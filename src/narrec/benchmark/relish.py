@@ -9,11 +9,8 @@ from narrec.recommender.base import RecommenderBase
 class RelishBenchmark(Benchmark):
 
     def __init__(self):
-        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE)
-        self.doc2recommended = {}
-        self.doc2partial_recommended = {}
-        self.doc2not_recommended = {}
         self.documents_with_idx = []
+        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE)
 
     def load_benchmark_data(self):
         # A relish data entry looks like this
@@ -45,8 +42,8 @@ class RelishBenchmark(Benchmark):
         #     "is_anonymous": true
         # },
         logging.info(f"Loading Relish benchmark data from {RELISH_BENCHMARK_JSON_FILE}")
-        self.doc2recommended.clear()
-        self.doc2not_recommended.clear()
+        self.topic2relevant_docs.clear()
+        self.topic2not_relevant_docs.clear()
         with open(RELISH_BENCHMARK_JSON_FILE, 'rt') as f:
             relish_data = json.load(f)
 
@@ -57,21 +54,21 @@ class RelishBenchmark(Benchmark):
             doc_id = int(rating["pmid"])
             key = idx, doc_id
             self.documents_with_idx.append((idx, doc_id))
-            if key in self.doc2recommended:
+            if key in self.topic2relevant_docs:
                 logging.warning(f'Duplicated rating for PMID {key}')
             else:
-                self.doc2recommended[key] = set()
-                self.doc2partial_recommended[key] = set()
-                self.doc2not_recommended[key] = set()
+                self.topic2relevant_docs[key] = set()
+                self.topic2partially_relevant_docs[key] = set()
+                self.topic2not_relevant_docs[key] = set()
 
             for doc_id in rating["response"]["relevant"]:
-                self.doc2recommended[key].add(int(doc_id))
+                self.topic2relevant_docs[key].add(int(doc_id))
                 rated_documents.add(int(doc_id))
             for doc_id in rating["response"]["partial"]:
-                self.doc2partial_recommended[key].add(int(doc_id))
+                self.topic2partially_relevant_docs[key].add(int(doc_id))
                 rated_documents.add(int(doc_id))
             for doc_id in rating["response"]["irrelevant"]:
-                self.doc2not_recommended[key].add(int(doc_id))
+                self.topic2not_relevant_docs[key].add(int(doc_id))
                 rated_documents.add(int(doc_id))
 
 
@@ -82,17 +79,17 @@ class RelishBenchmark(Benchmark):
     def get_evaluation_data_for_topic(self, idx: int, docid: int, mode: BenchmarkMode):
         key = (idx, docid)
         if mode == BenchmarkMode.RELEVANT_VS_IRRELEVANT:
-            return self.doc2recommended[key], self.doc2not_recommended[key]
+            return self.topic2relevant_docs[key], self.topic2not_relevant_docs[key]
         elif mode == BenchmarkMode.RELEVANT_PARTIAL_VS_IRRELEVANT:
             relevant = set()
-            relevant.update(self.doc2recommended[key])
-            relevant.update(self.doc2partial_recommended[key])
-            return relevant, self.doc2not_recommended[key]
+            relevant.update(self.topic2relevant_docs[key])
+            relevant.update(self.topic2partially_relevant_docs[key])
+            return relevant, self.topic2not_relevant_docs[key]
         elif mode == BenchmarkMode.RELEVANT_VS_PARTIAL_IRRELEVANT:
             irrelevant = set()
-            irrelevant.update(self.doc2partial_recommended[key])
-            irrelevant.update(self.doc2not_recommended[key])
-            return self.doc2recommended[key], irrelevant
+            irrelevant.update(self.topic2partially_relevant_docs[key])
+            irrelevant.update(self.topic2not_relevant_docs[key])
+            return self.topic2relevant_docs[key], irrelevant
         else:
             raise ValueError(f'Enum value {mode} unknown and not supported')
 
