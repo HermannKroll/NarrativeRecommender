@@ -1,6 +1,6 @@
 import logging
 
-from narrec.benchmark.benchmark import Benchmark
+from narrec.benchmark.benchmark import Benchmark, BenchmarkType
 from narrec.config import TG2005_PMIDS_FILE, TG2005_TOPIC_FILE, TG2005_BENCHMARK_FILE
 
 
@@ -29,15 +29,11 @@ class TrecGen2005Topic:
 class Genomics2005(Benchmark):
 
     def __init__(self):
-        super().__init__(name="Genomics2005", path_to_document_ids=TG2005_PMIDS_FILE)
         self.topics: [TrecGen2005Topic] = []
-
-        logging.info(f'Loading Benchmark data from {TG2005_BENCHMARK_FILE}...')
-        self.topic2relevant_docs = {}
-        self.topic2partially_relevant_docs = {}
-        self.topic2not_relevant_docs = {}
+        super().__init__(name="Genomics2005", path_to_document_ids=TG2005_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
     def load_benchmark_data(self):
+        logging.info(f'Loading Benchmark data from {TG2005_BENCHMARK_FILE}...')
         eval_topics = set()
         rated_documents = set()
         with open(TG2005_BENCHMARK_FILE, 'rt') as f:

@@ -1,7 +1,7 @@
 import logging
 from xml.etree import ElementTree
 
-from narrec.benchmark.benchmark import Benchmark, BenchmarkMode
+from narrec.benchmark.benchmark import Benchmark, BenchmarkMode, BenchmarkType
 from narrec.config import PM2020_TOPIC_FILE, PM2020_BENCHMARK_FILE, PM2020_PMIDS_FILE
 from narrec.recommender.base import RecommenderBase
 
@@ -53,16 +53,12 @@ class PrecMed2020Topic:
 class PM2020Benchmark(Benchmark):
 
     def __init__(self):
-        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE)
         self.topics: [PrecMed2020Topic] = []
+        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
-        logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')
-
-        self.topic2relevant_docs = {}
-        self.topic2partially_relevant_docs = {}
-        self.topic2not_relevant_docs = {}
 
     def load_benchmark_data(self):
+        logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')
         eval_topics = set()
         rated_documents = set()
         with open(PM2020_BENCHMARK_FILE, 'rt') as f:
@@ -94,22 +90,6 @@ class PM2020Benchmark(Benchmark):
         logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         self.topics = PrecMed2020Topic.parse_topics()
         self.topics = [t for t in self.topics if t.query_id in eval_topics]
-
-    def get_evaluation_data_for_topic(self, topic: int, mode: BenchmarkMode):
-        if mode == BenchmarkMode.RELEVANT_VS_IRRELEVANT:
-            return self.topic2relevant_docs[topic], self.topic2not_relevant_docs[topic]
-        elif mode == BenchmarkMode.RELEVANT_PARTIAL_VS_IRRELEVANT:
-            relevant = set()
-            relevant.update(self.topic2relevant_docs[topic])
-            relevant.update(self.topic2partially_relevant_docs[topic])
-            return relevant, self.topic2not_relevant_docs[topic]
-        elif mode == BenchmarkMode.RELEVANT_VS_PARTIAL_IRRELEVANT:
-            irrelevant = set()
-            irrelevant.update(self.topic2partially_relevant_docs[topic])
-            irrelevant.update(self.topic2not_relevant_docs[topic])
-            return self.topic2relevant_docs[topic], irrelevant
-        else:
-            raise ValueError(f'Enum value {mode} unknown and not supported')
 
     def perform_evaluation(self, recommender: RecommenderBase, mode: BenchmarkMode):
 
