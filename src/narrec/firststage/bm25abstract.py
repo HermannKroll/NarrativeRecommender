@@ -8,4 +8,7 @@ class BM25Abstract(BM25Base):
         super().__init__(name="BM25Abstract", index_path=index_path)
 
     def retrieve_documents_for(self, document: RecommenderDocument):
-        return self.do_bm25_retrieval(document.abstract)
+        if document.abstract and document.abstract.strip():
+            return self.do_bm25_retrieval(document.abstract)
+        else:
+            return self.do_bm25_retrieval(document.title)
