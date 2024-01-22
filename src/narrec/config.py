@@ -1,5 +1,7 @@
 import os
 
+GLOBAL_DB_DOCUMENT_COLLECTION = "PubMed"
+
 GIT_ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
 RESOURCE_DIR = os.path.join(GIT_ROOT_DIR, "resources")
 CONFIG_DIR = os.path.join(GIT_ROOT_DIR, "config")
