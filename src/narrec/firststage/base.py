@@ -3,8 +3,8 @@ from narrec.document.document import RecommenderDocument
 
 class FirstStageBase:
 
-    def __init__(self):
-        pass
+    def __init__(self, name):
+        self.name = name
 
-    def retrieve_document_for(self, document: RecommenderDocument):
+    def retrieve_documents_for(self, document: RecommenderDocument):
         pass
