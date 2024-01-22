@@ -52,7 +52,18 @@ def perform_evaluation_report(qrel_file: str, run_file: str, output: str):
     evaluator = pytrec_eval.RelevanceEvaluator(qrel, METRICS)
     results = evaluator.evaluate(run)
 
-    with open(output, 'w') as f_out:
-        json.dump(results, f_out, indent=4)
+    print(results)
 
-    generate_diagram(output, os.path.dirname(output))
+   # with open(output, 'w') as f_out:
+   #     json.dump(results, f_out, indent=4)
+
+   # generate_diagram(output, os.path.dirname(output))
+
+def main():
+    perform_evaluation_report("/home/kroll/NarrativeRecommender/resources/benchmarks/RELISH_documents.txt",
+                              " /ssd2/kroll/recommender/results/BM25Title", None)
+
+
+
+if __name__ == '__main__':
+    main()
