@@ -9,8 +9,8 @@ from tqdm import tqdm
 from kgextractiontoolbox.backend.models import Document
 from narrec.backend.database import SessionRecommender
 from narrec.benchmark.benchmark import Benchmark
-from narrec.benchmark.benchmarks import Benchmarks
 from narrec.config import INDEX_DIR
+from narrec.run_config import BENCHMARKS
 
 
 class BenchmarkIndex:
@@ -67,7 +67,7 @@ def main():
     logging.info('Creating benchmark pyterrier indexes...')
 
     pt.init()
-    for benchmark in Benchmarks():
+    for benchmark in BENCHMARKS:
         logging.info(f'Creating index for {benchmark.name}')
         index = BenchmarkIndex(benchmark)
     logging.info('Finished')
