@@ -43,9 +43,11 @@ def perform_evaluation_report(qrel_file: str, run_file: str, output: str):
     :param output: write report results as a JSON to this path
     :return: None
     """
+    print(f'Loading qrel file: {qrel_file}')
     with open(qrel_file, 'r') as f_qrel:
         qrel = pytrec_eval.parse_qrel(f_qrel)
 
+    print(f'Loading run file: {run_file}')
     with open(run_file, 'r') as f_run:
         run = pytrec_eval.parse_run(f_run)
 
@@ -61,7 +63,7 @@ def perform_evaluation_report(qrel_file: str, run_file: str, output: str):
 
 def main():
     perform_evaluation_report("/home/kroll/NarrativeRecommender/resources/benchmarks/RELISH_documents.txt",
-                              " /ssd2/kroll/recommender/results/BM25Title", None)
+                              "/ssd2/kroll/recommender/results/BM25Title.txt", None)
 
 
 
