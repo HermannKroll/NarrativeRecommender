@@ -1,18 +1,9 @@
 import pytrec_eval
 import json
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
 
-
-METRICS_OLD = [
-    "recall@1000",
-    "ndcg@10",
-    "ndcg@20",
-    "ndcg@100",
-    "bpref",
-    "map@1000",
-    "precision@10",
-    "precision@20",
-    "precision@100"
-]
 
 METRICS = {
     'recall_1000',
@@ -27,6 +18,22 @@ METRICS = {
 }
 
 
+def generate_diagram(input_json: str, output_dir: str):
+    with open(input_json, 'r') as file:
+        results = json.load(file)
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    for metric in METRICS:
+        data = {run_name: res[metric] for run_name, res in results.items() if metric in res}
+        df = pd.DataFrame(data)
+        plt.figure()
+        df.plot.bar(xlabel='Topic', ylabel=metric, figsize=(40, 10), width=1.0, edgecolor='black')
+        plt.savefig(os.path.join(output_dir, f"{metric}.svg"), format="svg")
+        plt.close('all')
+
+
 def perform_evaluation_report(qrel_file: str, run_file: str, output: str):
     """
     Applys pytrec_eval to our given scenario
@@ -36,7 +43,6 @@ def perform_evaluation_report(qrel_file: str, run_file: str, output: str):
     :param output: write report results as a JSON to this path
     :return: None
     """
-    #print(pytrec_eval.supported_measures)
     with open(qrel_file, 'r') as f_qrel:
         qrel = pytrec_eval.parse_qrel(f_qrel)
 
@@ -48,3 +54,5 @@ def perform_evaluation_report(qrel_file: str, run_file: str, output: str):
 
     with open(output, 'w') as f_out:
         json.dump(results, f_out, indent=4)
+
+    generate_diagram(output, os.path.dirname(output))
