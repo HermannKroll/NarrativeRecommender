@@ -53,7 +53,8 @@ class PM2020Benchmark(Benchmark):
 
     def __init__(self):
         self.topics: [PrecMed2020Topic] = []
-        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
+        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK,
+                         qrel_path=PM2020_BENCHMARK_FILE)
 
     def load_benchmark_data(self):
         logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')

@@ -9,7 +9,8 @@ class RelishBenchmark(Benchmark):
 
     def __init__(self):
         self.documents_with_idx = []
-        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
+        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK,
+                         qrel_path=RELISH_BENCHMARK_FILE)
 
     def iterate_over_document_entries(self):
         for idx, doc_id in self.topic2relevant_docs:

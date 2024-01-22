@@ -18,7 +18,7 @@ class BenchmarkType(Enum):
 
 class Benchmark:
 
-    def __init__(self, name, path_to_document_ids, type: BenchmarkType):
+    def __init__(self, name, path_to_document_ids, type: BenchmarkType, qrel_path: str):
         self.document_collection = GLOBAL_DB_DOCUMENT_COLLECTION
         self.name = name
         self.document_ids = set()
@@ -30,6 +30,7 @@ class Benchmark:
         self.topic2partially_relevant_docs = {}
         self.topic2not_relevant_docs = {}
         self.type = type
+        self.qrel_path = qrel_path
 
         self.load_benchmark_data()
 
