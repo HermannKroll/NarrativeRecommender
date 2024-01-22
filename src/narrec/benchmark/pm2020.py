@@ -1,9 +1,8 @@
 import logging
 from xml.etree import ElementTree
 
-from narrec.benchmark.benchmark import Benchmark, BenchmarkMode, BenchmarkType
+from narrec.benchmark.benchmark import Benchmark, BenchmarkType
 from narrec.config import PM2020_TOPIC_FILE, PM2020_BENCHMARK_FILE, PM2020_PMIDS_FILE
-from narrec.recommender.base import RecommenderBase
 
 DRUG = "Drug"
 CHEMICAL = "Chemical"
@@ -56,7 +55,6 @@ class PM2020Benchmark(Benchmark):
         self.topics: [PrecMed2020Topic] = []
         super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
-
     def load_benchmark_data(self):
         logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')
         eval_topics = set()
@@ -90,30 +88,6 @@ class PM2020Benchmark(Benchmark):
         logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         self.topics = PrecMed2020Topic.parse_topics()
         self.topics = [t for t in self.topics if t.query_id in eval_topics]
-
-    def perform_evaluation(self, recommender: RecommenderBase, mode: BenchmarkMode):
-
-        for topic in self.topics:
-            relevant, irrelevant = self.get_evaluation_data_for_topic(topic.query_id, mode)
-
-            # Idea: for each topic, get all relevant documents
-            # Select one of these documents
-            # perform the recommendation step
-            results = []
-            for relevant_document in relevant:
-                # Do recommendation
-                scores = []
-
-                # Needs to implement a first stage
-                # recommended_documents = recommender.recommend_documents(relevant_document, )
-
-                results.append((relevant_document, scores))
-
-                pass
-
-            # Average over scores
-
-            # Todo: implement some statistics here
 
     def __str__(self):
         return f'<{self.name}>'

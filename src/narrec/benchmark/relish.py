@@ -1,9 +1,8 @@
 import json
 import logging
 
-from narrec.benchmark.benchmark import Benchmark, BenchmarkMode, BenchmarkType
+from narrec.benchmark.benchmark import Benchmark, BenchmarkType
 from narrec.config import RELISH_BENCHMARK_FILE, RELISH_BENCHMARK_JSON_FILE, RELISH_PMIDS_FILE
-from narrec.recommender.base import RecommenderBase
 
 
 class RelishBenchmark(Benchmark):
@@ -11,6 +10,12 @@ class RelishBenchmark(Benchmark):
     def __init__(self):
         self.documents_with_idx = []
         super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
+
+    def get_input_document_ids(self):
+        docids = []
+        for idx, doc_id in self.topic2relevant_docs:
+            docids.append(doc_id)
+        return docids
 
     def load_benchmark_data(self):
         # A relish data entry looks like this
@@ -76,10 +81,6 @@ class RelishBenchmark(Benchmark):
         logging.info(f'Benchmark has {count} rated document queries')
         logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         logging.info('Relish data loaded')
-
-    def perform_evaluation(self, recommender: RecommenderBase, mode: BenchmarkMode):
-        for idx, docid in self.documents_with_idx:
-            relevant, irrelevant = self.get_evaluation_data_for_topic(idx, mode)
 
     @staticmethod
     def process_json_to_txt():

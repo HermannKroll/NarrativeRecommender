@@ -3,6 +3,7 @@ from abc import abstractmethod
 from enum import Enum
 from typing import List
 
+from narrec.config import GLOBAL_DB_DOCUMENT_COLLECTION
 from narrec.recommender.base import RecommenderBase
 
 
@@ -18,6 +19,7 @@ class BenchmarkType(Enum):
 class Benchmark:
 
     def __init__(self, name, path_to_document_ids, type: BenchmarkType):
+        self.document_collection = GLOBAL_DB_DOCUMENT_COLLECTION
         self.name = name
         self.document_ids = set()
         self.path_to_document_ids = path_to_document_ids
@@ -52,16 +54,6 @@ class Benchmark:
     def load_benchmark_data(self):
         raise NotImplementedError
 
-    def perform_evaluation_base(self, input_documents: List[str], recommender: RecommenderBase, mode: BenchmarkMode):
-        for idx, docid in input_documents:
-            relevant, irrelevant = self.get_evaluation_data_for_topic(idx, mode)
-
-            recommender.recommend_documents()
-
-
-    def perform_evaluation(self, recommender: RecommenderBase, mode: BenchmarkMode):
-        raise NotImplementedError
-
 
     def get_documents_for_baseline(self):
         if not self.documents_for_baseline_load:
@@ -73,3 +65,6 @@ class Benchmark:
             logging.info(f'Load {len(self.document_ids)} for {self.name}')
         self.documents_for_baseline_load = True
         return self.document_ids
+
+    def get_input_document_ids(self):
+        raise NotImplementedError
