@@ -66,5 +66,5 @@ class Benchmark:
         self.documents_for_baseline_load = True
         return self.document_ids
 
-    def get_input_document_ids(self):
+    def iterate_over_document_entries(self):
         raise NotImplementedError

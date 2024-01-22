@@ -37,19 +37,26 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
     result_lines = []
 
     print('Retrieve document contents...')
-    input_docs = retriever.retrieve_narrative_documents(document_ids=list(benchmark.get_input_document_ids()),
+    doc_ids = [d[1] for d in benchmark.iterate_over_document_entries()]
+    input_docs = retriever.retrieve_narrative_documents(document_ids=doc_ids,
                                                         document_collection=benchmark.document_collection)
+    docid2docs = {d.id: d for d in input_docs}
 
     print('Perform first stage retrieval')
-    for input_doc in tqdm(input_docs, total=len(input_docs)):
-        retrieved_docs = first_stage.retrieve_documents_for(input_doc)
+    doc_queries = list(benchmark.iterate_over_document_entries())
+    for q_idx, doc_id in tqdm(doc_queries, total=len(doc_queries)):
+        try:
+            input_doc = docid2docs[int(doc_id)]
+            retrieved_docs = first_stage.retrieve_documents_for(input_doc)
 
-        for rank, (docid, score) in enumerate(retrieved_docs):
-            if int(docid) == input_doc.id:
-                continue
+            for rank, (fs_docid, score) in enumerate(retrieved_docs):
+                if int(fs_docid) == input_doc.id:
+                    continue
 
-            result_line = f'{input_doc.id}\tQ0\t{docid}\t{rank + 1}\t{score}\t{first_stage.name}'
-            result_lines.append(result_line)
+                result_line = f'{q_idx}\tQ0\t{fs_docid}\t{rank + 1}\t{score}\t{first_stage.name}'
+                result_lines.append(result_line)
+        except KeyError:
+            print(f'Document {doc_id} not known in our collection - skipping')
 
     print(f'Results will be written to {result_path}')
     with open(result_path, 'wt') as f:
@@ -78,14 +85,16 @@ def main():
                 fs_docs = load_document_ids_from_runfile(fs_path)
 
                 for input_docid, retrieved_docs in fs_docs.items():
-                    # Retrieve the input document
-                    input_doc = retriever.retrieve_narrative_documents([input_docid], GLOBAL_DB_DOCUMENT_COLLECTION)[0]
-
-                    # Retrieve the documents to score
-                    retrieved_doc_ids = [d[0] for d in retrieved_docs]
-                    documents = retriever.retrieve_narrative_documents(retrieved_doc_ids, GLOBAL_DB_DOCUMENT_COLLECTION)
 
                     if DO_RECOMMENDATION:
+                        # Retrieve the input document
+                        input_doc = retriever.retrieve_narrative_documents([input_docid], GLOBAL_DB_DOCUMENT_COLLECTION)[0]
+
+                        # Retrieve the documents to score
+                        retrieved_doc_ids = [d[0] for d in retrieved_docs]
+                        documents = retriever.retrieve_narrative_documents(retrieved_doc_ids, GLOBAL_DB_DOCUMENT_COLLECTION)
+
+
                         for recommender in recommenders:
                             start = datetime.now()
                             rec_docs = recommender.recommend_documents(input_doc, documents, citation_graph)

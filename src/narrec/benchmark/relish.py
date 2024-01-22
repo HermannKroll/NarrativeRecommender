@@ -11,11 +11,9 @@ class RelishBenchmark(Benchmark):
         self.documents_with_idx = []
         super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
-    def get_input_document_ids(self):
-        docids = []
+    def iterate_over_document_entries(self):
         for idx, doc_id in self.topic2relevant_docs:
-            docids.append(doc_id)
-        return docids
+            yield idx, doc_id
 
     def load_benchmark_data(self):
         # A relish data entry looks like this
@@ -89,20 +87,24 @@ class RelishBenchmark(Benchmark):
 
         output_lines = []
 
-        for entry in data:
-            pmid = entry["pmid"]
-            relevant = entry["response"]["relevant"]
-            partial = entry["response"]["partial"]
-            irrelevant = entry["response"]["irrelevant"]
+        for idx, entry in enumerate(data):
+            doc_key = f'{idx}'
+            relevant = set(entry["response"]["relevant"])
+            partial = set(entry["response"]["partial"])
+            irrelevant = set(entry["response"]["irrelevant"])
+
+            assert len(relevant.intersection(partial)) == 0
+            assert len(relevant.intersection(irrelevant)) == 0
+            assert len(partial.intersection(irrelevant)) == 0
 
             # Process relevant entries
-            output_lines.extend(f'{pmid}\t0\t{rel_id}\t2' for rel_id in relevant)
+            output_lines.extend(f'{doc_key}\t0\t{rel_id}\t2' for rel_id in relevant)
 
             # Process partial entries
-            output_lines.extend(f'{pmid}\t0\t{part_id}\t1' for part_id in partial)
+            output_lines.extend(f'{doc_key}\t0\t{part_id}\t1' for part_id in partial)
 
             # Process irrelevant entries
-            output_lines.extend(f'{pmid}\t0\t{irrel_id}\t0' for irrel_id in irrelevant)
+            output_lines.extend(f'{doc_key}\t0\t{irrel_id}\t0' for irrel_id in irrelevant)
 
         with open(RELISH_BENCHMARK_FILE, 'w') as txt_file:
             txt_file.write('\n'.join(output_lines))
