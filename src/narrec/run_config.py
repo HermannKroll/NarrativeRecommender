@@ -5,7 +5,10 @@ from narrec.benchmark.relish import RelishBenchmark
 FIRST_STAGES = [
     "BM25Title",
     "BM25Abstract",
-    "BM25Yake"
+    "BM25Yake",
+    "FSCore",
+    "FSCorePlusAbstractBM25",
+    "FSCorePlusTitleBM25"
 ]
 
 BENCHMARKS = [
