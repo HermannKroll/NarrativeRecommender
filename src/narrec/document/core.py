@@ -17,6 +17,11 @@ class ScoredStatementExtraction(StatementExtraction):
                          sentence_id=stmt.sentence_id, confidence=stmt.confidence)
         self.score = score
 
+    def __str__(self):
+        return f'{self.score}: ({self.subject_id}, {self.relation}, {self.object_id})'
+
+    def __repr__(self):
+        return self.__str__()
 
 class NarrativeCore:
 
@@ -55,6 +60,9 @@ class NarrativeCoreExtractor:
             if s_score >= threshold:
                 filtered_statements.append((statement, s_score))
 
+        # sort filtered statements by score
+        filtered_statements.sort(key=lambda x: x[1], reverse=True)
+
         if not filtered_statements:
             return []
 
@@ -67,11 +75,22 @@ class NarrativeCoreExtractor:
         connected_components = [(c, len(c)) for c in sorted(nx.connected_components(graph), key=len, reverse=True)]
 
         cores = []
+        core_node_pairs = set()
+        # The following algorithm will be design select the highest scored edges between two
+        # concepts because filtered statements are sorted by their score desc
         for connected_nodes, size in connected_components:
             core_statements = []
             for statement, score in filtered_statements:
+                # add only the strongest edge between two concepts (could be caused by multiple extractions)
+                so = (statement.subject_id, statement.object_id)
+                os = (statement.object_id, statement.subject_id)
+                # Check whether we already added an edge between s and o or o and s
+                if so in core_node_pairs or os in core_node_pairs:
+                    continue
+
                 if statement.subject_id in connected_nodes and statement.object_id in connected_nodes:
                     core_statements.append(ScoredStatementExtraction(stmt=statement, score=score))
+                    core_node_pairs.add(so)
 
             cores.append(NarrativeCore(core_statements))
 
