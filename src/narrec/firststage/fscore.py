@@ -32,7 +32,8 @@ class FSCore(FirstStageBase):
                         doc_id_int = int(doc_id)
                         if self.benchmark.document_collection == "PubMed" and self.benchmark.get_documents_for_baseline():
                             if doc_id_int not in self.benchmark.get_documents_for_baseline():
-                                document_ids.add(doc_id_int)
+                                continue
+                            document_ids.add(doc_id_int)
 
         return document_ids
 

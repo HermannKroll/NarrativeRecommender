@@ -7,8 +7,8 @@ FIRST_STAGES = [
     "BM25Abstract",
     "BM25Yake",
     "FSCore",
-    "FSCorePlusAbstractBM25",
-    "FSCorePlusTitleBM25"
+ #   "FSCorePlusAbstractBM25",
+ #   "FSCorePlusTitleBM25"
 ]
 
 BENCHMARKS = [
@@ -18,13 +18,13 @@ BENCHMARKS = [
 ]
 
 
-CONFIDENCE_WEIGHT = 0.0
-TFIDF_WEIGHT = 1.0
+CONFIDENCE_WEIGHT = 0.5
+TFIDF_WEIGHT = 0.5
 
 
 assert CONFIDENCE_WEIGHT + TFIDF_WEIGHT == 1.0
 
-NARRATIVE_CORE_THRESHOLD = 0.5
+NARRATIVE_CORE_THRESHOLD = 0.4
 
 
 
@@ -35,5 +35,6 @@ FS_DOCUMENT_CUTOFF = 1001
 print('--'*60)
 print(f'Confidence weight : {CONFIDENCE_WEIGHT}')
 print(f'TF-IDF weight     : {TFIDF_WEIGHT}')
+print(f'Core threshold    : {NARRATIVE_CORE_THRESHOLD}')
 print(f'Document FS cutoff: {FS_DOCUMENT_CUTOFF}')
 print('--'*60)

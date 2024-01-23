@@ -66,32 +66,32 @@ class NarrativeCoreExtractor:
         if not filtered_statements:
             return []
 
-        graph = nx.Graph()
-        for statement, score in filtered_statements:
-            graph.add_edge(statement.subject_id, statement.object_id)
+        # graph = nx.Graph()
+        # for statement, score in filtered_statements:
+        #    graph.add_edge(statement.subject_id, statement.object_id)
 
         # Find all connected components and sort them by their size (No. of nodes)
         # Will produce a sorted list of nodes
-        connected_components = [(c, len(c)) for c in sorted(nx.connected_components(graph), key=len, reverse=True)]
+        # connected_components = [(c, len(c)) for c in sorted(nx.connected_components(graph), key=len, reverse=True)]
 
         cores = []
         core_node_pairs = set()
         # The following algorithm will be design select the highest scored edges between two
         # concepts because filtered statements are sorted by their score desc
-        for connected_nodes, size in connected_components:
-            core_statements = []
-            for statement, score in filtered_statements:
-                # add only the strongest edge between two concepts (could be caused by multiple extractions)
-                so = (statement.subject_id, statement.object_id)
-                os = (statement.object_id, statement.subject_id)
-                # Check whether we already added an edge between s and o or o and s
-                if so in core_node_pairs or os in core_node_pairs:
-                    continue
+        #for connected_nodes, size in connected_components:
+        core_statements = []
+        for statement, score in filtered_statements:
+            # add only the strongest edge between two concepts (could be caused by multiple extractions)
+            so = (statement.subject_id, statement.object_id)
+            os = (statement.object_id, statement.subject_id)
+            # Check whether we already added an edge between s and o or o and s
+            if so in core_node_pairs or os in core_node_pairs:
+                continue
 
-                if statement.subject_id in connected_nodes and statement.object_id in connected_nodes:
-                    core_statements.append(ScoredStatementExtraction(stmt=statement, score=score))
-                    core_node_pairs.add(so)
+            #if statement.subject_id in connected_nodes and statement.object_id in connected_nodes:
+            core_statements.append(ScoredStatementExtraction(stmt=statement, score=score))
+            core_node_pairs.add(so)
 
-            cores.append(NarrativeCore(core_statements))
+        cores.append(NarrativeCore(core_statements))
 
         return cores

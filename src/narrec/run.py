@@ -81,8 +81,8 @@ def main():
     for bench in benchmarks:
         index_path = os.path.join(INDEX_DIR, bench.name)
         first_stages = [FSCore(core_extractor, bench),
-                        FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-                        FSCorePlusTitleBM25(core_extractor, bench, index_path),
+                    #    FSCorePlusAbstractBM25(core_extractor, bench, index_path),
+                    #    FSCorePlusTitleBM25(core_extractor, bench, index_path),
                         BM25Title(index_path), BM25Abstract(index_path),
                         BM25Yake(index_path)]
 
