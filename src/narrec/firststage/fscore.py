@@ -48,18 +48,28 @@ class FSCore(FirstStageBase):
         max_core = cores[0]
 
         # Core statements are also sorted by their score
-        document_ids_scored = []
-        # dont add documents multiple times
-        contained_doc_ids = set()
+        document_ids_scored = {}
+        # If a statement of the core is contained within a document, we increase the score
+        # of the document by the score of the corresponding edge
         for stmt in max_core.statements:
             # retrieve matching documents
             document_ids = self.retrieve_documents((stmt.subject_id, stmt.relation, stmt.object_id))
-            # add all documents with the statement score to our list
-            document_ids_scored.extend([(d, stmt.score) for d in document_ids if d not in contained_doc_ids])
-            contained_doc_ids.update(document_ids)
 
-            if len(document_ids) >= FS_DOCUMENT_CUTOFF:
-                break
+            for doc_id in document_ids:
+                if doc_id not in document_ids_scored:
+                    document_ids_scored[doc_id] = stmt.score
+                else:
+                    document_ids_scored[doc_id] += stmt.score
 
+        # We did not find any documents
+        if len(document_ids_scored) == 0:
+            return []
+
+        # Get the maximum score to normalize the scores
+        max_score = max(document_ids_scored.values())
+        # Convert to list
+        document_ids_scored = [(k, v / max_score) for k, v in document_ids_scored.items()]
+        # Sort by score and then doc desc
+        document_ids_scored.sort(key=lambda x: (x[1], x[0]), reverse=True)
         # Ensure cutoff
         return document_ids_scored[:FS_DOCUMENT_CUTOFF]
