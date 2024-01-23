@@ -20,8 +20,9 @@ class ScoredStatementExtraction(StatementExtraction):
 
 class NarrativeCore:
 
-    def __init__(self, statements):
+    def __init__(self, statements: List[ScoredStatementExtraction]):
         self.statements = statements
+        self.statements.sort(key=lambda x: x.score, reverse=True)
         self.size = len(statements)
 
 
