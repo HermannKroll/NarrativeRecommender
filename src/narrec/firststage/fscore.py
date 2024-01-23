@@ -6,6 +6,7 @@ from narrec.benchmark.benchmark import Benchmark
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.document import RecommenderDocument
 from narrec.firststage.base import FirstStageBase
+from narrec.run_config import FS_DOCUMENT_CUTOFF
 
 
 class FSCore(FirstStageBase):
@@ -54,4 +55,8 @@ class FSCore(FirstStageBase):
             # add all documents with the statement score to our list
             document_ids_scored.extend([(d, stmt.score) for d in document_ids])
 
-        return document_ids_scored
+            if len(document_ids) >= FS_DOCUMENT_CUTOFF:
+                break
+
+        # Ensure cutoff
+        return document_ids_scored[:FS_DOCUMENT_CUTOFF]

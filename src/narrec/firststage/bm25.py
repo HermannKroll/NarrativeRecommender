@@ -2,7 +2,7 @@ import string
 
 import pyterrier as pt
 
-from narrec.config import BM25_DOCUMENT_CUTOFF
+from narrec.run_config import FS_DOCUMENT_CUTOFF
 from narrec.firststage.base import FirstStageBase
 
 
@@ -26,5 +26,5 @@ class BM25Base(FirstStageBase):
             scored_docs.append((row["docno"], row["score"]))
 
         scored_docs = sorted(scored_docs, key=lambda x: (x[1], x[0]), reverse=True)
-        scored_docs = scored_docs[:BM25_DOCUMENT_CUTOFF]
+        scored_docs = scored_docs[:FS_DOCUMENT_CUTOFF]
         return scored_docs

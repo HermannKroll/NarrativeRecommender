@@ -21,3 +21,8 @@ TFIDF_WEIGHT = 0.5
 assert CONFIDENCE_WEIGHT + TFIDF_WEIGHT == 1.0
 
 NARRATIVE_CORE_THRESHOLD = 0.5
+
+
+
+# Experimental Configuration (because first stage will always find input doc)
+FS_DOCUMENT_CUTOFF = 1001

@@ -13,22 +13,7 @@ class FSCorePlusTitleBM25(FSCore):
         self.bm25 = BM25Title(bm25_index_path)
 
     def retrieve_documents_for(self, document: RecommenderDocument):
-        # Compute the cores
-        cores = self.extractor.extract_narrative_core_from_document(document)
-
-        # We dont have any core
-        if not cores:
+        document_ids_scored = super().retrieve_documents_for(document)
+        if not document_ids_scored:
+            # We dont have any core
             return self.bm25.retrieve_documents_for(document)
-
-        # scores are sorted by their size
-        max_core = cores[0]
-
-        # Core statements are also sorted by their score
-        document_ids_scored = []
-        for stmt in max_core.statements:
-            # retrieve matching documents
-            document_ids = self.retrieve_documents((stmt.subject_id, stmt.relation, stmt.object_id))
-            # add all documents with the statement score to our list
-            document_ids_scored.extend([(d, stmt.score) for d in document_ids])
-
-        return document_ids_scored

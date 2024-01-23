@@ -30,6 +30,3 @@ RELISH_PMIDS_FILE = os.path.join(DATA_DIR, "pmids_pm2018.txt")
 PM2020_PMIDS_FILE = os.path.join(DATA_DIR, "pmids_pm2020.txt")
 # DB Backend
 BACKEND_CONFIG = os.path.join(CONFIG_DIR, "backend.json")
-
-# Experimental Configuration (because first stage will always find input doc)
-BM25_DOCUMENT_CUTOFF = 1001
