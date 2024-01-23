@@ -49,11 +49,14 @@ class FSCore(FirstStageBase):
 
         # Core statements are also sorted by their score
         document_ids_scored = []
+        # dont add documents multiple times
+        contained_doc_ids = set()
         for stmt in max_core.statements:
             # retrieve matching documents
             document_ids = self.retrieve_documents((stmt.subject_id, stmt.relation, stmt.object_id))
             # add all documents with the statement score to our list
-            document_ids_scored.extend([(d, stmt.score) for d in document_ids])
+            document_ids_scored.extend([(d, stmt.score) for d in document_ids if d not in contained_doc_ids])
+            contained_doc_ids.update(document_ids)
 
             if len(document_ids) >= FS_DOCUMENT_CUTOFF:
                 break

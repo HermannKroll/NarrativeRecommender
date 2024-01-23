@@ -17,3 +17,4 @@ class FSCorePlusTitleBM25(FSCore):
         if not document_ids_scored:
             # We dont have any core
             return self.bm25.retrieve_documents_for(document)
+        return document_ids_scored
