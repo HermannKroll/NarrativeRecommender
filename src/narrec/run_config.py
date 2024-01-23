@@ -3,7 +3,8 @@ from narrec.benchmark.pm2020 import PM2020Benchmark
 from narrec.benchmark.relish import RelishBenchmark
 
 FIRST_STAGES = [
-    "BM25Title"
+    "BM25Title",
+    "BM25Abstract"
 ]
 
 BENCHMARKS = [
