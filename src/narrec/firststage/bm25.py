@@ -2,8 +2,8 @@ import string
 
 import pyterrier as pt
 
-from narrec.run_config import FS_DOCUMENT_CUTOFF
 from narrec.firststage.base import FirstStageBase
+from narrec.run_config import FS_DOCUMENT_CUTOFF
 
 
 class BM25Base(FirstStageBase):
@@ -12,7 +12,7 @@ class BM25Base(FirstStageBase):
         super().__init__(name=name)
         if not pt.started():
             pt.init()
-        self.index = pt.IndexFactory.of(index_path)
+        self.index = pt.IndexFactory.of(index_path, memory=True)
         self.translator = str.maketrans("", "", string.punctuation)
 
     def do_bm25_retrieval(self, query: str):
