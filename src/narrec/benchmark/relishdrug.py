@@ -48,7 +48,7 @@ class RelishDrugBenchmark(RelishBenchmark):
         self.topic2not_relevant_docs = {key: v for key, v in self.topic2not_relevant_docs.items()
                                         if key in self.document_idx_ids_with_drugs}
 
-        self.documents_with_idx = [(idx, key) for idx, key in self.documents_with_idx
+        self.documents_with_idx = [key for key in self.documents_with_idx
                                    if key in self.document_idx_ids_with_drugs]
 
         print(f'{len(self.document_idx_ids_with_drugs)} documents have drugs on their graphs')
