@@ -2,6 +2,7 @@ import os
 
 from tqdm import tqdm
 
+from narrant.preprocessing.enttypes import DRUG
 from narrec.backend.retriever import DocumentRetriever
 from narrec.benchmark.benchmark import BenchmarkType, Benchmark
 from narrec.benchmark.relish import RelishBenchmark
@@ -27,6 +28,8 @@ def analyze_benchmark(retriever: DocumentRetriever, benchmark: Benchmark):
     graph_size2count = {}
     count_less_5 = 0
     count_less_10 = 0
+    count_has_drug = 0
+    count_has_drug_in_graph = 0
     doc_queries = list(benchmark.iterate_over_document_entries())
     for q_idx, doc_id in tqdm(doc_queries, total=len(doc_queries)):
         try:
@@ -44,6 +47,14 @@ def analyze_benchmark(retriever: DocumentRetriever, benchmark: Benchmark):
             if doc_graph_size < 10:
                 count_less_10 += 1
 
+            if DRUG in {t.ent_type for t in input_doc.tags}:
+                count_has_drug += 1
+
+            cond1 = DRUG in {s.subject_type for s in input_doc.extracted_statements}
+            cond2 = DRUG in {s.object_type for s in input_doc.extracted_statements}
+            if cond1 or cond2:
+                count_has_drug_in_graph += 1
+
         except KeyError:
             print(f'Document {doc_id} not known in our collection - skipping')
 
@@ -52,8 +63,10 @@ def analyze_benchmark(retriever: DocumentRetriever, benchmark: Benchmark):
         print(f'graph of {size}: {count}')
 
     print()
-    print('Less than 5 edges : ', count_less_5)
-    print('Less than 10 edges: ', count_less_10)
+    print('Less than 5 edges   : ', count_less_5)
+    print('Less than 10 edges  : ', count_less_10)
+    print('Has a drug concept  : ', count_has_drug)
+    print('Has a drug statement: ', count_has_drug_in_graph)
 
 
 def main():
