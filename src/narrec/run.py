@@ -18,6 +18,7 @@ from narrec.firststage.fscore import FSCore
 from narrec.firststage.fscoreplusabstractbm25 import FSCorePlusAbstractBM25
 from narrec.firststage.fscoreplustitlebm25 import FSCorePlusTitleBM25
 from narrec.recommender.simple import RecommenderSimple
+from narrec.run_config import BENCHMARKS
 
 
 def load_document_ids_from_runfile(path_to_runfile):
@@ -70,7 +71,7 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
 
 
 def main():
-    benchmarks = [RelishBenchmark()]
+    benchmarks = BENCHMARKS
     corpus = DocumentCorpus(collections=[GLOBAL_DB_DOCUMENT_COLLECTION])
     core_extractor = NarrativeCoreExtractor(corpus=corpus)
     retriever = DocumentRetriever()
@@ -79,10 +80,10 @@ def main():
     DO_RECOMMENDATION = False
 
     for bench in benchmarks:
-        index_path = os.path.join(INDEX_DIR, bench.name)
+        index_path = os.path.join(INDEX_DIR, bench.get_index_name())
         first_stages = [FSCore(core_extractor, bench),
-                    #    FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-                    #    FSCorePlusTitleBM25(core_extractor, bench, index_path),
+                        FSCorePlusAbstractBM25(core_extractor, bench, index_path),
+                        FSCorePlusTitleBM25(core_extractor, bench, index_path),
                         BM25Title(index_path), BM25Abstract(index_path),
                         BM25Yake(index_path)]
 

@@ -36,6 +36,9 @@ class Benchmark:
     def get_qrel_path(self):
         raise NotImplementedError
 
+    def get_index_name(self):
+        return self.name
+
     def get_evaluation_data_for_topic(self, topic: int, mode: BenchmarkMode):
         if mode == BenchmarkMode.RELEVANT_VS_IRRELEVANT:
             return self.topic2relevant_docs[topic], self.topic2not_relevant_docs[topic]

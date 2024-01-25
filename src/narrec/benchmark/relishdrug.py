@@ -1,4 +1,3 @@
-import json
 import logging
 import os.path
 
@@ -6,9 +5,8 @@ from tqdm import tqdm
 
 from narrant.preprocessing.enttypes import DRUG
 from narrec.backend.retriever import DocumentRetriever
-from narrec.benchmark.benchmark import Benchmark, BenchmarkType
 from narrec.benchmark.relish import RelishBenchmark
-from narrec.config import RELISH_BENCHMARK_JSON_FILE, RELISH_PMIDS_FILE, BENCHMKARK_QRELS_DIR
+from narrec.config import BENCHMKARK_QRELS_DIR
 
 
 class RelishDrugBenchmark(RelishBenchmark):
@@ -18,6 +16,9 @@ class RelishDrugBenchmark(RelishBenchmark):
         self.document_idx_ids_with_drugs = set()
         super().__init__(name="RELISH_DRUG")
 
+    def get_index_name(self):
+        # use the same index as relish
+        return RelishBenchmark.NAME
 
     def load_benchmark_data(self):
         super().load_benchmark_data()
@@ -47,6 +48,9 @@ class RelishDrugBenchmark(RelishBenchmark):
                                               if key in self.document_idx_ids_with_drugs}
         self.topic2not_relevant_docs = {key: v for key, v in self.topic2not_relevant_docs.items()
                                         if key in self.document_idx_ids_with_drugs}
+
+        self.topics = [key for key in self.topics
+                       if key in self.document_idx_ids_with_drugs]
 
         self.documents_with_idx = [key for key in self.documents_with_idx
                                    if key in self.document_idx_ids_with_drugs]

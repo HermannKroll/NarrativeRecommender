@@ -15,7 +15,7 @@ class RelishBenchmark(Benchmark):
         super().__init__(name=name, path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
     def iterate_over_document_entries(self):
-        for idx, doc_id in self.topic2relevant_docs:
+        for idx, doc_id in self.documents_with_idx:
             yield idx, doc_id
 
     def load_benchmark_data(self):
@@ -60,7 +60,7 @@ class RelishBenchmark(Benchmark):
             count += 1
             doc_id = int(rating["pmid"])
             key = idx, doc_id
-            self.topics.append(doc_id)
+            self.topics.append((idx, doc_id))
             self.documents_with_idx.append((idx, doc_id))
             if key in self.topic2relevant_docs:
                 logging.warning(f'Duplicated rating for PMID {key}')
