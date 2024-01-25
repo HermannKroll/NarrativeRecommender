@@ -96,7 +96,7 @@ def perform_evaluation_for_run(qrel, run_file: str):
 
 
 def perform_evaluation(benchmark: Benchmark):
-    print(f'Loading qrel file: {benchmark.qrel_path}')
+    print(f'Loading qrel file: {benchmark.get_qrel_path()}')
     with open(benchmark.qrel_path, 'r') as f_qrel:
         qrel = pytrec_eval.parse_qrel(f_qrel)
 

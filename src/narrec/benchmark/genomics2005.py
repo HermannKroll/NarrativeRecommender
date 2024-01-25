@@ -30,8 +30,10 @@ class Genomics2005(Benchmark):
 
     def __init__(self):
         self.topics: [TrecGen2005Topic] = []
-        super().__init__(name="Genomics2005", path_to_document_ids=TG2005_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK,
-                         qrel_path=TG2005_BENCHMARK_FILE)
+        super().__init__(name="Genomics2005", path_to_document_ids=TG2005_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
+
+    def get_qrel_path(self):
+        return TG2005_BENCHMARK_FILE
 
     def load_benchmark_data(self):
         logging.info(f'Loading Benchmark data from {TG2005_BENCHMARK_FILE}...')

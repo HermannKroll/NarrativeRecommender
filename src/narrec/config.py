@@ -9,6 +9,7 @@ DATA_DIR = "/ssd2/kroll/recommender/"
 
 RESULT_DIR = os.path.join(DATA_DIR, "results")
 INDEX_DIR = os.path.join(DATA_DIR, "indexes")
+BENCHMKARK_QRELS_DIR = os.path.join(DATA_DIR, "benchmark_qrels")
 
 if not os.path.isdir(RESULT_DIR):
     os.makedirs(RESULT_DIR, exist_ok=True)
@@ -16,12 +17,14 @@ if not os.path.isdir(RESULT_DIR):
 if not os.path.isdir(INDEX_DIR):
     os.makedirs(INDEX_DIR, exist_ok=True)
 
+if not os.path.isdir(BENCHMKARK_QRELS_DIR):
+    os.makedirs(BENCHMKARK_QRELS_DIR, exist_ok=True)
+
 BENCHMARK_DIR = os.path.join(RESOURCE_DIR, "benchmarks")
 
 TG2005_TOPIC_FILE = os.path.join(BENCHMARK_DIR, "trec_genomics2005_topics.txt")
 TG2005_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "trec_genomics2005_documents.txt")
 RELISH_BENCHMARK_JSON_FILE = os.path.join(BENCHMARK_DIR, "RELISH_v1.json")
-RELISH_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "RELISH_documents.txt")
 PM2020_BENCHMARK_FILE = os.path.join(BENCHMARK_DIR, "trec_pm2020_documents.txt")
 PM2020_TOPIC_FILE = os.path.join(BENCHMARK_DIR, "trec_pm2020_topics.xml")
 

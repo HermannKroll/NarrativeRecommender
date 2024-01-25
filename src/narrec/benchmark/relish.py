@@ -1,16 +1,16 @@
 import json
 import logging
+import os.path
 
 from narrec.benchmark.benchmark import Benchmark, BenchmarkType
-from narrec.config import RELISH_BENCHMARK_FILE, RELISH_BENCHMARK_JSON_FILE, RELISH_PMIDS_FILE
+from narrec.config import RELISH_BENCHMARK_JSON_FILE, RELISH_PMIDS_FILE, BENCHMKARK_QRELS_DIR
 
 
 class RelishBenchmark(Benchmark):
 
     def __init__(self):
         self.documents_with_idx = []
-        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK,
-                         qrel_path=RELISH_BENCHMARK_FILE)
+        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
     def iterate_over_document_entries(self):
         for idx, doc_id in self.topic2relevant_docs:
@@ -81,8 +81,14 @@ class RelishBenchmark(Benchmark):
         logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         logging.info('Relish data loaded')
 
+    def get_qrel_path(self):
+        path = os.path.join(BENCHMKARK_QRELS_DIR, f'{benchmark.name}_qrel.txt')
+        if not os.path.isfile(path):
+            RelishBenchmark.process_json_to_txt(path)
+        return path
+
     @staticmethod
-    def process_json_to_txt():
+    def process_json_to_txt(output_path: str):
         with open(RELISH_BENCHMARK_JSON_FILE, 'r') as json_file:
             data = json.load(json_file)
 
@@ -107,7 +113,7 @@ class RelishBenchmark(Benchmark):
             # Process irrelevant entries
             output_lines.extend(f'{doc_key}\t0\t{irrel_id}\t0' for irrel_id in irrelevant)
 
-        with open(RELISH_BENCHMARK_FILE, 'w') as txt_file:
+        with open(output_path, 'w') as txt_file:
             txt_file.write('\n'.join(output_lines))
 
         logging.info(f'Document file created successfully.')
@@ -120,4 +126,4 @@ if __name__ == '__main__':
                         level=logging.DEBUG)
     benchmark = RelishBenchmark()
     logging.info(f'Benchmark has {len(benchmark.get_documents_for_baseline())} documents')
-    benchmark.process_json_to_txt()
+    print(benchmark.get_qrel_path())
