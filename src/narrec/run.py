@@ -88,7 +88,7 @@ def main():
 
         for first_stage in first_stages:
             if bench.type == BenchmarkType.REC_BENCHMARK:
-                fs_path = os.path.join(RESULT_DIR, f'{first_stage.name}.txt')
+                fs_path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}.txt')
                 if not os.path.isfile(fs_path):
                     # create first stage data
                     run_first_stage_for_benchmark(retriever, bench, first_stage, fs_path)
