@@ -8,9 +8,11 @@ from narrec.config import RELISH_BENCHMARK_JSON_FILE, RELISH_PMIDS_FILE, BENCHMK
 
 class RelishBenchmark(Benchmark):
 
-    def __init__(self):
+    NAME = "RELISH"
+
+    def __init__(self, name="RELISH"):
         self.documents_with_idx = []
-        super().__init__(name="RELISH", path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
+        super().__init__(name=name, path_to_document_ids=RELISH_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
 
     def iterate_over_document_entries(self):
         for idx, doc_id in self.topic2relevant_docs:
@@ -82,7 +84,7 @@ class RelishBenchmark(Benchmark):
         logging.info('Relish data loaded')
 
     def get_qrel_path(self):
-        path = os.path.join(BENCHMKARK_QRELS_DIR, f'{benchmark.name}_qrel.txt')
+        path = os.path.join(BENCHMKARK_QRELS_DIR, f'{self.name}_qrels.txt')
         if not os.path.isfile(path):
             RelishBenchmark.process_json_to_txt(path)
         return path

@@ -1,19 +1,21 @@
 from narrec.benchmark.genomics2005 import Genomics2005
 from narrec.benchmark.pm2020 import PM2020Benchmark
 from narrec.benchmark.relish import RelishBenchmark
+from narrec.benchmark.relishdrug import RelishDrugBenchmark
 
 FIRST_STAGES = [
     "BM25Title",
     "BM25Abstract",
     "BM25Yake",
     "FSCore",
- #   "FSCorePlusAbstractBM25",
- #   "FSCorePlusTitleBM25"
+    "FSCorePlusAbstractBM25",
+    "FSCorePlusTitleBM25"
 ]
 
 BENCHMARKS = [
    # PM2020Benchmark(),
-    RelishBenchmark(),
+    #RelishBenchmark(),
+    RelishDrugBenchmark()
    # Genomics2005()
 ]
 
