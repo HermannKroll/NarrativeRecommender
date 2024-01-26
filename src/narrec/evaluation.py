@@ -97,7 +97,7 @@ def perform_evaluation_for_run(qrel, run_file: str):
 
 def perform_evaluation(benchmark: Benchmark):
     print(f'Loading qrel file: {benchmark.get_qrel_path()}')
-    with open(benchmark.qrel_path, 'r') as f_qrel:
+    with open(benchmark.get_qrel_path(), 'r') as f_qrel:
         qrel = pytrec_eval.parse_qrel(f_qrel)
 
     relevant_topics = {q for q in qrel}
@@ -105,7 +105,7 @@ def perform_evaluation(benchmark: Benchmark):
 
     results = list()
     for run_name in FIRST_STAGES:
-        run_path = os.path.join(RESULT_DIR, f'{run_name}.txt')
+        run_path = os.path.join(RESULT_DIR, f'{benchmark.name}_{run_name}.txt')
         results.append([run_name, perform_evaluation_for_run(qrel, run_path)])
 
     measures = [(k, v) for k, v in RESULT_MEASURES.items()]
