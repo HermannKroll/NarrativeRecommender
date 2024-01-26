@@ -58,7 +58,6 @@ class RelishDrugBenchmark(RelishBenchmark):
         print(f'{len(self.document_idx_ids_with_drugs)} documents have drugs on their graphs')
 
     def get_qrel_path(self):
-        super().get_qrel_path()
         path = os.path.join(BENCHMKARK_QRELS_DIR, f'{self.name}_qrels.txt')
         # Rewrite the Relish qrels file and only keep those query lines which
         # belong to benchmark input documents with drugs
@@ -67,15 +66,16 @@ class RelishDrugBenchmark(RelishBenchmark):
             with open(path, 'wt') as f_out:
                 # read in Relish qrels
                 relish_path = os.path.join(BENCHMKARK_QRELS_DIR, f'{RelishBenchmark.NAME}_qrels.txt')
+                if not os.path.isfile(relish_path):
+                    RelishBenchmark.process_json_to_txt(relish_path)
                 relevant_index_lines = {str(k) for k, _ in self.document_idx_ids_with_drugs}
                 with open(relish_path, 'rt') as f_in:
                     for line in f_in:
-                        comps = line.strip().split()
+                        components = line.strip().split()
                         # filter that query belongs to RelishDrug benchmark
-                        if comps[0] in relevant_index_lines:
+                        if components[0] in relevant_index_lines:
                             f_out.write(line)
 
-            RelishBenchmark.process_json_to_txt(path)
         return path
 
 
