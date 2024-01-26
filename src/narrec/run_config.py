@@ -14,7 +14,7 @@ FIRST_STAGES = [
 
 BENCHMARKS = [
    # PM2020Benchmark(),
-    #RelishBenchmark(),
+    RelishBenchmark(),
     RelishDrugBenchmark()
    # Genomics2005()
 ]
