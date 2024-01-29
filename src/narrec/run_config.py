@@ -12,6 +12,11 @@ FIRST_STAGES = [
   #  "FSCorePlusTitleBM25"
 ]
 
+RECOMMENDER_NAMES = [
+    "EqualRecommender",
+    "StatementOverlap"
+]
+
 BENCHMARKS = [
    # PM2020Benchmark(),
    # RelishBenchmark(),
