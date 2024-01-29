@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from narrec.recommender.simple import EqualRecommender
 from tqdm import tqdm
 
 from narrec.backend.retriever import DocumentRetriever
@@ -12,7 +13,6 @@ from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.base import FirstStageBase
 from narrec.firststage.bm25abstract import BM25Abstract
 from narrec.firststage.bm25title import BM25Title
-from narrec.recommender.simple import EqualRecommender
 from narrec.recommender.statementoverlap import StatementOverlap
 from narrec.run_config import BENCHMARKS
 
@@ -94,10 +94,12 @@ def main():
                 fs_docs = load_document_ids_from_runfile(fs_path)
 
                 recommender2result_lines = dict()
-                for topicid, retrieved_docs in tqdm(fs_docs.items(), desc="Evaluating topics"):
-                    # get the input ids for each doc
-                    topic2doc = {top: doc for top, doc in bench.iterate_over_document_entries()}
-                    if DO_RECOMMENDATION:
+
+                if DO_RECOMMENDATION:
+                    for topicid, retrieved_docs in tqdm(fs_docs.items(), desc="Evaluating topics"):
+                        # get the input ids for each doc
+                        topic2doc = {top: doc for top, doc in bench.iterate_over_document_entries()}
+
                         # Retrieve the input document
                         input_doc = retriever.retrieve_narrative_documents([topic2doc[topicid]],
                                                                            GLOBAL_DB_DOCUMENT_COLLECTION)[0]
@@ -137,7 +139,8 @@ def main():
                             # print(f'{time_taken}s to compute {recommender.name}')
 
                     for recommender in recommenders:
-                        path = os.path.join(RESULT_DIR, f'{bench.name}_{recommender.name}.txt')
+                        path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}_{recommender.name}.txt')
+                        print(f'Writing reuslts to {path}')
                         with open(path, 'wt') as f:
                             f.write('\n'.join(recommender2result_lines[recommender.name]))
 
