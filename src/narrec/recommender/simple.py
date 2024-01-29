@@ -3,10 +3,10 @@ from narrec.document.document import RecommenderDocument
 from narrec.recommender.base import RecommenderBase
 
 
-class RecommenderSimple(RecommenderBase):
+class EqualRecommender(RecommenderBase):
     
     def __init__(self):
-        super().__init__(name="RecommenderSimple")
+        super().__init__(name="EqualRecommender")
     
     def recommend_documents(self, doc: RecommenderDocument, docs_from: [RecommenderDocument],
                             citation_graph: CitationGraph) -> [RecommenderDocument]:
@@ -18,4 +18,4 @@ class RecommenderSimple(RecommenderBase):
         :param citation_graph: citation network
         :return: a ranked list of recommended documents
         """
-        return [(d, 1.0) for d in docs_from]
+        return [(d.id, 1.0) for d in docs_from]

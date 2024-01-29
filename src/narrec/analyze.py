@@ -10,7 +10,7 @@ from narrec.citation.graph import CitationGraph
 from narrec.config import RESULT_DIR, INDEX_DIR, GLOBAL_DB_DOCUMENT_COLLECTION
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
-from narrec.recommender.simple import RecommenderSimple
+from narrec.recommender.simple import EqualRecommender
 
 
 def analyze_benchmark(retriever: DocumentRetriever, benchmark: Benchmark):
@@ -75,7 +75,7 @@ def main():
     core_extractor = NarrativeCoreExtractor(corpus=corpus)
     retriever = DocumentRetriever()
     citation_graph = CitationGraph()
-    recommenders = [RecommenderSimple()]
+    recommenders = [EqualRecommender()]
     DO_RECOMMENDATION = False
 
     for bench in benchmarks:
