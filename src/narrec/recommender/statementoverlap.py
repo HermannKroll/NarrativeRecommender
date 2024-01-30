@@ -16,7 +16,7 @@ class StatementOverlap(RecommenderBase):
         # scores are sorted by their size
         cores = self.extractor.extract_narrative_core_from_document(doc)
         if not cores:
-            return [(d, 1.0) for d in docs_from]
+            return [(d.id, 1.0) for d in docs_from]
 
         core = cores[0]
 
