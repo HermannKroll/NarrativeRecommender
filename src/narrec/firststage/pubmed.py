@@ -1,15 +1,36 @@
-import requests
-import logging
 import ast
+import logging
 import os
+import time
+
+import requests
 
 from narrec.config import DATA_DIR
+from narrec.document.document import RecommenderDocument
+from narrec.firststage.base import FirstStageBase
 
 
-class PubMedRecommender:
+class PubMedRecommender(FirstStageBase):
+
     def __init__(self):
+        super().__init__(name="PubMedRecommender")
         self.name = "PubMedRecommender"
         self.cache_path = os.path.join(DATA_DIR, 'pubmed_cache.txt')
+
+    def retrieve_documents_for(self, document: RecommenderDocument):
+        similar_ids = self.get_similar_article_pmids(document.id)
+        if len(similar_ids) == 0:
+            return []
+
+        scored_docs = []
+        score = 1.0
+        score_steps = 1.0 / len(similar_ids)
+        for similar_id in similar_ids:
+            assert 0.0 <= score <= 1.0
+            scored_docs.append((similar_id, score))
+            score = score - score_steps
+
+        return scored_docs
 
     def cache_results(self, pmid, results):
         with open(self.cache_path, 'a') as cache_file:
@@ -26,6 +47,7 @@ class PubMedRecommender:
             return None
 
     def get_similar_article_pmids(self, pmid):
+        time.sleep(0.5)
         cached_results = self.get_cached_results(pmid)
         if cached_results is not None:
             logging.info(f"PMID {pmid}: Found in cache.")
