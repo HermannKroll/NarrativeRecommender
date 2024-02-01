@@ -20,10 +20,12 @@ METRICS = {
     'map_cut_1000',
     'P_10',
     'P_20',
-    'P_100'
+    'P_100',
+    'num_ret',
 }
 
 RESULT_MEASURES = {
+    'num_ret': 'Retrieved',
     'recall_1000': 'Recall@1000',
     'ndcg_cut_10': 'nDCG@10',
     'ndcg_cut_20': 'nDCG@20',
@@ -91,7 +93,7 @@ def perform_evaluation_for_run(qrel, run_file: str):
     with open(run_file, 'r') as f_run:
         run = pytrec_eval.parse_run(f_run)
 
-    evaluator = pytrec_eval.RelevanceEvaluator(qrel, METRICS)
+    evaluator = pytrec_eval.RelevanceEvaluator(qrel, METRICS, judged_docs_only_flag=True)
     return evaluator.evaluate(run)
 
 
@@ -110,7 +112,10 @@ def perform_evaluation(benchmark: Benchmark):
 
         for recommender in RECOMMENDER_NAMES:
             run_path = os.path.join(RESULT_DIR, f'{benchmark.name}_{run_name}_{recommender}.txt')
-            results.append([f'{run_name}_{recommender}', perform_evaluation_for_run(qrel, run_path)])
+            if os.path.isfile(run_path):
+                results.append([f'{run_name}_{recommender}', perform_evaluation_for_run(qrel, run_path)])
+            else:
+                print(f'Run file missing: {run_path}')
 
     measures = [(k, v) for k, v in RESULT_MEASURES.items()]
     score_rows, max_m = calculate_table_data(measures, results, relevant_topics)
