@@ -9,7 +9,8 @@ FIRST_STAGES = [
     "BM25Yake",
     "FSCore",
     "FSCorePlusAbstractBM25",
-    "FSCorePlusTitleBM25"
+    "FSCorePlusTitleBM25",
+    "PubMedRecommender"
 ]
 
 RECOMMENDER_NAMES = [
