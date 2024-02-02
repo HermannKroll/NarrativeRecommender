@@ -46,5 +46,8 @@ class DocumentCorpus:
         for row in q:
             support += row.support
 
+        if support == 0:
+            raise ValueError(f'no support found in DB for: {statement}')
+
         self.cache_statement2count[statement] = support
         return support
