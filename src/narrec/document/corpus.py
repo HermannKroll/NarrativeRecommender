@@ -37,17 +37,14 @@ class DocumentCorpus:
             return self.cache_statement2count[statement]
 
         session = SessionExtended.get()
-        q = session.query(PredicationInvertedIndex)
+        q = session.query(PredicationInvertedIndex.support)
         q = q.filter(PredicationInvertedIndex.subject_id == statement[0])
         q = q.filter(PredicationInvertedIndex.relation == statement[1])
         q = q.filter(PredicationInvertedIndex.object_id == statement[2])
 
-        document_ids = set()
+        support = 0
         for row in q:
-            prov_mapping = json.loads(row.provenance_mapping)
-            for doc_col, docids2prov in prov_mapping.items():
-                for doc_id in docids2prov.keys():
-                    document_ids.add(int(doc_id))
+            support += row.support
 
-        self.cache_statement2count[statement] = len(document_ids)
-        return len(document_ids)
+        self.cache_statement2count[statement] = support
+        return support
