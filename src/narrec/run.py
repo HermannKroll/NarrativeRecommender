@@ -115,6 +115,10 @@ def main():
                                                                            GLOBAL_DB_DOCUMENT_COLLECTION)
 
                         for recommender in recommenders:
+                            path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}_{recommender.name}.txt')
+                            if os.path.isfile(path):
+                                continue
+
                             if recommender.name not in recommender2result_lines:
                                 recommender2result_lines[recommender.name] = list()
 
@@ -122,29 +126,32 @@ def main():
                             rec_docs = recommender.recommend_documents(input_doc, documents, citation_graph)
                             assert len(rec_docs) == len(documents)
 
-                            max_score = rec_docs[0][1]
-                            if max_score < 0.0:
-                                raise ValueError(f'Max score {max_score} <= (score = {max_score} /'
-                                                 f' ranker = {recommender.name})')
+                            if len(rec_docs) > 0:
+                                max_score = rec_docs[0][1]
+                                if max_score < 0.0:
+                                    raise ValueError(f'Max score {max_score} <= (score = {max_score} /'
+                                                     f' ranker = {recommender.name})')
 
-                            for rank, (doc_id, score) in enumerate(rec_docs):
-                                if max_score > 0.0:
-                                    norm_score = score / max_score
-                                else:
-                                    norm_score = 0.0
+                                for rank, (doc_id, score) in enumerate(rec_docs):
+                                    if max_score > 0.0:
+                                        norm_score = score / max_score
+                                    else:
+                                        norm_score = 0.0
 
-                                if norm_score < 0.0 or norm_score > 1.0:
-                                    raise ValueError(f'Document {doc_id} received a score not in (score = '
-                                                     f'{norm_score} / ranker = {recommender.name})')
+                                    if norm_score < 0.0 or norm_score > 1.0:
+                                        raise ValueError(f'Document {doc_id} received a score not in (score = '
+                                                         f'{norm_score} / ranker = {recommender.name})')
 
-                                result_line = f'{topicid}\tQ0\t{doc_id}\t{rank + 1}\t{norm_score}\t{recommender.name}'
-                                recommender2result_lines[recommender.name].append(result_line)
+                                    result_line = f'{topicid}\tQ0\t{doc_id}\t{rank + 1}\t{norm_score}\t{recommender.name}'
+                                    recommender2result_lines[recommender.name].append(result_line)
 
-                            time_taken = datetime.now() - start
-                            # print(f'{time_taken}s to compute {recommender.name}')
+                                time_taken = datetime.now() - start
+                                # print(f'{time_taken}s to compute {recommender.name}')
 
                     for recommender in recommenders:
                         path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}_{recommender.name}.txt')
+                        if os.path.isfile(path):
+                            continue
                         print(f'Writing results to {path}')
                         with open(path, 'wt') as f:
                             f.write('\n'.join(recommender2result_lines[recommender.name]))
