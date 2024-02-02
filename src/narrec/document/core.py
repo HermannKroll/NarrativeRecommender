@@ -1,11 +1,10 @@
 from typing import List
 
-import networkx as nx
-
 from kgextractiontoolbox.document.narrative_document import StatementExtraction
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.run_config import CONFIDENCE_WEIGHT, TFIDF_WEIGHT, NARRATIVE_CORE_THRESHOLD
+from narrec.document.scoring import score_edge
+from narrec.run_config import NARRATIVE_CORE_THRESHOLD
 
 
 class ScoredStatementExtraction(StatementExtraction):
@@ -23,6 +22,7 @@ class ScoredStatementExtraction(StatementExtraction):
     def __repr__(self):
         return self.__str__()
 
+
 class NarrativeCore:
 
     def __init__(self, statements: List[ScoredStatementExtraction]):
@@ -36,19 +36,6 @@ class NarrativeCoreExtractor:
     def __init__(self, corpus: DocumentCorpus):
         self.corpus = corpus
 
-    def score_edge(self, statement: StatementExtraction, document: RecommenderDocument):
-        confidence = statement.confidence
-        assert 0.0 <= confidence <= 1.0
-
-        spo = (statement.subject_id, statement.relation, statement.object_id)
-
-        tf = document.spo2frequency[spo] / document.max_statement_frequency
-        idf = self.corpus.get_idf_score((statement.subject_id, statement.relation, statement.object_id))
-        tfidf = tf * idf
-
-        assert 0.0 <= tfidf <= 1.0
-        return CONFIDENCE_WEIGHT * confidence + TFIDF_WEIGHT * tfidf
-
     def extract_narrative_core_from_document(self, document: RecommenderDocument,
                                              threshold=NARRATIVE_CORE_THRESHOLD) -> List[NarrativeCore]:
         if not document.extracted_statements:
@@ -56,7 +43,8 @@ class NarrativeCoreExtractor:
 
         filtered_statements = []
         for statement in document.extracted_statements:
-            s_score = self.score_edge(statement, document)
+            spo = (statement.subject_id, statement.relation, statement.object_id)
+            s_score = score_edge(spo, document, self.corpus)
             if s_score >= threshold:
                 filtered_statements.append((statement, s_score))
 
@@ -78,7 +66,7 @@ class NarrativeCoreExtractor:
         core_node_pairs = set()
         # The following algorithm will be design select the highest scored edges between two
         # concepts because filtered statements are sorted by their score desc
-        #for connected_nodes, size in connected_components:
+        # for connected_nodes, size in connected_components:
         core_statements = []
         for statement, score in filtered_statements:
             # add only the strongest edge between two concepts (could be caused by multiple extractions)
@@ -88,7 +76,7 @@ class NarrativeCoreExtractor:
             if so in core_node_pairs or os in core_node_pairs:
                 continue
 
-            #if statement.subject_id in connected_nodes and statement.object_id in connected_nodes:
+            # if statement.subject_id in connected_nodes and statement.object_id in connected_nodes:
             core_statements.append(ScoredStatementExtraction(stmt=statement, score=score))
             core_node_pairs.add(so)
 
