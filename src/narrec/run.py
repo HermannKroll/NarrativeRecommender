@@ -18,6 +18,8 @@ from narrec.firststage.fscore import FSCore
 from narrec.firststage.fscoreplusabstractbm25 import FSCorePlusAbstractBM25
 from narrec.firststage.fscoreplustitlebm25 import FSCorePlusTitleBM25
 from narrec.firststage.pubmed import PubMedRecommender
+from narrec.recommender.jaccard import Jaccard
+from narrec.recommender.jaccard_weighted import JaccardWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
 from narrec.run_config import BENCHMARKS
 
@@ -77,7 +79,7 @@ def main():
     core_extractor = NarrativeCoreExtractor(corpus=corpus)
     retriever = DocumentRetriever()
     citation_graph = CitationGraph()
-    recommenders = [EqualRecommender(), StatementOverlap(core_extractor)]
+    recommenders = [EqualRecommender(), StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
     DO_RECOMMENDATION = True
 
     for bench in benchmarks:
@@ -115,9 +117,6 @@ def main():
                                                                            GLOBAL_DB_DOCUMENT_COLLECTION)
 
                         for recommender in recommenders:
-                            path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}_{recommender.name}.txt')
-                            if os.path.isfile(path):
-                                continue
 
                             if recommender.name not in recommender2result_lines:
                                 recommender2result_lines[recommender.name] = list()
@@ -150,8 +149,6 @@ def main():
 
                     for recommender in recommenders:
                         path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}_{recommender.name}.txt')
-                        if os.path.isfile(path):
-                            continue
                         print(f'Writing results to {path}')
                         with open(path, 'wt') as f:
                             f.write('\n'.join(recommender2result_lines[recommender.name]))
