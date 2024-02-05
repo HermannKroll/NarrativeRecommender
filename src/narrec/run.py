@@ -153,7 +153,8 @@ def main():
                         path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}_{recommender.name}.txt')
                         print(f'Writing results to {path}')
                         with open(path, 'wt') as f:
-                            f.write('\n'.join(recommender2result_lines[recommender.name]))
+                            if recommender.name in recommender2result_lines:
+                                f.write('\n'.join(recommender2result_lines[recommender.name]))
 
 
             elif bench.type == BenchmarkType.IR_BENCHMARK:
