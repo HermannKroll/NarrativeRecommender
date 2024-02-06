@@ -22,18 +22,17 @@ class FSCore(FirstStageBase):
         q = q.filter(PredicationInvertedIndex.subject_id == spo[0])
         q = q.filter(PredicationInvertedIndex.relation == spo[1])
         q = q.filter(PredicationInvertedIndex.object_id == spo[2])
+        q = q.filter(PredicationInvertedIndex.document_collection == self.benchmark.document_collection)
 
         document_ids = set()
         for row in q:
             prov_mapping = json.loads(row.provenance_mapping)
-            for doc_col, docids2prov in prov_mapping.items():
-                if doc_col == self.benchmark.document_collection:
-                    for doc_id in docids2prov.keys():
-                        doc_id_int = int(doc_id)
-                        if self.benchmark.document_collection == "PubMed" and self.benchmark.get_documents_for_baseline():
-                            if doc_id_int not in self.benchmark.get_documents_for_baseline():
-                                continue
-                            document_ids.add(doc_id_int)
+            for doc_id in prov_mapping:
+                doc_id_int = int(doc_id)
+                if self.benchmark.document_collection == "PubMed" and self.benchmark.get_documents_for_baseline():
+                    if doc_id_int not in self.benchmark.get_documents_for_baseline():
+                        continue
+                    document_ids.add(doc_id_int)
 
         return document_ids
 
