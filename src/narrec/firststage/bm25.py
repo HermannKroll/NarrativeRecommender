@@ -23,8 +23,13 @@ class BM25Base(FirstStageBase):
         scored_docs = []
 
         for index, row in rtr.iterrows():
-            scored_docs.append((row["docno"], row["score"]))
+            # dont allow negative bm25 scores
+            scored_docs.append((row["docno"], max(0.0, float(row["score"]))))
 
         scored_docs = sorted(scored_docs, key=lambda x: (x[1], x[0]), reverse=True)
+        if len(scored_docs) > 0:
+            max_score = scored_docs[0][1]
+            scored_docs = [(d, score / max_score) for d, score in scored_docs]
+
         scored_docs = scored_docs[:FS_DOCUMENT_CUTOFF]
         return scored_docs
