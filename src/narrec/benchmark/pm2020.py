@@ -1,7 +1,7 @@
 import logging
 from xml.etree import ElementTree
 
-from narrec.benchmark.benchmark import Benchmark, BenchmarkType
+from narrec.benchmark.benchmark import IRBenchmark
 from narrec.config import PM2020_TOPIC_FILE, PM2020_BENCHMARK_FILE, PM2020_PMIDS_FILE
 
 DRUG = "Drug"
@@ -49,19 +49,11 @@ class PrecMed2020Topic:
         return topics
 
 
-class PM2020Benchmark(Benchmark):
+class PM2020Benchmark(IRBenchmark):
 
     def __init__(self):
         self.topics: [PrecMed2020Topic] = []
-        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
-
-    def get_qrel_path(self):
-        return PM2020_BENCHMARK_FILE
-
-    def iterate_over_document_entries(self):
-        for q_id in self.topics:
-            for rel_doc_id in self.topic2relevant_docs[q_id.query_id]:
-                yield f'Q{q_id.query_id}D{rel_doc_id}', rel_doc_id
+        super().__init__(name="PM2020", path_to_document_ids=PM2020_PMIDS_FILE)
 
     def load_benchmark_data(self):
         logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')

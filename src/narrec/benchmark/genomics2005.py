@@ -1,6 +1,6 @@
 import logging
 
-from narrec.benchmark.benchmark import Benchmark, BenchmarkType
+from narrec.benchmark.benchmark import IRBenchmark
 from narrec.config import TG2005_PMIDS_FILE, TG2005_TOPIC_FILE, TG2005_BENCHMARK_FILE
 
 
@@ -26,19 +26,11 @@ class TrecGen2005Topic:
         return topics
 
 
-class Genomics2005(Benchmark):
+class Genomics2005(IRBenchmark):
 
     def __init__(self):
         self.topics: [TrecGen2005Topic] = []
-        super().__init__(name="Genomics2005", path_to_document_ids=TG2005_PMIDS_FILE, type=BenchmarkType.REC_BENCHMARK)
-
-    def get_qrel_path(self):
-        return TG2005_BENCHMARK_FILE
-
-    def iterate_over_document_entries(self):
-        for q_id in self.topics:
-            for rel_doc_id in self.topic2relevant_docs[q_id.query_id]:
-                yield f'Q{q_id.query_id}D{rel_doc_id}', rel_doc_id
+        super().__init__(name="Genomics2005", path_to_document_ids=TG2005_PMIDS_FILE)
 
     def load_benchmark_data(self):
         logging.info(f'Loading Benchmark data from {TG2005_BENCHMARK_FILE}...')

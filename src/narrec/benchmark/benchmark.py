@@ -1,10 +1,9 @@
 import logging
+import os
 from abc import abstractmethod
 from enum import Enum
-from typing import List
 
-from narrec.config import GLOBAL_DB_DOCUMENT_COLLECTION
-from narrec.recommender.base import RecommenderBase
+from narrec.config import GLOBAL_DB_DOCUMENT_COLLECTION, BENCHMKARK_QRELS_DIR
 
 
 class BenchmarkMode(Enum):
@@ -12,9 +11,11 @@ class BenchmarkMode(Enum):
     RELEVANT_VS_PARTIAL_IRRELEVANT = 1
     RELEVANT_PARTIAL_VS_IRRELEVANT = 2
 
+
 class BenchmarkType(Enum):
     IR_BENCHMARK = 0
     REC_BENCHMARK = 1
+
 
 class Benchmark:
 
@@ -59,7 +60,6 @@ class Benchmark:
     def load_benchmark_data(self):
         raise NotImplementedError
 
-
     def get_documents_for_baseline(self):
         if not self.documents_for_baseline_load:
             self.document_ids = set()
@@ -73,3 +73,32 @@ class Benchmark:
 
     def iterate_over_document_entries(self):
         raise NotImplementedError
+
+
+class IRBenchmark(Benchmark):
+
+    def __init__(self, name, path_to_document_ids):
+        super().__init__(name=name, path_to_document_ids=path_to_document_ids, type=BenchmarkType.IR_BENCHMARK)
+
+    @staticmethod
+    def get_doc_query_key(query_id: int, doc_id: int) -> str:
+        return f'Q{query_id}D{doc_id}'
+
+    @staticmethod
+    def get_doc_id_from_doc_query_key(doc_query_key: str) -> int:
+        return int(doc_query_key.split('D')[-1])
+
+    def get_qrel_path(self):
+        path = os.path.join(BENCHMKARK_QRELS_DIR, f'{self.name}_qrels.txt')
+        if not os.path.isfile(path):
+            result_lines = []
+            with open(path, 'wt') as f:
+                for querydockey,  in self.iterate_over_document_entries():
+                    pass
+
+        return path
+
+    def iterate_over_document_entries(self):
+        for q_id in self.topics:
+            for rel_doc_id in self.topic2relevant_docs[q_id.query_id]:
+                yield IRBenchmark.get_doc_query_key(q_id.query_id, rel_doc_id), rel_doc_id

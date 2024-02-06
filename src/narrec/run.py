@@ -29,9 +29,13 @@ def load_document_ids_from_runfile(path_to_runfile):
     with open(path_to_runfile, 'rt') as f:
         for line in f:
             components = line.split('\t')
-            topic_id = int(components[0])
+            topic_id = str(components[0])
             doc_id = int(components[2])
             score = float(components[4])
+
+            assert len(topic_id) > 0
+            assert int(doc_id) >= 0
+            assert 0.0 <= score <= 1.0
 
             if topic_id not in topic2docs:
                 topic2docs[topic_id] = [(doc_id, score)]
@@ -105,7 +109,7 @@ def main():
             if DO_RECOMMENDATION:
                 for topicid, retrieved_docs in tqdm(fs_docs.items(), desc="Evaluating topics"):
                     # get the input ids for each doc
-                    topic2doc = {top: doc for top, doc in bench.iterate_over_document_entries()}
+                    topic2doc = {str(top): doc for top, doc in bench.iterate_over_document_entries()}
 
                     # Retrieve the input document
                     input_doc = retriever.retrieve_narrative_documents([topic2doc[topicid]],
