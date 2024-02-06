@@ -35,6 +35,11 @@ class Genomics2005(Benchmark):
     def get_qrel_path(self):
         return TG2005_BENCHMARK_FILE
 
+    def iterate_over_document_entries(self):
+        for q_id in self.topics:
+            for rel_doc_id in self.topic2relevant_docs[q_id.query_id]:
+                yield f'Q{q_id.query_id}D{rel_doc_id}', rel_doc_id
+
     def load_benchmark_data(self):
         logging.info(f'Loading Benchmark data from {TG2005_BENCHMARK_FILE}...')
         eval_topics = set()
@@ -51,19 +56,19 @@ class Genomics2005(Benchmark):
                     self.topic2relevant_docs[q_id] = set()
                     self.topic2partially_relevant_docs[q_id] = set()
                     self.topic2not_relevant_docs[q_id] = set()
-                    # add based on rating
-                    if rating == 2:
-                        # relevant
-                        self.topic2relevant_docs[q_id].add(pmid)
-                        rated_documents.add(pmid)
-                    elif rating == 1:
-                        self.topic2partially_relevant_docs[q_id].add(pmid)
-                        rated_documents.add(pmid)
-                    elif rating == 0:
-                        self.topic2not_relevant_docs[q_id].add(pmid)
-                        rated_documents.add(pmid)
-                    else:
-                        raise ValueError(f'Rating value {rating} not supported')
+                # add based on rating
+                if rating == 2:
+                    # relevant
+                    self.topic2relevant_docs[q_id].add(pmid)
+                    rated_documents.add(pmid)
+                elif rating == 1:
+                    self.topic2partially_relevant_docs[q_id].add(pmid)
+                    rated_documents.add(pmid)
+                elif rating == 0:
+                    self.topic2not_relevant_docs[q_id].add(pmid)
+                    rated_documents.add(pmid)
+                else:
+                    raise ValueError(f'Rating value {rating} not supported')
 
         logging.info(f'Benchmark has {len(rated_documents)} distinct and rated documents')
         self.topics = TrecGen2005Topic.parse_topics()

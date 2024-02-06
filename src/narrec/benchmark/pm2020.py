@@ -58,6 +58,11 @@ class PM2020Benchmark(Benchmark):
     def get_qrel_path(self):
         return PM2020_BENCHMARK_FILE
 
+    def iterate_over_document_entries(self):
+        for q_id in self.topics:
+            for rel_doc_id in self.topic2relevant_docs[q_id.query_id]:
+                yield f'Q{q_id.query_id}D{rel_doc_id}', rel_doc_id
+
     def load_benchmark_data(self):
         logging.info(f'Loading Benchmark data from {PM2020_BENCHMARK_FILE}...')
         eval_topics = set()
