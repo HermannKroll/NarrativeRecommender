@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pytrec_eval
 
-from narrec.benchmark.benchmark import Benchmark
+from narrec.benchmark.benchmark import Benchmark, BenchmarkType, IRBenchmark
 from narrec.config import RESULT_DIR
 from narrec.run_config import BENCHMARKS, FIRST_STAGES, RECOMMENDER_NAMES
 
@@ -58,6 +58,39 @@ def calculate_table_data(measures: List[tuple], results: List, relevant_topics: 
             for q in relevant_topics.difference(set(run.keys())):
                 run.update({q: 0.0})
             score = round(sum(run.values()) / len(run.keys()), 2)
+            max_m[measure] = max(max_m[measure], score)
+            s_row[measure] = score
+        score_rows[name] = s_row
+    return score_rows, max_m
+
+def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, relevant_topics: set):
+    # an IR benchmark consists of each input queries X
+    # each query X has Y documents rated
+    # we used each document of Y as an input to our overall pipeline
+    # we want to first average over the scores of a topic and then
+    # calculate the mean scores of the given measures per topic
+    max_m = {m[0]: 0.0 for m in measures}
+    score_rows = defaultdict(dict)
+    for name, raw_run in results:
+        s_row = dict()
+        for measure, _ in measures:
+            run = extract_run(raw_run, measure)
+            # add missing scores
+            for q in relevant_topics.difference(set(run.keys())):
+                run.update({q: 0.0})
+
+            # collect the scores over all input document ids for a topic
+            topic2score = dict()
+            for r, s in run.items():
+                r_q_id = IRBenchmark.get_query_id_from_doc_query_key(r)
+                if r_q_id not in topic2score:
+                    topic2score[r_q_id] = []
+                topic2score[r_q_id].append(s)
+
+            # average the scores per topic
+            topic2score = {t: sum(scores) / len(scores) for t, scores in topic2score.items()}
+            # then average over all topics
+            score = round(sum(topic2score.values()) / len(topic2score.keys()), 2)
             max_m[measure] = max(max_m[measure], score)
             s_row[measure] = score
         score_rows[name] = s_row
@@ -120,7 +153,11 @@ def perform_evaluation(benchmark: Benchmark):
                 print(f'Run file missing: {run_path}')
 
     measures = [(k, v) for k, v in RESULT_MEASURES.items()]
-    score_rows, max_m = calculate_table_data(measures, results, relevant_topics)
+    if benchmark.type == BenchmarkType.REC_BENCHMARK:
+        score_rows, max_m = calculate_table_data(measures, results, relevant_topics)
+    else:
+        score_rows, max_m = calculate_table_data_ir_benchmark(measures, results, relevant_topics)
+
     print("--" * 60)
     print("Creating table content")
     print("--" * 60)
