@@ -15,7 +15,9 @@ FIRST_STAGES = [
 
 RECOMMENDER_NAMES = [
     "EqualRecommender",
-    "StatementOverlap"
+    "StatementOverlap",
+    "Jaccard",
+    "JaccardWeighted"
 ]
 
 BENCHMARKS = [
