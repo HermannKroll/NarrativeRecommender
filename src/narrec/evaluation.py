@@ -39,7 +39,7 @@ RESULT_MEASURES = {
 
 
 def extract_run(run: dict, measure: str):
-    run = sorted(run.items(), key=lambda x: int(x[0]))
+    run = sorted(run.items(), key=lambda x: str(x[0]))
     indices = [k for k, _ in run]
     values = [(v[measure],) for _, v in run]
 
@@ -107,6 +107,9 @@ def perform_evaluation(benchmark: Benchmark):
     results = list()
     for run_name in FIRST_STAGES:
         run_path = os.path.join(RESULT_DIR, f'{benchmark.name}_{run_name}.txt')
+        if not os.path.isfile(run_path):
+            print(f'Run file missing: {run_path}')
+            continue
         results.append([run_name, perform_evaluation_for_run(qrel, run_path)])
 
         for recommender in RECOMMENDER_NAMES:

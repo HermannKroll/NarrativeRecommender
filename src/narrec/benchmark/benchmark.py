@@ -88,13 +88,29 @@ class IRBenchmark(Benchmark):
     def get_doc_id_from_doc_query_key(doc_query_key: str) -> int:
         return int(doc_query_key.split('D')[-1])
 
+    @staticmethod
+    def get_query_id_from_doc_query_key(doc_query_key: str) -> int:
+        # Take everything between Q and D
+        return int(doc_query_key.split('D')[0][1:])
+
     def get_qrel_path(self):
         path = os.path.join(BENCHMKARK_QRELS_DIR, f'{self.name}_qrels.txt')
         if not os.path.isfile(path):
             result_lines = []
+
+            for querydockey, doc_id in self.iterate_over_document_entries():
+                q_id = IRBenchmark.get_query_id_from_doc_query_key(querydockey)
+                result_lines.extend(f'{querydockey}\t0\t{rel_id}\t2'
+                                    for rel_id in self.topic2relevant_docs[q_id] if rel_id != doc_id)
+
+                result_lines.extend(f'{querydockey}\t0\t{part_id}\t1'
+                                    for part_id in self.topic2partially_relevant_docs[q_id] if part_id != doc_id)
+
+                result_lines.extend(f'{querydockey}\t0\t{irrel_id}\t0'
+                                    for irrel_id in self.topic2not_relevant_docs[q_id] if irrel_id != doc_id)
+
             with open(path, 'wt') as f:
-                for querydockey,  in self.iterate_over_document_entries():
-                    pass
+                f.write('\n'.join(result_lines))
 
         return path
 
