@@ -5,6 +5,7 @@ import time
 
 import requests
 
+from narrec.benchmark.benchmark import Benchmark
 from narrec.config import DATA_DIR
 from narrec.document.document import RecommenderDocument
 from narrec.firststage.base import FirstStageBase
@@ -12,9 +13,10 @@ from narrec.firststage.base import FirstStageBase
 
 class PubMedRecommender(FirstStageBase):
 
-    def __init__(self):
+    def __init__(self, benchmark: Benchmark):
         super().__init__(name="PubMedRecommender")
         self.name = "PubMedRecommender"
+        self.benchmark = benchmark
         self.cache_path = os.path.join(DATA_DIR, 'pubmed_cache.txt')
 
     def retrieve_documents_for(self, document: RecommenderDocument):
@@ -27,8 +29,10 @@ class PubMedRecommender(FirstStageBase):
         score_steps = 1.0 / len(similar_ids)
         for similar_id in similar_ids:
             assert 0.0 <= score <= 1.0
-            scored_docs.append((similar_id, score))
-            score = score - score_steps
+
+            if int(similar_id) in self.benchmark.get_documents_for_baseline():
+                scored_docs.append((similar_id, score))
+                score = score - score_steps
 
         return scored_docs
 

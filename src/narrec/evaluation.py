@@ -80,7 +80,7 @@ def generate_diagram(input_json: str, output_dir: str):
         plt.close('all')
 
 
-def perform_evaluation_for_run(benchmark: Benchmark, qrel, run_file: str):
+def perform_evaluation_for_run(qrel, run_file: str):
     """
     Applys pytrec_eval to our given scenario
     Computes the previously defined metrics
@@ -88,19 +88,8 @@ def perform_evaluation_for_run(benchmark: Benchmark, qrel, run_file: str):
     :param run_file: our actual produced run file by some method
     :return: None
     """
-    run_name = run_file.split('/')[-1]
-    run_path_filtered = os.path.join(RESULT_DIR, f'filtered_{run_name}')
-    print(f'Filtering {run_file} in {run_path_filtered}')
-    if not os.path.isfile(run_path_filtered):
-        with open(run_file, 'rt') as fin:
-            with open(run_path_filtered, 'wt') as fout:
-                for line in fin:
-                    qid, q0, pmid, rank, score, strategy = line.split()
-                    if int(pmid) in benchmark.get_documents_for_baseline():
-                        fout.write('\t'.join([qid, q0, pmid, rank, score, strategy]) + '\n')
-
-    print(f'Loading run file: {run_path_filtered}')
-    with open(run_path_filtered, 'r') as f_run:
+    print(f'Loading run file: {run_file}')
+    with open(run_file, 'r') as f_run:
         run = pytrec_eval.parse_run(f_run)
 
     evaluator = pytrec_eval.RelevanceEvaluator(qrel, METRICS, judged_docs_only_flag=True)
@@ -118,12 +107,12 @@ def perform_evaluation(benchmark: Benchmark):
     results = list()
     for run_name in FIRST_STAGES:
         run_path = os.path.join(RESULT_DIR, f'{benchmark.name}_{run_name}.txt')
-        results.append([run_name, perform_evaluation_for_run(benchmark, qrel, run_path)])
+        results.append([run_name, perform_evaluation_for_run(qrel, run_path)])
 
         for recommender in RECOMMENDER_NAMES:
             run_path = os.path.join(RESULT_DIR, f'{benchmark.name}_{run_name}_{recommender}.txt')
             if os.path.isfile(run_path):
-                results.append([f'{run_name}_{recommender}', perform_evaluation_for_run(benchmark, qrel, run_path)])
+                results.append([f'{run_name}_{recommender}', perform_evaluation_for_run(qrel, run_path)])
             else:
                 print(f'Run file missing: {run_path}')
 
