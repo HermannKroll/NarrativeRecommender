@@ -10,6 +10,7 @@ class GraphBase(RecommenderBase):
 
     @staticmethod
     def ont_path(node_j, node_k):
+        #TODO
         return 1
 
     def ontological_similarity(self, node_j, node_k):
