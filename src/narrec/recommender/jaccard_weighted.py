@@ -1,7 +1,7 @@
 from narrec.citation.graph import CitationGraph
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.document.scoring import score_edge
+from narrec.scoring.edge import score_edge
 from narrec.recommender.base import RecommenderBase
 
 

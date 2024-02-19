@@ -3,7 +3,7 @@ from typing import List
 from kgextractiontoolbox.document.narrative_document import StatementExtraction
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.document.scoring import score_edge
+from narrec.scoring.edge import score_edge
 from narrec.run_config import NARRATIVE_CORE_THRESHOLD
 
 

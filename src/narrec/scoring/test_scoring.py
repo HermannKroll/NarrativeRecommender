@@ -1,7 +1,7 @@
 from narrant.entity.entityresolver import EntityResolver
 from narrec.backend.retriever import DocumentRetriever
 from narrec.document.corpus import DocumentCorpus
-from narrec.document.scoring import score_edge_sentence, score_edge
+from narrec.scoring.edge import score_edge_sentence, score_edge
 
 retriever = DocumentRetriever()
 corpus = DocumentCorpus(["PubMed"])

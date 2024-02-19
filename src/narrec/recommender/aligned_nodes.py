@@ -2,7 +2,7 @@ from narrec.citation.graph import CitationGraph
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.recommender.graph_base import GraphBase
-from narrec.document.scoring import score_edge
+from narrec.scoring.edge import score_edge
 from narrec.document.document import RecommenderDocument
 
 
