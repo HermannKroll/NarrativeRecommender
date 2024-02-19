@@ -246,7 +246,7 @@
           padding-top: 0.25em;
         }
 
-    
+
         .noscript div {
           background-color: rgb(180, 30, 30);
           border-radius: 1em;
@@ -626,6 +626,7 @@
         let graph_str = `{{ graph }}`;
         graph_str = graph_str.replaceAll("XXXXX", "\"");
         let document_graph = JSON.parse(graph_str);
+        console.log(document_graph);
 
         let nodes = document_graph["nodes"];
         let node2id = {};
