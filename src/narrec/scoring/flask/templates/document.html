@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        :root {
+          --grey_light1: #e8e8e8;
+          --grey_green: #f1f6e0;
+          --grey_light2: #fafafa;
+          --grey_dark1: #dbdbdb;
+          --grey_dark2: #b0b0b0;
+          --action_green:#94b541;
+          --action_green_highlight:#7e9e2f;
+          --grey_border: #616161;
+          --background: #eeeeee;
+
+          --color-drug: #ff8181;
+          --color-target: #87e7ff;
+          --color-disease: #aeff9a;
+        }
+
+        /* MISSING BOOTSTRAP5 STYLES */
+        .vh-95 {
+          height: 95vh !important;
+        }
+
+
+        /* DRUG OVERVIEW INDEX (UNUSED)*/
+        p {
+          margin: 0;
+          font-size: 15px;
+        }
+         .main_page h1 {
+          font-weight: bold;
+          margin-bottom: 0.5em;
+        }
+        .main_page .searchbar {
+          width: 100%;
+          height: 2.75em;
+        }
+        .main_page p {
+          margin-top: 2em;
+          text-align: center;
+        }
+        select option:hover {
+          color: white;
+          background-color: var(--action_green);
+        }
+
+        .bottom_searchbox div {
+          background-color: var(--grey_light2);
+          display: flex;
+          align-items: center;
+          margin: 0.5em;
+          padding: 0.33em;
+          border-radius: 0.33em;
+          box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.17), 0 2px 3px 0 rgba(0, 0, 0, 0.15);
+        }
+        .bottom_searchbox div .phase {
+          display: flex;
+          align-items: center;
+          margin-left: 0.5em;
+          position: relative;
+        }
+        .bottom_searchbox div .phase img {
+          width: 1.25em;
+          height: 1.25em;
+        }
+        .bottom_searchbox div .count {
+          display: flex;
+          height: 1.5em;
+          margin: 0 0 0 0.5em;
+          border-radius: 0.75em;
+          box-shadow: none;
+        }
+        .bottom_searchbox div .count a {
+          text-decoration: none;
+          font-size: 14px;
+          color: white;
+        }
+
+        /* NEWS SLIDER (BOTTOM CONTAINER) */
+        .news_bottom {
+          display: none;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          overflow-x: scroll;
+          align-content: flex-start;
+          justify-content: flex-start;
+        }
+        .news_bottom div {
+          display: flex;
+          flex-direction: column;
+          place-content: space-between;
+          cursor: pointer;
+          background-color: var(--grey_light2);
+          width: 18em;
+          margin: 0.75em 0 0.75em 0.75em;
+          flex-shrink: 0;
+          padding: 0.5em;
+          border-radius: 0.33em;
+          box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.17), 0 2px 3px 0 rgba(0, 0, 0, 0.15);
+        }
+        .news_bottom div h2 {
+          font-size: 15px;
+          font-weight: bold;
+        }
+        .news_bottom div .journal {
+          margin-top: 0.5em;
+          font-size: 15px;
+        }
+        .news_bottom div .date {
+          margin-top: 0.5em;
+          font-size: 15px;
+          font-style: italic;
+        }
+        .news_bottom div:hover {
+          background-color: var(--grey_green);
+        }
+
+        /* NEWS-POPUP STYLES */
+        .newsdetail {
+          height: 90%;
+          background-color: white;
+          margin: 2% 2% calc(2%) 2%;
+          padding: 1em;
+          box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.1), 0 6px 10px 0 rgba(0, 0, 0, 0.09);
+        }
+        .newsdetail .top {
+          display: flex;
+          place-content: space-between;
+          align-items: center;
+          height: 1.5em;
+        }
+        .newsdetail .top div {
+          cursor: pointer;
+          display: flex;
+          justify-content: center;
+          border-radius: 1em;
+        }
+        .newsdetail .top div img {
+          height: 1.5em;
+          width: 1.5em;
+        }
+        .newsdetail .top div:hover {
+          background-color: var(--grey_dark1);
+        }
+        .newsdetail .top a {
+          display: flex;
+        }
+        .newsdetail .top img {
+          align-self: center;
+          height: 1.5em;
+          width: 1.5em;
+        }
+        .newsdetail .bottom {
+          display: flex;
+          height: 95%;
+          margin-top: 1em;
+          border-top: 1px solid var(--grey_border);
+        }
+        .newsdetail .bottom .checkbox {
+          display: flex;
+          overflow: hidden;
+          flex-direction: column;
+          width: 10%;
+          padding: 0.75em;
+        }
+        .newsdetail .bottom .checkbox div {
+          display: flex;
+          align-items: center;
+          overflow: hidden;
+          box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.17), 0 2px 3px 0 rgba(0, 0, 0, 0.15);
+          border-radius: 0.33em;
+          margin-bottom: 0.75em;
+          padding: 0.2em;
+        }
+        .newsdetail .bottom .checkbox div input {
+          height: 1.5em;
+          width: 1.5em;
+          cursor: pointer;
+        }
+        .newsdetail .bottom .checkbox div label {
+          margin-left: 0.33em;
+          font-size: 16px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .newsdetail .bottom .paper {
+          overscroll-behavior: contain; /* prevent scroll body */
+          overflow-y: scroll;
+          width: 47%;
+          padding: 0.75em 1.5em 0.75em 1.5em;
+        }
+        .newsdetail .bottom .paper a:link, .newsdetail .bottom .paper a:visited {
+          border-radius: 0.33em;
+          text-decoration: none;
+          color: black;
+        }
+        .newsdetail .bottom .paper h2 {
+          font-size: 22px;
+          margin: 0;
+        }
+        .newsdetail .bottom .paper .author {
+          margin-top: 0.75em;
+          font-size: 15px;
+        }
+        .newsdetail .bottom .paper .journal {
+          border-top: 1px solid var(--grey_border);
+          margin-top: 1em;
+          font-size: 15px;
+          text-align: center;
+          font-weight: bold;
+        }
+        .newsdetail .bottom .paper .date {
+          margin-top: 0.5em;
+          font-size: 15px;
+          font-style: italic;
+          border-bottom: 1px solid var(--grey_border);
+          text-align: center;
+        }
+        .newsdetail .bottom .paper .abstract {
+          font-size: 16px;
+          margin-top: 1em;
+        }
+        .newsdetail .bottom .graphContainer {
+          display: flex;
+          flex-direction: column;
+          background-color: #eeeeee;
+          border: 1px solid var(--grey_border);
+          border-top: 0;
+          margin: 0 0.75em 0.75em 0;
+          height: 100%;
+          width: 43%;
+        }
+        .newsdetail .bottom .graphContainer .graphNetwork{
+          height: calc(100% - 2.5em);
+        }
+        .newsdetail .bottom .graphContainer .graphFooter{
+          display: flex;
+        }
+
+
+
+        #classificationHeader {
+          border-top: 1px solid var(--grey_border);
+          margin-bottom: 0;
+          padding-top: 0.25em;
+        }
+
+    
+        .noscript div {
+          background-color: rgb(180, 30, 30);
+          border-radius: 1em;
+          font-size: x-large;
+          margin: auto;
+          padding: 2em 3.5em;
+          text-align: center;
+          font-weight: bold;
+          color: white;
+        }
+
+        /* KEYWORD CLOUD STYLES */
+        ul.cloud {
+          list-style: none;
+          padding-left: 0;
+          display: none;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          line-height: 2.5rem;
+        }
+        ul.cloud li[data-weight="1"] {
+          --size: 3;
+          --angle: -0.5;
+        }
+        ul.cloud li[data-weight="2"] {
+          --size: 3.5;
+          --angle: 0.5;
+        }
+        ul.cloud li[data-weight="3"] {
+          --size: 4;
+          --angle: 1;
+        }
+        ul.cloud li[data-weight="4"] {
+          --size: 4.5;
+          --angle: -1;
+        }
+        ul.cloud li[data-weight="5"] {
+          --size: 5;
+          --angle: -1.5;
+        }
+        ul.cloud li[data-weight="6"] {
+          --size: 5.5;
+          --angle: 1.5;
+        }
+        ul.cloud li[data-weight="7"] {
+          --size: 6;
+          --angle: -2;
+        }
+        ul.cloud li[data-weight="8"] {
+          --size: 6.2;
+          --angle: 2;
+        }
+        ul.cloud li:nth-child(n+1) {
+          --color: #ab0c0c;
+        }
+        ul.cloud li:nth-child(2n+1) {
+          --color: #259825;
+        }
+        ul.cloud li:nth-child(3n+1) {
+          --color: #3c3ccb;
+        }
+        ul.cloud li:nth-child(4n+1) {
+          --color: #cc7333;
+        }
+        ul.cloud li {
+          --size: attr(data-weight number, 2);
+          display: block;
+          padding: 0.125rem 0.25rem;
+          text-decoration: none;
+          position: relative;
+          transform: rotate(calc(var(--angle) * 1deg));
+          color: var(--color);
+          font-family: Impact, serif;
+          font-size: calc(var(--size) * 0.25rem + 0.5rem);
+        }
+        ul.cloud li:hover {
+          background: rgba(190, 190, 190, 0.4);
+          border-radius: 0.25em;
+          cursor: default;
+        }
+        .word_cloud h2 {
+          font-size: 16px;
+          margin: 0;
+        }
+
+        /* BOOTSTRAP STYLE WRAPPER */
+        /* corresponds to >= medium (md) sized screen width */
+        @media (min-width: 576px) {
+          .drug-structure:hover {
+            width: 24em;
+            height: 24em;
+            transition: width 0.5s, height 0.5s;
+            cursor: zoom-in;
+          }
+          .vh-90-sm {
+            height: 90vh !important;
+          }
+          .h-graph {
+            height: calc(100% - 5.75rem);
+          }
+          .form-check-input-wrap {
+            width: 1.5em;
+            height: 1.5em;
+            margin-right: 0.25rem;
+          }
+        }
+        /* corresponds to >= large (lg) sized screen width */
+        @media (min-width: 992px) {
+          .wide-size-sidebar {
+            position: fixed !important;
+            max-width: 215px !important;
+            margin-left: 5% !important;
+          }
+
+          .wide-size-content {
+            /* 17% cause of 16.666% width of the fixed sidebar */
+            margin-left: 18% !important;
+            margin-right: auto !important;
+          }
+          .ms-lg-10 {
+            margin-left: 5rem !important;
+          }
+        }
+        @media (min-width: 1650px) {
+          .wide-size-content {
+            /* 17% cause of 16.666% width of the fixed sidebar */
+            margin-left: 16% !important;
+            margin-right: auto !important;
+          }
+        }
+
+
+        @media screen and (max-width: 1000px) {
+          .newsdetail {
+            overflow-y: scroll !important;
+            overscroll-behavior: contain !important; /* prevent scroll body */
+          }
+          .newsdetail .bottom {
+            display: inline-block !important;
+          }
+          .newsdetail .bottom .checkbox {
+            margin-left: 0.5em !important;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            width: 95% !important;
+            justify-content: center !important;
+            padding-left: 0 !important;
+          }
+          .newsdetail .bottom .checkbox div {
+            margin-right: 0.5em !important;
+          }
+          .newsdetail .bottom .paper {
+            overflow-y: auto !important;
+            width: 95% !important;
+            margin-left: 0.5em !important;
+            padding-left: 0 !important;
+          }
+          .newsdetail .bottom .graphContainer {
+            width: 95% !important;
+            margin-left: 0.5em !important;
+            margin-bottom: 2em !important;
+            border: 1px solid var(--grey_border) !important;
+          }
+        }
+
+    </style>
+</head>
+
+<div class="popup_dummie position-relative vh-95 d-none" id="newsPopup">
+    <div class="newsdetail shadow-none m-0">
+        <div class="top">
+            <a id="paperLink">View Paper</a>
+        </div>
+        <div class="bottom">
+            <div class="checkbox" id="newsCheckbox"></div>
+            <div class="paper">
+                <h2 id="paperTitle"></h2>
+                <p class="author" id="paperAuthor"></p>
+                <p class="journal" id="paperJournal"></p>
+                <p class="date" id="paperDate"></p>
+                <p class="abstract" id="paperAbstract"></p>
+
+                <div id="classifications">
+                    <h2 id="classificationHeader">Classifications</h2>
+                    <div id="classificationDiv"></div>
+                    <p id="classificationInfo"
+                       style="margin-top: 10px; font-size:15px;">
+                        <em>(1,10) means text passage 1-10</em></p>
+                </div>
+            </div>
+            <div class="graphContainer" id="graphContainer">
+                <div class="graphNetwork" id="paperGraph"></div>
+                <div class="graphFooter">
+                    <button class="btn btn-secondary me-1 ms-auto" onclick="centerNetwork(papernetwork)">
+                        Center
+                    </button>
+                    <button class="btn btn-secondary me-1" onclick="toggleFullscreenNetworkGraph('graph')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows-fullscreen mb-1" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"></path>
+                        </svg>
+                        <span type="button" id="graphFullscreen">Fullscreen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js"></script>
+<script type="text/javascript">
+        const typeColorMap = {
+        "Disease": "#aeff9a",
+        "Drug": "#ff8181",
+        "Species": "#b88cff",
+        "Excipient": "#ffcf97",
+        "LabMethod": "#9eb8ff",
+        "Chemical": "#fff38c",
+        "Gene": "#87e7ff",
+        "Target": "#1fe7ff",
+        "Method": "#7897ff",
+        "DosageForm": "#9189ff",
+        "Mutation": "#8cffa9",
+        "ProteinMutation": "#b9ffcb",
+        "DNAMutation": "#4aff78",
+        "Variant": "#ffa981",
+        "CellLine": "#00bc0f",
+        "SNP": "#fd83ca",
+        "DomainMotif": "#f383fd",
+        "Plant": "#dcfd83",
+        "Strain": "#75c4c7",
+        "Vaccine": "#c7767d",
+        "HealthStatus": "#bbaabb",
+        "Organism": "#00bc0f",
+        "Tissue": "#dc8cff"
+    }
+
+
+    var markInstance = null;
+    var tagsArray = null;
+    var activeTypeMap = null;
+    var document_graph = null;
+    let papernetwork = null;
+
+
+    function fillClassifications(classifications) {
+        const classDiv = document.getElementById('classificationDiv');
+        const classInfo = document.getElementById('classificationInfo');
+
+        // paper has no classification data
+        if (Object.keys(classifications).length === 0) {
+            classInfo.style.display = 'None';
+            return;
+        }
+
+        //clear previous stored classification data
+        classDiv.replaceChildren();
+
+        Object.entries(classifications).forEach(([key, value]) => {
+            value = value.replaceAll(' ', '').replaceAll(';', ', ')
+            const classBox = document.createElement("div");
+            const tags = document.createElement('div');
+            const header = document.createElement('div');
+            classBox.classList.add('classTags');
+            header.classList.add('classTagsHeader');
+            header.innerText = key + ':';
+            tags.innerText = value;
+
+            classBox.append(header, tags);
+            classDiv.append(classBox);
+        })
+        classInfo.style.display = 'Block';
+    }
+
+    function markLink(tags) {
+        if (tags.id.substring(0, 4) == "MESH") {
+            var meshId = tags.id.substring(5, tags.id.length);
+            return "https://meshb.nlm.nih.gov/record/ui?ui=" + meshId;
+        } else if (tags.id.substring(0, 6) == "CHEMBL") {
+            return "https://www.ebi.ac.uk/chembl/compound_report_card/" + tags.id + "/";
+        } else if (tags.type == "Gene") {
+            return "https://www.ncbi.nlm.nih.gov/gene/" + tags.id;
+        } else if (tags.type == "Species") {
+            return "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=" + tags.id;
+        } else {
+            return "javascript:;";
+        }
+    }
+    function initCheckbox(typeArray) {
+        typeArray.sort(function (a, b) {
+            if (a.toUpperCase() < b.toUpperCase()) {
+                return -1;
+            }
+            if (a.toUpperCase() > b.toUpperCase()) {
+                return 1;
+            }
+            return 0;
+        });
+        const checkBoxDiv = document.getElementById("newsCheckbox");
+        while (checkBoxDiv.firstChild) {
+            checkBoxDiv.removeChild(checkBoxDiv.lastChild);
+        }
+
+        activeTypeMap = new Map();
+        for (let item of typeArray) {
+            const checkbox = document.createElement("input");
+            const label = document.createElement("label");
+            const connector = document.createElement("div");
+            checkbox.type = "checkbox";
+            checkbox.checked = true;
+            checkbox.id = item;
+            checkbox.name = item;
+            if (item == "All") {
+                checkbox.addEventListener("click", function () {
+                    checkboxActionAll();
+                });
+            } else {
+                checkbox.addEventListener("click", function () {
+                    checkboxAction();
+                });
+            }
+            label.innerHTML = item;
+            label.for = item;
+            connector.style.backgroundColor = typeColorMap[item];
+            connector.append(checkbox);
+            connector.append(label);
+            checkBoxDiv.append(connector);
+
+            activeTypeMap.set(checkbox.id, checkbox.checked);
+        }
+
+        function checkboxActionAll() {
+            const checkboxAll = document.getElementById("All");
+            var checkboxes = document.getElementById("newsCheckbox").getElementsByTagName("input");
+            for (let item of checkboxes) {
+                item.checked = checkboxAll.checked;
+            }
+            checkboxAction();
+        }
+
+        function checkboxAction() {
+            var checkboxes = document.getElementById("newsCheckbox").getElementsByTagName("input");
+            const title = document.getElementById("paperTitle");
+            activeTypeMap = new Map();
+            for (let item of checkboxes) {
+                activeTypeMap.set(item.id, item.checked);
+            }
+            markInstance.unmark();
+            for (var j = 0; j < tagsArray.length; j++) {
+                var startIndex = tagsArray[j].start >= title.textContent.length ? tagsArray[j].start - 1 : tagsArray[j].start;
+                if (activeTypeMap.get(tagsArray[j].type)) {
+                    markInstance.markRanges([{
+                        start: startIndex,
+                        length: tagsArray[j].end - tagsArray[j].start
+                    }], {
+                        "element": "a",
+                        "each": function (e) {
+                            e.href = markLink(tagsArray[j]);
+                            if (e.href != "javascript:;") {
+                                e.target = "_blank"
+                            }
+                            e.style.backgroundColor = typeColorMap[tagsArray[j].type];
+                        },
+                    });
+
+                }
+            }
+            visualize_document_graph(document.getElementById("paperGraph"));
+        }
+    }
+
+    function visualize_document_graph(container) {
+        // will be set by server
+        let graph_str = `{{ graph }}`;
+        graph_str = graph_str.replaceAll("XXXXX", "\"");
+        let document_graph = JSON.parse(graph_str);
+
+        let nodes = document_graph["nodes"];
+        let node2id = {};
+        let id = 1;
+        let nodesToCreate = new vis.DataSet([]);
+        nodes.forEach(node => {
+            let colorLabel = node.slice(node.indexOf("(") + 1, node.indexOf(")"));
+            if (colorLabel == "PlantFamily/Genus") {
+                colorLabel = "Plant"
+            }
+            if (!activeTypeMap.get(colorLabel)) {
+                return;
+            }
+            node2id[node] = id;
+            let color = typeColorMap[colorLabel];
+            let nodeData = {'id': id, 'label': node.slice(0, node.indexOf("(")), 'color': color};
+            nodesToCreate.add(nodeData);
+            id = id + 1;
+        });
+
+        let edgesToCreate = new vis.DataSet([]);
+        document_graph["facts"].forEach(fact => {
+            let subject = node2id[fact['s']];
+            let predicate = fact['p'];
+            let object = node2id[fact['o']];
+            let edgeData = {'from': subject, 'to': object, 'label': predicate};
+            //console.log(edgeData);
+            edgesToCreate.add(edgeData);
+        });
+
+        // create a netwok
+        // provide the data in the vis format
+        var data = {
+            nodes: nodesToCreate,
+            edges: edgesToCreate
+        };
+        var options = {
+            interaction: {
+                multiselect: true,
+                hover: true,
+            },
+            physics: {
+                enabled: true,
+                barnesHut: {
+                    gravitationalConstant: -3000,
+                    centralGravity: 0.5,
+                    springLength: 80, //was 140
+                    springConstant: 0.03,
+                    damping: 0.70,
+                    avoidOverlap: 0.3
+                },
+                stabilization: {
+                    enabled: true,
+                    iterations: 1000,
+                    updateInterval: 100,
+                    onlyDynamicEdges: false,
+                    fit: true
+                },
+            },
+            layout: {
+                randomSeed: 1
+            }
+        };
+
+        // initialize your network!
+        papernetwork = new vis.Network(container, data, options);
+
+    }
+
+    // flask thing - id is substitued by server
+    let document_id = {{ document_id }};
+    console.log("Document id: " + document_id);
+
+
+    let content_str = `{{ paper }}`;
+    content_str = content_str.replaceAll("XXXXX", "\"");
+    let contentData = JSON.parse(content_str);
+    console.log(contentData);
+
+    const title = document.getElementById("paperTitle");
+    const abstract = document.getElementById("paperAbstract");
+    const date = document.getElementById("paperDate");
+    const author = document.getElementById("paperAuthor");
+    const journal = document.getElementById("paperJournal");
+    const link = document.getElementById("paperLink");
+    title.textContent = contentData.title;
+    abstract.textContent = contentData.abstract;
+    author.textContent = contentData.metadata.authors;
+    journal.textContent = contentData.metadata.journals;
+
+    if (contentData.metadata.publication_month !== 0) {
+        date.textContent = contentData.metadata.publication_month + "/" + contentData.metadata.publication_year;
+    } else {
+        date.textContent = contentData.metadata.publication_year;
+    }
+
+    link.href = contentData.metadata.doi;
+    link.target = "_blank";
+
+    markInstance = new Mark([title, abstract]);
+    tagsArray = contentData.tags;
+    var typeArray = ["All"];
+    for (var j = 0; j < tagsArray.length; j++) {
+        if (tagsArray[j].type === "PlantFamily/Genus") {
+            tagsArray[j].type = "Plant"
+        }
+        var startIndex = tagsArray[j].start >= title.textContent.length ? tagsArray[j].start - 1 : tagsArray[j].start;
+        markInstance.markRanges([{
+            start: startIndex,
+            length: tagsArray[j].end - tagsArray[j].start
+        }], {
+            "element": "a",
+            "each": function (e) {
+                e.href = markLink(tagsArray[j]);
+                if (e.href != "javascript:;") {
+                    e.target = "_blank"
+                }
+                e.style.backgroundColor = typeColorMap[tagsArray[j].type];
+            },
+        });
+        if (!typeArray.includes(tagsArray[j].type)) {
+            typeArray.push(tagsArray[j].type);
+        }
+    }
+    initCheckbox(typeArray);
+
+    fillClassifications(contentData.classification);
+
+    const graphDiv = document.getElementById("paperGraph");
+    visualize_document_graph(graphDiv);
+
+
+
+</script>
+
