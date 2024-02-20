@@ -650,9 +650,21 @@
         let edgesToCreate = new vis.DataSet([]);
         document_graph["facts"].forEach(fact => {
             let subject = node2id[fact['s']];
-            let predicate = fact['p'];
+            let score_string = "";
+            for (const key in fact["scores"]) {
+                score_string += `${key}: ${fact["scores"][key]}\n`;
+            }
+            let predicate = fact['p'] + "\n" + "\n" + score_string;
             let object = node2id[fact['o']];
-            let edgeData = {'from': subject, 'to': object, 'label': predicate};
+            let edgeData = {
+                'from': subject, 'to': object, 'label': predicate,
+                edges: {
+                    length: 300, // Adjust the length of the edges between nodes
+                },
+                physics: {
+                    enabled: false, // Disable physics to prevent automatic node placement
+                }
+            };
             //console.log(edgeData);
             edgesToCreate.add(edgeData);
         });
@@ -667,6 +679,14 @@
             interaction: {
                 multiselect: true,
                 hover: true,
+            },
+            manipulation: {
+                enabled: true,
+                addNode: false,
+                addEdge: false,
+                editNode: false,
+                deleteNode: false,
+                deleteEdge: false,
             },
             physics: {
                 enabled: true,
@@ -687,7 +707,7 @@
                 },
             },
             layout: {
-                randomSeed: 1
+                randomSeed: undefined
             }
         };
 
