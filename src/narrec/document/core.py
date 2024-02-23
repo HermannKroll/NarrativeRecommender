@@ -16,6 +16,14 @@ class ScoredStatementExtraction(StatementExtraction):
                          sentence_id=stmt.sentence_id, confidence=stmt.confidence)
         self.score = score
 
+    def is_equal(self, other):
+        if not isinstance(other, ScoredStatementExtraction):
+            return False
+
+        a = (self.subject_id == other.subject_id and self.object_id == other.object_id)
+        b = (self.object_id == other.subject_id and self.subject_id == other.object_id)
+        return a or b
+
     def __str__(self):
         return f'{self.score}: ({self.subject_id}, {self.relation}, {self.object_id})'
 
@@ -30,29 +38,48 @@ class NarrativeCore:
         self.statements.sort(key=lambda x: x.score, reverse=True)
         self.size = len(statements)
 
+    def intersect(self, other):
+        if not isinstance(other, NarrativeCore):
+            return None
+
+        statements = []
+        found = False
+        for a in self.statements:
+            for b in self.statements:
+                if a.is_equal(b):
+                    found = True
+                    break
+            if found:
+                statements.append(a)
+        return NarrativeCore(statements)
+
 
 class NarrativeCoreExtractor:
 
     def __init__(self, corpus: DocumentCorpus):
         self.corpus = corpus
 
-    def extract_narrative_core_from_document(self, document: RecommenderDocument,
-                                             threshold=NARRATIVE_CORE_THRESHOLD) -> List[NarrativeCore]:
+    def extract_narrative_core_from_document(self, document: RecommenderDocument) -> NarrativeCore:
         if not document.extracted_statements:
-            return []
+            return None
 
         filtered_statements = []
+        s_scores = []
         for statement in document.extracted_statements:
             spo = (statement.subject_id, statement.relation, statement.object_id)
             s_score = score_edge(spo, document, self.corpus)
-            if s_score >= threshold:
-                filtered_statements.append((statement, s_score))
+            s_scores.append(s_score)
+            filtered_statements.append((statement, s_score))
+
+        # Only tak statements that have a score above the average score
+        avg_score = sum(s_scores) / len(s_scores)
+        filtered_statements = [fs for fs in filtered_statements if fs[1] >= avg_score]
 
         # sort filtered statements by score
         filtered_statements.sort(key=lambda x: x[1], reverse=True)
 
         if not filtered_statements:
-            return []
+            return None
 
         # graph = nx.Graph()
         # for statement, score in filtered_statements:
@@ -62,7 +89,6 @@ class NarrativeCoreExtractor:
         # Will produce a sorted list of nodes
         # connected_components = [(c, len(c)) for c in sorted(nx.connected_components(graph), key=len, reverse=True)]
 
-        cores = []
         core_node_pairs = set()
         # The following algorithm will be design select the highest scored edges between two
         # concepts because filtered statements are sorted by their score desc
@@ -80,6 +106,4 @@ class NarrativeCoreExtractor:
             core_statements.append(ScoredStatementExtraction(stmt=statement, score=score))
             core_node_pairs.add(so)
 
-        cores.append(NarrativeCore(core_statements))
-
-        return cores
+        return NarrativeCore(core_statements)
