@@ -4,13 +4,14 @@ from narrec.benchmark.relish import RelishBenchmark
 from narrec.benchmark.relishdrug import RelishDrugBenchmark
 
 FIRST_STAGES = [
-    "BM25Title",
-    "BM25Abstract",
-    "BM25Yake",
+   # "BM25Title",
+   # "BM25Abstract",
+   # "BM25Yake",
     "FSCore",
-    "FSCorePlusAbstractBM25",
-    "FSCorePlusTitleBM25",
-    "PubMedRecommender"
+    "FSCoreOverlap"
+   # "FSCorePlusAbstractBM25",
+   # "FSCorePlusTitleBM25",
+   # "PubMedRecommender"
 ]
 
 RECOMMENDER_NAMES = [
