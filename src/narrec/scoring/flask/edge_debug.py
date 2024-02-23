@@ -8,7 +8,8 @@ from narraint.backend.database import SessionExtended
 from narrant.entity.entityresolver import EntityResolver
 from narrec.backend.retriever import DocumentRetriever
 from narrec.document.corpus import DocumentCorpus
-from narrec.scoring.edge import score_edge, score_edge_sentence
+from narrec.scoring.edge import score_edge, score_edge_sentence, score_edge_connectivity, score_edge_confidence, \
+    score_edge_tfidf
 
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                     datefmt='%Y-%m-%d:%H:%M:%S',
@@ -19,13 +20,14 @@ retriever = DocumentRetriever()
 corpus = DocumentCorpus(["PubMed"])
 
 SCORE_FUNCTIONS = [
+    ("confidence", score_edge_confidence),
+    ("tfidf", score_edge_tfidf),
     ("tfidf+conf", score_edge),
-    ("tfidf+conf+sentence", score_edge_sentence)
+    ("tfidf+conf+sentence", score_edge_sentence),
+    ("connectivity", score_edge_connectivity)
 ]
 
-
-def get_document_graph(document_id):
-    document_id = int(document_id)
+def retrieve_document_graph(document_id):
     session = SessionExtended.get()
     query = session.query(Predication)
     query = query.filter(Predication.document_collection == "PubMed")
@@ -58,13 +60,61 @@ def get_document_graph(document_id):
         except Exception:
             pass
 
-    print(f'Querying document graph for document id: {document_id} - {len(facts)} facts found')
     session.remove()
+    print(f'Querying document graph for document id: {document_id} - {len(facts)} facts found')
+
+    # Apply filter
+    scores = [res["scores"]["tfidf+conf"] for res in result]
+    print(scores)
+    avg_score = sum(scores) / len(scores)
+    result = [r for r in result if r["scores"]["tfidf+conf"] >= avg_score]
+    nodes = set()
+    for r in result:
+        nodes.add(r["s"])
+        nodes.add(r["o"])
+
+    return result, nodes
+
+def get_document_graph(document_id):
+    document_id = int(document_id)
+    result, nodes = retrieve_document_graph(document_id)
     return str(dict(nodes=list(nodes), facts=result))
+
+
+def get_document_graph_intersection(document_ids):
+    docs = document_ids.split(',')
+    assert len(docs) == 2
+    docid_a = int(docs[0])
+    docid_b = int(docs[1])
+
+    result_a, nodes_a = retrieve_document_graph(docid_a)
+    result_b, nodes_b = retrieve_document_graph(docid_b)
+
+    result = []
+    found = False
+    for a in result_a:
+        for b in result_b:
+            if a["s"] == b["s"] and a["o"] == b["o"]:
+                found = True
+                break
+            if a["s"] == b["o"] and a["o"] == b["s"]:
+                found = True
+                break
+        if found:
+            result.append(a)
+
+    nodes = set()
+    for r in result:
+        nodes.add(r["s"])
+        nodes.add(r["o"])
+
+    return str(dict(nodes=list(nodes), facts=result))
+
 
 
 def get_document_content(document_id):
     session = SessionExtended.get()
+    document_id = int(document_id.split(',')[0])
 
     doc = (retrieve_narrative_documents_from_database(session, document_ids={document_id},
                                                       document_collection="PubMed")[0])
@@ -78,7 +128,7 @@ app = Flask(__name__)
 
 @app.route("/<document_id>")
 def hello(document_id):
-    return render_template("document.html", document_id=document_id,
+    return render_template("document.html", document_id=int(document_id.split(',')[0]),
                            # escape "
-                           graph=get_document_graph(document_id).replace('\'', 'XXXXX'),
+                           graph=get_document_graph_intersection(document_id).replace('\'', 'XXXXX'),
                            paper=get_document_content(document_id).replace('\'', 'XXXXX'))
