@@ -91,8 +91,8 @@ def get_document_graph_intersection(document_ids):
     result_b, nodes_b = retrieve_document_graph(docid_b)
 
     result = []
-    found = False
     for a in result_a:
+        found = False
         for b in result_b:
             if a["s"] == b["s"] and a["o"] == b["o"]:
                 found = True
