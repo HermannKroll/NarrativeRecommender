@@ -55,7 +55,9 @@ class FSCoreOverlap(FSCore):
             return docs_inter[:FS_DOCUMENT_CUTOFF]
 
         # otherwise fill list with normal core computation
-        docs_with_core_a = self.score_document_ids_with_core(core_a)
+        contained_ids = {d[0] for d in docs_inter}
+        docs_with_core_a = [d for d in self.score_document_ids_with_core(core_a)
+                            if d[0] not in contained_ids]
 
         # rescale list
         docs_inter = [(d[0], d[1] * 0.5 + 0.5) for d in docs_inter]
