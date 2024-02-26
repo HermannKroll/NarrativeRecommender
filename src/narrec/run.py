@@ -85,12 +85,12 @@ def main():
     retriever = DocumentRetriever()
     citation_graph = CitationGraph()
     recommenders = [EqualRecommender(), StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
-    DO_RECOMMENDATION = True
+    DO_RECOMMENDATION = False
 
     for bench in benchmarks:
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
         first_stages = [#PubMedRecommender(bench),
-                        #FSCore(core_extractor, bench),
+                        FSCore(core_extractor, bench),
                         FSCoreOverlap(core_extractor, bench, index_path, retriever)]
                         #FSCorePlusAbstractBM25(core_extractor, bench, index_path),
                         #FSCorePlusTitleBM25(core_extractor, bench, index_path),
