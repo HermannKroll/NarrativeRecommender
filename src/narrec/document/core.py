@@ -48,7 +48,7 @@ class NarrativeCore:
         statements = []
         for a in self.statements:
             found = False
-            for b in self.statements:
+            for b in other.statements:
                 if a.is_equal(b):
                     found = True
                     break
