@@ -94,11 +94,11 @@ class NarrativeCoreExtractor:
 
         core_node_pairs = set()
         # The following algorithm will be design select the highest scored edges between two
-        # concepts because filtered statements are sorted by their score desc
+        # nodes because filtered statements are sorted by their score desc
         # for connected_nodes, size in connected_components:
         core_statements = []
         for statement, score in filtered_statements:
-            # add only the strongest edge between two concepts (could be caused by multiple extractions)
+            # add only the strongest edge between two nodes (could be caused by multiple extractions)
             so = (statement.subject_id, statement.object_id)
             os = (statement.object_id, statement.subject_id)
             # Check whether we already added an edge between s and o or o and s
