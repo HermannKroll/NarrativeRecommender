@@ -16,30 +16,30 @@ from narrec.scoring.edge import score_edge_sentence, score_edge
 
 relish_entry = """
 {
-    "pmid": "22569528",
+  "pmid": "29475924",
     "response": {
         "relevant": [
-            "17928366", "18562239", "19052640", "19060905", "19242111",
-            "19244124", "19414607", "19805545", "19816936", "20079430",
-            "20811985", "22028468", "22177953", "23549785", "23712012",
-            "24089523", "25350931", "26235619", "27376062", "28474232",
-            "29454854"
+            "18427755", "18707817", "19107346", "20564129", "20638188",
+            "22817686", "23138773", "23519358", "23740156", "23740157",
+            "23830191", "23861153", "23871680", "24778060", "25240823",
+            "25275060", "25368288", "25472758", "25854390", "26124381",
+            "26408718", "26637898", "26977000", "27263126", "28061768",
+            "28237400", "29715126", "29715148"
         ],
-        "partial": [],
+        "partial": [
+            "19619958", "22513917", "22528795", "23187817", "23717789",
+            "24488446", "24621620", "24658606", "25061863", "25154301",
+            "25434933", "25434935", "25434941", "25993245", "26625767",
+            "28476824", "28675121"
+        ],
         "irrelevant": [
-            "18280112", "18332145", "18463290", "18665890", "18983981",
-            "19114553", "19282669", "19361221", "19541618", "19583964",
-            "19835659", "20226096", "20674547", "20868520", "21098038",
-            "21102438", "21135229", "21135874", "21144847", "21403838",
-            "21596018", "21730285", "21833774", "22056560", "22065579",
-            "22257058", "22292131", "23560844", "23603816", "23817184",
-            "24113259", "24158441", "24185007", "24434059", "24602610",
-            "26838549", "27226552", "27422819", "28396345"
+            "18596426", "19402900", "20004125", "23053138", "23205789",
+            "23376580", "23563213", "23662828", "24439342", "24923058",
+            "25885321", "26209921", "26539264", "27542716", "29125123"
         ]
     }
 }
 """
-
 
 data = json.loads(relish_entry)
 doc_id = int(data['pmid'])
@@ -58,7 +58,6 @@ corpus = DocumentCorpus(["PubMed"])
 core_extractor = NarrativeCoreExtractor(corpus=corpus)
 citation_graph = CitationGraph()
 
-
 docs = list(retriever.retrieve_narrative_documents_for_collections(doc_ids, ["PubMed"]))
 id2docs = {d.id: d for d in docs}
 # don't recommend the input id
@@ -68,15 +67,13 @@ recommenders = [EqualRecommender(),
                 AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
                 StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
 
-
 rec_doc = id2docs[doc_id]
 
-
 for recommender in recommenders:
-    print('--'*60)
+    print('--' * 60)
     time = datetime.now()
     scored_docs = recommender.recommend_documents(rec_doc, docs, citation_graph=citation_graph)
     scored_docs = [(docid2label[int(d[0])], d[0], round(d[1], 2)) for d in scored_docs]
-    print(f'{recommender.name} ({datetime.now()- time}s):\t{scored_docs}')
-    print('--'*60)
+    print(f'{recommender.name} ({datetime.now() - time}s):\t{scored_docs}')
+    print('--' * 60)
     print()
