@@ -14,11 +14,9 @@ class StatementOverlap(RecommenderBase):
                             citation_graph: CitationGraph) -> [RecommenderDocument]:
         # Compute the cores
         # scores are sorted by their size
-        cores = self.extractor.extract_narrative_core_from_document(doc)
-        if not cores:
+        core = self.extractor.extract_narrative_core_from_document(doc)
+        if not core:
             return [(d.id, 1.0) for d in docs_from]
-
-        core = cores[0]
 
         # Core statements are also sorted by their score
         document_ids_scored = {d.id: 0.0 for d in docs_from}

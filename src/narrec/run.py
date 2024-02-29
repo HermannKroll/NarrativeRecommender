@@ -18,6 +18,8 @@ from narrec.firststage.fscore_overlap import FSCoreOverlap
 from narrec.firststage.fscoreplusabstractbm25 import FSCorePlusAbstractBM25
 from narrec.firststage.fscoreplustitlebm25 import FSCorePlusTitleBM25
 from narrec.firststage.pubmed import PubMedRecommender
+from narrec.recommender.aligned_cores import AlignedCoresRecommender
+from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.jaccard import Jaccard
 from narrec.recommender.jaccard_weighted import JaccardWeighted
@@ -84,17 +86,20 @@ def main():
     core_extractor = NarrativeCoreExtractor(corpus=corpus)
     retriever = DocumentRetriever()
     citation_graph = CitationGraph()
-    recommenders = [EqualRecommender(), StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
-    DO_RECOMMENDATION = False
+    recommenders = [EqualRecommender(),
+                    AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
+                    StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
+    DO_RECOMMENDATION = True
 
     for bench in benchmarks:
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
-        first_stages = [#PubMedRecommender(bench),
-                        FSCore(core_extractor, bench),
-                        FSCoreOverlap(core_extractor, bench, index_path, retriever)]
+        first_stages = [FSCore(core_extractor, bench),
+                        FSCoreOverlap(core_extractor, bench, index_path, retriever),
+                        PubMedRecommender(bench),
+                        BM25Abstract(index_path)]
                         #FSCorePlusAbstractBM25(core_extractor, bench, index_path),
                         #FSCorePlusTitleBM25(core_extractor, bench, index_path),
-                        #BM25Title(index_path), BM25Abstract(index_path), BM25Yake(index_path)]
+                        #BM25Title(index_path),, BM25Yake(index_path)]
 
         for first_stage in first_stages:
 
