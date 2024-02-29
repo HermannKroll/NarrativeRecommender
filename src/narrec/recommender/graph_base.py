@@ -1,3 +1,4 @@
+from narrant.entity.meshontology import MeSHOntology
 from narrec.citation.graph import CitationGraph
 from narrec.document.document import RecommenderDocument
 from narrec.recommender.base import RecommenderBase
@@ -8,17 +9,13 @@ class GraphBase(RecommenderBase):
         super().__init__(name=name)
         self.threshold = threshold
 
-    @staticmethod
-    def ont_path(node_j, node_k):
-        #TODO
-        return 1
 
     def ontological_similarity(self, node_j, node_k):
         op = self.ont_path(node_j, node_k)
         if node_j == node_k:
-            return 1
+            return 1.0
         elif op:
-            return 1 / abs(op)
+            return 1.0 / abs(op)
         else:
             return 0
 

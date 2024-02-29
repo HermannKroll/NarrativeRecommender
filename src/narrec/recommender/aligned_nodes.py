@@ -13,12 +13,10 @@ class AlignedNodesRecommender(GraphBase):
         self.extractor = NarrativeCoreExtractor(corpus=self.corpus)
 
     def node_score(self, node_a, document_i: RecommenderDocument):
-        cores = self.extractor.extract_narrative_core_from_document(document_i)
-        if not cores:
-            return 0
-        core = cores[0]
-        scores = [score_edge(statement, document_i, self.corpus) for statement in core.statements if
-                  statement.subject_id == node_a]
+        core = self.extractor.extract_narrative_core_from_document(document_i)
+        scores = [score_edge(statement.get_triple(), document_i, self.corpus)
+                  for statement in core.statements
+                  if statement.subject_id == node_a]
         avg_score = sum(scores) / len(scores)
         return avg_score
 

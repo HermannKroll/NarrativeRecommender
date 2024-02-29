@@ -16,6 +16,9 @@ class ScoredStatementExtraction(StatementExtraction):
                          sentence_id=stmt.sentence_id, confidence=stmt.confidence)
         self.score = score
 
+    def get_triple(self):
+        return self.subject_id, self.relation, self.object_id
+
     def is_equal(self, other):
         if not isinstance(other, ScoredStatementExtraction):
             return False
