@@ -24,15 +24,14 @@ class AlignedCoresRecommender(GraphBase):
             count_sum = 0
 
             for (node_a2, node_b2) in node_matchings:
-                for edge in candidate.extracted_statements:
-                    if edge.subject_id == node_b1 and edge.object_id == node_b2:
+                for edge in candidate.graph:
+                    if edge[0] == node_b1 and edge[2] == node_b2:
                         osim1 = self.ontological_node_similarity(node_a1, node_b1)
                         osim2 = self.ontological_node_similarity(node_a2, node_b2)
-                        stmt = (edge.subject_id, edge.relation, edge.object_id)
-                        sim_sum += osim1 * osim2 * score_edge(stmt, candidate, self.corpus)
+                        sim_sum += osim1 * osim2 * score_edge(edge, candidate, self.corpus)
                         count_sum += 1
 
             if count_sum > 0:
                 similarity_score += sim_sum / count_sum
 
-        return similarity_score / len(node_matchings)
+        return similarity_score / len(doc.nodes)
