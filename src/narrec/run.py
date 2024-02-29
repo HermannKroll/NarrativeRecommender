@@ -92,6 +92,7 @@ def main():
     DO_RECOMMENDATION = False
 
     for bench in benchmarks:
+        bench.load_benchmark_data()
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
         first_stages = [#FSCore(core_extractor, bench),
                         FSCoreOverlap(core_extractor, bench, index_path, retriever)]

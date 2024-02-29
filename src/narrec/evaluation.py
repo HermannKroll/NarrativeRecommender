@@ -186,6 +186,7 @@ def perform_evaluation(benchmark: Benchmark):
 
 def main():
     for benchmark in BENCHMARKS:
+        benchmark.load_benchmark_data()
         perform_evaluation(benchmark)
 
 if __name__ == '__main__':

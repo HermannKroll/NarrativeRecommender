@@ -32,7 +32,6 @@ class Benchmark:
         self.topic2not_relevant_docs = {}
         self.type = type
 
-        self.load_benchmark_data()
 
     def get_qrel_path(self):
         raise NotImplementedError
