@@ -1,3 +1,4 @@
+from narrant.atc.atc_tree import ATCTree
 from narrant.entity.meshontology import MeSHOntology
 
 
@@ -5,6 +6,7 @@ class Ontology:
 
     def __init__(self):
         self.mesh_ontology = MeSHOntology.instance()
+        self.atc = ATCTree.instance()
 
     @staticmethod
     def prefix_based_distance(a: str, b: str, denominator: str = '.') -> int:
@@ -60,7 +62,7 @@ class Ontology:
             for a_tn in a_tree_nos:
                 for b_tn in b_tree_nos:
                     dis = Ontology.prefix_based_distance(a_tn, b_tn)
-                    if dis > 0:
+                    if dis >= 0:
                         distances.append(dis)
             if len(distances) > 0:
                 # return the minimum ontological distance between a and b
@@ -73,19 +75,45 @@ class Ontology:
             # some descriptor does not have a tree number
             return -1
 
-    def compute_ontological_distance(self, a: str, b: str) -> int:
-        # if they are equal - 1.0
+    def compute_chembl_ontological_distance(self, a: str, b:str) -> int:
+        if not a.startswith('CHEMBL'):
+            return -1
+        if not b.startswith('CHEMBL'):
+            return -1
         if a == b:
-            return 1.0
+            return 0
+
+        distances = []
+        # ensures to always retrieve the final atc classification level (code len = 7)
+        for a_atc in [c for c in self.atc.chembl2atcclass[a] if len(c) == 7]:
+            # atc code : R06AE06 -> R.06.AE.06
+            a_code = f'{a_atc[0]}.{a_atc[1:3]}.{a_atc[3]}.{a_atc[4:]}'
+            for b_atc in [c for c in self.atc.chembl2atcclass[b] if len(c) == 7]:
+                b_code = f'{b_atc[0]}.{b_atc[1:3]}.{b_atc[3]}.{b_atc[4:]}'
+                distance = Ontology.prefix_based_distance(a_code, b_code)
+                if distance >= 0:
+                    distances.append(distance)
+
+        if len(distances) > 0:
+            # return the minimum ontological distance between a and b
+            return min(distances)
+        else:
+            # we did not find any distance -> -1
+            return -1
+
+    def compute_ontological_distance(self, a: str, b: str) -> int:
+        # if they are equal -> 0
+        if a == b:
+            return 0
         # if both mesh descriptors
         if a.startswith('MESH:D') and b.startswith('MESH:D'):
-            return self.ontological_mesh_similarity(a, b)
+            return self.ontological_mesh_distance(a, b)
         # if both are chembl ids
         if a.startswith('CHEMBL') and b.startswith('CHEMBL'):
-            return 0.0
+            return self.compute_chembl_ontological_distance(a, b)
 
         # TODO
-        return 1
+        return -1
 
 
 def main():

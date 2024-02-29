@@ -30,3 +30,18 @@ class OntologyTests(unittest.TestCase):
 
         for a, b, goal in tests:
             self.assertEqual(goal, self.ontology.ontological_mesh_distance(a, b))
+
+    def test_chembl_prefix_based_distance(self):
+        tests = [("R.06.AE.06", "R.06.AE.07", 2),
+                 ("R.06.AE.06", "R.06.AE", 1),
+                 ("R.06.AE.06", "R.06", 2),
+                 ("R.06.AE.06", "D01", -1),
+                 ("A.01.AA.01", "A.02.AA.01", 6)]
+        for a, b, goal in tests:
+            self.assertEqual(goal, Ontology.prefix_based_distance(a, b))
+
+    def test_chembl_based_distance(self):
+        tests = [("CHEMBL1528", "CHEMBL2106575", 2),
+                 ("CHEMBL1528", "CHEMBL1200736", 6)]
+        for a, b, goal in tests:
+            self.assertEqual(goal, self.ontology.compute_chembl_ontological_distance(a, b))
