@@ -28,8 +28,8 @@ class GraphBase(RecommenderBase):
 
     def node_candidates(self, document_i: RecommenderDocument, document_k: RecommenderDocument):
         candidates = []
-        nodes_i = document_i.concepts
-        nodes_k = document_k.concepts
+        nodes_i = document_i.nodes
+        nodes_k = document_k.nodes
 
         for node_a in nodes_i:
             for node_b in nodes_k:

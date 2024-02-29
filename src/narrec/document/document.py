@@ -17,7 +17,7 @@ class RecommenderDocument(NarrativeDocument):
         self.spo2sentences = dict()
         self.sentence2spo = dict()
         self.graph = set()
-        self.concepts = set()
+        self.nodes = set()
 
         if self.extracted_statements:
             for statement in self.extracted_statements:
@@ -37,7 +37,7 @@ class RecommenderDocument(NarrativeDocument):
                     self.spo2sentences[spo].add(statement.sentence_id)
 
                 self.graph.add(spo)
-                self.concepts.add(statement.subject_id)
-                self.concepts.add(statement.object_id)
+                self.nodes.add(statement.subject_id)
+                self.nodes.add(statement.object_id)
 
             self.max_statement_frequency = max(self.spo2frequency.values())
