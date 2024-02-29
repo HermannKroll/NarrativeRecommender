@@ -89,14 +89,14 @@ def main():
     recommenders = [EqualRecommender(),
                     AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
                     StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
-    DO_RECOMMENDATION = True
+    DO_RECOMMENDATION = False
 
     for bench in benchmarks:
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
-        first_stages = [FSCore(core_extractor, bench),
-                        FSCoreOverlap(core_extractor, bench, index_path, retriever),
-                        PubMedRecommender(bench),
-                        BM25Abstract(index_path)]
+        first_stages = [#FSCore(core_extractor, bench),
+                        FSCoreOverlap(core_extractor, bench, index_path, retriever)]
+                      #  PubMedRecommender(bench),
+                     #   BM25Abstract(index_path)]
                         #FSCorePlusAbstractBM25(core_extractor, bench, index_path),
                         #FSCorePlusTitleBM25(core_extractor, bench, index_path),
                         #BM25Title(index_path),, BM25Yake(index_path)]
