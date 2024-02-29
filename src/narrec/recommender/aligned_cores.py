@@ -7,7 +7,7 @@ from narrec.document.document import RecommenderDocument
 
 class AlignedCoresRecommender(GraphBase):
     def __init__(self, threshold, corpus: DocumentCorpus):
-        super().__init__(threshold)
+        super().__init__(threshold, name="AlignedCoresRecommender")
         self.corpus = corpus
 
     def compute_document_score(self, doc: RecommenderDocument, candidate: RecommenderDocument,

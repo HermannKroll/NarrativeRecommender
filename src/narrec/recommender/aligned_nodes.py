@@ -8,7 +8,7 @@ from narrec.document.document import RecommenderDocument
 
 class AlignedNodesRecommender(GraphBase):
     def __init__(self, threshold, corpus: DocumentCorpus):
-        super().__init__(threshold)
+        super().__init__(threshold, name="AlignedNodesRecommender")
         self.corpus = corpus
         self.extractor = NarrativeCoreExtractor(corpus=self.corpus)
 
