@@ -5,13 +5,13 @@ from narrec.benchmark.relishdrug import RelishDrugBenchmark
 
 FIRST_STAGES = [
    # "BM25Title",
-   # "BM25Abstract",
+    "BM25Abstract",
    # "BM25Yake",
     "FSCore",
     "FSCoreOverlap"
    # "FSCorePlusAbstractBM25",
    # "FSCorePlusTitleBM25",
-   # "PubMedRecommender"
+    "PubMedRecommender"
 ]
 
 RECOMMENDER_NAMES = [
@@ -23,9 +23,9 @@ RECOMMENDER_NAMES = [
 
 BENCHMARKS = [
     PM2020Benchmark(),
-    Genomics2005(),
-    RelishBenchmark(),
-    RelishDrugBenchmark()
+ #   Genomics2005(),
+ #   RelishBenchmark(),
+ #   RelishDrugBenchmark()
 
 ]
 
