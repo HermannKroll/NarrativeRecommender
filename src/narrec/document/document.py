@@ -18,6 +18,7 @@ class RecommenderDocument(NarrativeDocument):
         self.sentence2spo = dict()
         self.graph = set()
         self.nodes = set()
+        self.concept2frequency = dict()
 
         if self.extracted_statements:
             for statement in self.extracted_statements:
@@ -35,6 +36,12 @@ class RecommenderDocument(NarrativeDocument):
                 else:
                     self.spo2frequency[spo] += 1
                     self.spo2sentences[spo].add(statement.sentence_id)
+
+                for concept in [statement.subject_id, statement.object_id]:
+                    if concept in self.concept2frequency:
+                        self.concept2frequency[concept] += 1
+                    else:
+                        self.concept2frequency[concept] = 1
 
                 self.graph.add(spo)
                 self.nodes.add(statement.subject_id)
