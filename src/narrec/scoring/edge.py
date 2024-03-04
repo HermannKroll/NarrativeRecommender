@@ -20,6 +20,15 @@ def score_edge_tfidf(statement: tuple, document: RecommenderDocument, corpus: Do
 
     return tfidf
 
+def score_edge_tfidf_sentences(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
+    assert len(statement) == 3
+
+    tf = len(document.spo2sentences[statement]) / document.max_statement_frequency
+    idf = corpus.get_idf_score(statement)
+    tfidf = tf * idf
+
+    return tfidf
+
 
 def score_edge(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
     assert len(statement) == 3
@@ -33,6 +42,27 @@ def score_edge(statement: tuple, document: RecommenderDocument, corpus: Document
 
     assert 0.0 <= tfidf <= 1.0
     return 0.5 * confidence + 0.5 * tfidf
+
+
+def score_edge_sentences(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
+    assert len(statement) == 3
+
+
+    confidence = max(document.spo2confidences[statement])
+    assert 0.0 <= confidence <= 1.0
+
+    tf = len(document.spo2sentences[statement]) / document.max_statement_frequency
+    idf_s = corpus.get_concept_ifd_score(statement[0])
+    idf_o = corpus.get_concept_ifd_score(statement[2])
+   # idf_statement = corpus.get_idf_score(statement)
+
+    tfidf = tf * ((idf_s + idf_o) * 0.5)
+
+  # assert 0.0 <= tf <= 1.0
+
+    return 0.2 * confidence + 0.8 * tfidf
+
+
 
 
 def score_edge_sentence(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
