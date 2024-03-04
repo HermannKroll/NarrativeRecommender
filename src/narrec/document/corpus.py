@@ -5,6 +5,7 @@ import math
 from kgextractiontoolbox.backend.models import Document
 from narraint.backend.database import SessionExtended
 from narraint.backend.models import PredicationInvertedIndex, TagInvertedIndex
+from narrant.cleaning.pharmaceutical_vocabulary import SYMMETRIC_PREDICATES
 
 
 class DocumentCorpus:
@@ -36,7 +37,7 @@ class DocumentCorpus:
     def get_document_count(self):
         return self.document_count
 
-    def get_statement_documents(self, statement: tuple):
+    def _get_statement_documents_without_symmetric(self, statement: tuple):
         # number of documents which support the statement
         if statement in self.cache_statement2count:
             return self.cache_statement2count[statement]
@@ -51,10 +52,17 @@ class DocumentCorpus:
         for row in q:
             support += row.support
 
-        if support == 0:
-            raise ValueError(f'no support found in DB for: {statement}')
-
         self.cache_statement2count[statement] = support
+        return support
+
+    def get_statement_documents(self, statement: tuple):
+        if statement[1] in SYMMETRIC_PREDICATES:
+            support = (self._get_statement_documents_without_symmetric(statement) +
+                       self._get_statement_documents_without_symmetric((statement[2], statement[1], statement[0])))
+        else:
+            support = self._get_statement_documents_without_symmetric(statement)
+
+        assert support > 0
         return support
 
     def get_concept_support(self, entity_id):
