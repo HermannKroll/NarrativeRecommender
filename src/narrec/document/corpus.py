@@ -4,7 +4,7 @@ import math
 
 from kgextractiontoolbox.backend.models import Document
 from narraint.backend.database import SessionExtended
-from narraint.backend.models import PredicationInvertedIndex
+from narraint.backend.models import PredicationInvertedIndex, TagInvertedIndex
 
 
 class DocumentCorpus:
@@ -23,10 +23,15 @@ class DocumentCorpus:
 
         logging.info(f'{self.document_count} documents in corpus')
         self.cache_statement2count = dict()
+        self.cache_concept2support = dict()
+
 
     def get_idf_score(self, statement: tuple):
         # Introduce normalization here
         return math.log(self.get_document_count() / self.get_statement_documents(statement)) / math.log(self.document_count)
+
+    def get_concept_ifd_score(self, entity_id: str):
+        return math.log(self.get_document_count() / self.get_concept_support(entity_id))
 
     def get_document_count(self):
         return self.document_count
@@ -50,4 +55,19 @@ class DocumentCorpus:
             raise ValueError(f'no support found in DB for: {statement}')
 
         self.cache_statement2count[statement] = support
+        return support
+
+    def get_concept_support(self, entity_id):
+        if entity_id in self.cache_concept2support:
+            return self.cache_concept2support[entity_id]
+
+        session = SessionExtended.get()
+        q = session.query(TagInvertedIndex.support)
+        q = q.filter(TagInvertedIndex.entity_id == entity_id)
+        support = 0
+        for row in q:
+            support += row.support
+
+        self.cache_concept2support[entity_id] = support
+        assert support > 0
         return support
