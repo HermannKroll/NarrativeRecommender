@@ -3,7 +3,7 @@ from typing import List
 from kgextractiontoolbox.document.narrative_document import StatementExtraction
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.scoring.edge import score_edge
+from narrec.scoring.edge import score_edge, score_edge_sentences
 from narrec.run_config import NARRATIVE_CORE_THRESHOLD
 
 
@@ -40,6 +40,10 @@ class NarrativeCore:
         self.statements = statements
         self.statements.sort(key=lambda x: x.score, reverse=True)
         self.size = len(statements)
+        self.graph = {(s.subject_id, s.relation, s.object_id) for s in self.statements}
+
+    def contains_statement(self, spo)-> bool:
+        return spo in self.graph
 
     def intersect(self, other):
         if not isinstance(other, NarrativeCore):
@@ -70,13 +74,13 @@ class NarrativeCoreExtractor:
         s_scores = []
         for statement in document.extracted_statements:
             spo = (statement.subject_id, statement.relation, statement.object_id)
-            s_score = score_edge(spo, document, self.corpus)
+            s_score = score_edge_sentences(spo, document, self.corpus)
             s_scores.append(s_score)
             filtered_statements.append((statement, s_score))
 
         # Only tak statements that have a score above the average score
-        avg_score = sum(s_scores) / len(s_scores)
-        filtered_statements = [fs for fs in filtered_statements if fs[1] >= avg_score]
+      #  avg_score = sum(s_scores) / len(s_scores)
+      #  filtered_statements = [fs for fs in filtered_statements if fs[1] >= avg_score]
 
         # sort filtered statements by score
         filtered_statements.sort(key=lambda x: x[1], reverse=True)
