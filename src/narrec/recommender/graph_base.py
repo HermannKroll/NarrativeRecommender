@@ -1,4 +1,3 @@
-from narrant.entity.meshontology import MeSHOntology
 from narrec.citation.graph import CitationGraph
 from narrec.document.document import RecommenderDocument
 from narrec.ontology.ontology import Ontology
@@ -23,7 +22,7 @@ class GraphBase(RecommenderBase):
         elif distance == -1:
             return 0.0
         else:
-        # compute similarity
+            # compute similarity
             return 1.0 / distance
 
     def node_candidates(self, document_i: RecommenderDocument, document_k: RecommenderDocument):

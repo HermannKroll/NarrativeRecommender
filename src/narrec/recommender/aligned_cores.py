@@ -1,9 +1,9 @@
 from narrec.citation.graph import CitationGraph
 from narrec.document.corpus import DocumentCorpus
+from narrec.document.document import RecommenderDocument
 from narrec.recommender.graph_base import GraphBase
 from narrec.run_config import NODE_SIMILARITY_THRESHOLD
-from narrec.scoring.edge import score_edge
-from narrec.document.document import RecommenderDocument
+from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
 class AlignedCoresRecommender(GraphBase):
@@ -28,7 +28,7 @@ class AlignedCoresRecommender(GraphBase):
                     if edge[0] == node_b1 and edge[2] == node_b2:
                         osim1 = self.ontological_node_similarity(node_a1, node_b1)
                         osim2 = self.ontological_node_similarity(node_a2, node_b2)
-                        sim_sum += osim1 * osim2 * score_edge(edge, candidate, self.corpus)
+                        sim_sum += osim1 * osim2 * score_edge_by_tf_and_concept_idf(edge, candidate, self.corpus)
                         count_sum += 1
 
             if count_sum > 0:

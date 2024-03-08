@@ -1,4 +1,3 @@
-import itertools
 import logging
 
 from flask import Flask, render_template
@@ -10,8 +9,9 @@ from narrant.entity.entityresolver import EntityResolver
 from narrec.backend.retriever import DocumentRetriever
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
-from narrec.scoring.edge import score_edge, score_edge_sentence, score_edge_connectivity, score_edge_confidence, \
-    score_edge_tfidf, score_edge_tfidf_sentences, score_edge_sentences
+from narrec.document.document import RecommenderDocument
+from narrec.scoring.edge import score_edge_connectivity, score_edge_confidence, \
+    score_edge_tfidf_sentences, score_edge_by_tf_and_concept_idf
 
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                     datefmt='%Y-%m-%d:%H:%M:%S',
@@ -25,18 +25,20 @@ core_extractor = NarrativeCoreExtractor(corpus=corpus)
 SCORE_FUNCTIONS = [
     ("confidence", score_edge_confidence),
     ("tfidfsentences", score_edge_tfidf_sentences),
-    ("final", score_edge_sentences),
- #   ("tfidf+conf", score_edge),
- #   ("tfidf+conf+sentence", score_edge_sentence),
+    ("final", score_edge_by_tf_and_concept_idf),
+    #   ("tfidf+conf", score_edge),
+    #   ("tfidf+conf+sentence", score_edge_sentence),
     ("connectivity", score_edge_connectivity)
 ]
+
 
 def retrieve_document_graph(document_id):
     session = SessionExtended.get()
     query = session.query(Predication)
     query = query.filter(Predication.document_collection == "PubMed")
     query = query.filter(Predication.document_id == document_id)
-    query = query.filter(Predication.relation.isnot(None))
+    query = query.filter(Predication.relation != None)
+    query = query.filter(Predication.subject_type != Predication.object_type)
     facts = set()
     nodes = set()
 
@@ -70,34 +72,36 @@ def retrieve_document_graph(document_id):
         except Exception:
             pass
 
-    for n1, n2 in itertools.product(nodes, nodes):
-        key = (n1[1], "associated", n2[1])
-        if key in facts:
-            continue
-
-        facts.add(key)
-        scores = {}
-        for name, score_function in SCORE_FUNCTIONS:
-            edge = (n1[1], "associated", n2[1])
-            scores[name] = round(score_function(edge, doc, corpus), 2)
-
-        result.append(dict(s=n1[0], p="associated", o=n2[0], scores=scores))
-
+    # for n1, n2 in itertools.product(nodes, nodes):
+    #     key = (n1[1], "associated", n2[1])
+    #     if key in facts:
+    #         continue
+    #
+    #     facts.add(key)
+    #     scores = {}
+    #     for name, score_function in SCORE_FUNCTIONS:
+    #         edge = (n1[1], "associated", n2[1])
+    #         scores[name] = round(score_function(edge, doc, corpus), 2)
+    #
+    #     result.append(dict(s=n1[0], p="associated", o=n2[0], scores=scores))
 
     session.remove()
     print(f'Querying document graph for document id: {document_id} - {len(facts)} facts found')
 
     # Apply filter
- #   scores = [res["scores"]["tfidf+conf"] for res in result]
- #   print(scores)
- #   avg_score = sum(scores) / len(scores)
-   # result = [r for r in result if r["scores"]["tfidf+conf"] >= avg_score]
+    result.sort(key=lambda x: x["scores"]["final"], reverse=True)
+    result = result[:10]
+    #   scores = [res["scores"]["tfidf+conf"] for res in result]
+    #   print(scores)
+    #   avg_score = sum(scores) / len(scores)
+    # result = [r for r in result if r["scores"]["tfidf+conf"] >= avg_score]
     nodes = set()
     for r in result:
         nodes.add(r["s"])
         nodes.add(r["o"])
 
     return result, nodes
+
 
 def get_document_graph(document_id):
     document_id = int(document_id)
@@ -135,13 +139,13 @@ def get_document_graph_intersection(document_ids):
     return str(dict(nodes=list(nodes), facts=result))
 
 
-
 def get_document_content(document_id):
     session = SessionExtended.get()
     document_id = document_id
 
     doc = (retrieve_narrative_documents_from_database(session, document_ids={document_id},
                                                       document_collection="PubMed")[0])
+    doc = RecommenderDocument(doc)
     doc.title = doc.title.replace('\'', ' ')
     doc.abstract = doc.abstract.replace('\'', ' ')
     return str(doc.to_dict())

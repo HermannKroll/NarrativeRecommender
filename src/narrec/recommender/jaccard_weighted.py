@@ -1,8 +1,8 @@
 from narrec.citation.graph import CitationGraph
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.scoring.edge import score_edge
 from narrec.recommender.base import RecommenderBase
+from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
 class JaccardWeighted(RecommenderBase):
@@ -25,18 +25,18 @@ class JaccardWeighted(RecommenderBase):
 
         # Score each edge by its mean between the edge score of both documents
         # It is sure that the edge belongs to both documents
-        score_inter = sum([(0.5 * (score_edge(spo, doc, self.corpus)
-                                   + score_edge(spo, candidate, self.corpus)))
+        score_inter = sum([(0.5 * (score_edge_by_tf_and_concept_idf(spo, doc, self.corpus)
+                                   + score_edge_by_tf_and_concept_idf(spo, candidate, self.corpus)))
                            for spo in graph_inter])
 
-        score_union = sum([(0.5 * (score_edge(spo, doc, self.corpus)
-                                   + score_edge(spo, candidate, self.corpus)))
+        score_union = sum([(0.5 * (score_edge_by_tf_and_concept_idf(spo, doc, self.corpus)
+                                   + score_edge_by_tf_and_concept_idf(spo, candidate, self.corpus)))
                            for spo in graph_union
                            if spo in doc.graph and spo in candidate.graph])
 
-        score_union += sum(score_edge(spo, doc, self.corpus) for spo in graph_union
+        score_union += sum(score_edge_by_tf_and_concept_idf(spo, doc, self.corpus) for spo in graph_union
                            if spo in doc.graph and spo not in graph_inter)
-        score_union += sum(score_edge(spo, candidate, self.corpus) for spo in graph_union
+        score_union += sum(score_edge_by_tf_and_concept_idf(spo, candidate, self.corpus) for spo in graph_union
                            if spo in candidate.graph and spo not in graph_inter)
 
         if score_union == 0.0:

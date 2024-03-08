@@ -1,10 +1,10 @@
 from narrec.citation.graph import CitationGraph
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
+from narrec.document.document import RecommenderDocument
 from narrec.recommender.graph_base import GraphBase
 from narrec.run_config import NODE_SIMILARITY_THRESHOLD
-from narrec.scoring.edge import score_edge
-from narrec.document.document import RecommenderDocument
+from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
 class AlignedNodesRecommender(GraphBase):
@@ -15,7 +15,7 @@ class AlignedNodesRecommender(GraphBase):
 
     def node_score(self, node, document_i: RecommenderDocument):
         core = self.extractor.extract_narrative_core_from_document(document_i)
-        scores = [score_edge(statement.get_triple(), document_i, self.corpus)
+        scores = [score_edge_by_tf_and_concept_idf(statement.get_triple(), document_i, self.corpus)
                   for statement in core.statements
                   if statement.subject_id == node or statement.object_id == node]
         if len(scores) == 0:
