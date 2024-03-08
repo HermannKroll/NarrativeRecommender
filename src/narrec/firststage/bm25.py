@@ -13,13 +13,14 @@ class BM25Base(FirstStageBase):
         if not pt.started():
             pt.init()
         self.index = pt.IndexFactory.of(index_path, memory=True)
-        self.translator = str.maketrans("", "", string.punctuation)
+
+    def filter_query_string(self, query):
+        return "".join([x if x.isalnum() else " " for x in query])
 
     def do_bm25_retrieval(self, query: str):
         # Replace punctuation
-        query = query.translate(self.translator)
         bm25 = pt.BatchRetrieve(self.index, wmodel="BM25")
-        rtr = bm25.search(query)
+        rtr = bm25.search(self.filter_query_string(query))
         scored_docs = []
 
         for index, row in rtr.iterrows():
