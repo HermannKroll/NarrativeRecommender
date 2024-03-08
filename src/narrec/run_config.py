@@ -25,12 +25,13 @@ BENCHMARKS = [
     PM2020Benchmark(),
  #   Genomics2005(),
  #   RelishBenchmark(),
- #   RelishDrugBenchmark()
+    RelishDrugBenchmark()
 
 ]
 
 CONFIDENCE_WEIGHT = 0.5
 TFIDF_WEIGHT = 0.5
+CORE_TOP_K = 10
 
 assert CONFIDENCE_WEIGHT + TFIDF_WEIGHT == 1.0
 
