@@ -44,7 +44,7 @@ def score_edge(statement: tuple, document: RecommenderDocument, corpus: Document
     return 0.5 * confidence + 0.5 * tfidf
 
 
-def score_edge_sentences(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
+def score_edge_by_tf_and_concept_idf(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
     assert len(statement) == 3
 
 
