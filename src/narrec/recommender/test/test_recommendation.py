@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 
-from narrant.entity.entityresolver import EntityResolver
 from narrec.backend.retriever import DocumentRetriever
 from narrec.citation.graph import CitationGraph
 from narrec.document.core import NarrativeCoreExtractor
@@ -12,19 +11,31 @@ from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.jaccard import Jaccard
 from narrec.recommender.jaccard_weighted import JaccardWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
-from narrec.scoring.edge import score_edge_sentence, score_edge
 
 relish_entry = """
 {
-  "pmid": "27122312",
-    "response": {
-        "relevant": [
-            "23639470", "24091716", "24598368"
-        ],
-        "irrelevant": [
-            "24561820", "23927970", "23558901"
-        ]
-    }
+  "pmid": "21397062",
+        "response": {
+            "relevant": [
+                "18818955", "20147368", "20625291", "21191290", "21983221",
+                "22399287", "23027747", "23201160", "24339795", "24699222",
+                "24706765", "24966690", "25184538", "25540137", "25589264",
+                "26446763", "27068403", "27219040", "27234911", "27899452",
+                "27906866", "28033128", "29686978", "29793662"
+            ],
+            "partial": [
+                "18385471", "18448590", "18949482", "19307729", "19348045",
+                "19389850", "19780717", "19812536", "19903818", "20081299",
+                "20511716", "20616717", "21130072", "21791920", "21848011",
+                "23301036", "23636770", "23661805", "23689795", "23942199",
+                "24100128", "24204001", "24965791", "29791908"
+            ],
+            "irrelevant": [
+                "18667602", "19289823", "20924400", "21170879", "21468194",
+                "22338089", "24715567", "24797667", "27129733", "29072386",
+                "29102372", "29393102"
+            ]
+        }
 }
 """
 
