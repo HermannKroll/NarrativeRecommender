@@ -76,6 +76,8 @@ class DocumentCorpus:
         for row in q:
             support += row.support
 
+        if support == 0:
+            support = 1
+
         self.cache_concept2support[entity_id] = support
-        assert support > 0
         return support
