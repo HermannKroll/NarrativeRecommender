@@ -3,8 +3,8 @@ from typing import List
 from kgextractiontoolbox.document.narrative_document import StatementExtraction
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.scoring.edge import score_edge, score_edge_sentences
-from narrec.run_config import NARRATIVE_CORE_THRESHOLD
+from narrec.scoring.edge import score_edge, score_edge_by_tf_and_concept_idf
+from narrec.run_config import NARRATIVE_CORE_THRESHOLD, CORE_TOP_K
 
 
 class ScoredStatementExtraction(StatementExtraction):
@@ -74,7 +74,8 @@ class NarrativeCoreExtractor:
         s_scores = []
         for statement in document.extracted_statements:
             spo = (statement.subject_id, statement.relation, statement.object_id)
-            s_score = score_edge_sentences(spo, document, self.corpus)
+
+            s_score = score_edge_by_tf_and_concept_idf(spo, document, self.corpus)
             s_scores.append(s_score)
             filtered_statements.append((statement, s_score))
 
@@ -84,6 +85,9 @@ class NarrativeCoreExtractor:
 
         # sort filtered statements by score
         filtered_statements.sort(key=lambda x: x[1], reverse=True)
+
+        # take top-k
+        filtered_statements = filtered_statements[:CORE_TOP_K]
 
         if not filtered_statements:
             return None
