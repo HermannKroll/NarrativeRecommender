@@ -11,12 +11,8 @@ from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.base import FirstStageBase
 from narrec.firststage.bm25abstract import BM25Abstract
-from narrec.firststage.bm25title import BM25Title
-from narrec.firststage.bm25yake import BM25Yake
 from narrec.firststage.fscore import FSCore
 from narrec.firststage.fscore_overlap import FSCoreOverlap
-from narrec.firststage.fscoreplusabstractbm25 import FSCorePlusAbstractBM25
-from narrec.firststage.fscoreplustitlebm25 import FSCorePlusTitleBM25
 from narrec.firststage.perfect import Perfect
 from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
@@ -96,15 +92,14 @@ def main():
     for bench in benchmarks:
         bench.load_benchmark_data()
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
-        first_stages = [Perfect(bench)]
-        # first_stages = [FSCore(core_extractor, bench),
-        #                 FSCoreOverlap(core_extractor, bench, index_path, retriever),
-        #                 PubMedRecommender(bench),
-        #                 BM25Abstract(index_path),
-        #                 Perfect(bench)]
-                        #FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-                        #FSCorePlusTitleBM25(core_extractor, bench, index_path),
-                        #BM25Title(index_path),, BM25Yake(index_path)]
+        first_stages = [FSCore(core_extractor, bench),
+                        FSCoreOverlap(core_extractor, bench, index_path, retriever),
+                        PubMedRecommender(bench),
+                        BM25Abstract(index_path),
+                        Perfect(bench)]
+        # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
+        # FSCorePlusTitleBM25(core_extractor, bench, index_path),
+        # BM25Title(index_path),, BM25Yake(index_path)]
 
         for first_stage in first_stages:
 
