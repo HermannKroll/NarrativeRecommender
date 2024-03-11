@@ -32,7 +32,6 @@ class Benchmark:
         self.topic2not_relevant_docs = {}
         self.type = type
 
-
     def get_qrel_path(self):
         raise NotImplementedError
 
@@ -91,6 +90,23 @@ class IRBenchmark(Benchmark):
     def get_query_id_from_doc_query_key(doc_query_key: str) -> int:
         # Take everything between Q and D
         return int(doc_query_key.split('D')[0][1:])
+
+    def load_benchmark_data(self):
+        # extend the dictionaries by own query doc keys (composed out of topic + input doc)
+        # will not overwrite existing keys
+        for querydockey, doc_id in self.iterate_over_document_entries():
+            assert querydockey not in self.topic2relevant_docs
+            assert querydockey not in self.topic2partially_relevant_docs
+            assert querydockey not in self.topic2not_relevant_docs
+
+            q_id = IRBenchmark.get_query_id_from_doc_query_key(querydockey)
+            self.topic2relevant_docs[querydockey] = {rel_id for rel_id in self.topic2relevant_docs[q_id]
+                                                     if rel_id != doc_id}
+            self.topic2partially_relevant_docs[querydockey] = {rel_id
+                                                               for rel_id in self.topic2partially_relevant_docs[q_id]
+                                                               if rel_id != doc_id}
+            self.topic2not_relevant_docs[querydockey] = {rel_id for rel_id in self.topic2not_relevant_docs[q_id]
+                                                         if rel_id != doc_id}
 
     def get_qrel_path(self):
         path = os.path.join(BENCHMKARK_QRELS_DIR, f'{self.name}_qrels.txt')

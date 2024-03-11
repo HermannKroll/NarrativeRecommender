@@ -89,6 +89,9 @@ class PM2020Benchmark(IRBenchmark):
         self.topics = PrecMed2020Topic.parse_topics()
         self.topics = [t for t in self.topics if t.query_id in eval_topics]
 
+        # will extend the topic dictionaries
+        super().load_benchmark_data()
+
     def __str__(self):
         return f'<{self.name}>'
 

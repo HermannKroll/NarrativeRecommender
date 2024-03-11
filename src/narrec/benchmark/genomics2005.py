@@ -66,6 +66,8 @@ class Genomics2005(IRBenchmark):
         self.topics = TrecGen2005Topic.parse_topics()
         self.topics = [t for t in self.topics if t.query_id in eval_topics]
 
+        # will extend the topic dictionaries
+        super().load_benchmark_data()
 
 def main():
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
