@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import List
 
 import matplotlib.pyplot as plt
+import numpy
 import pandas as pd
 import pytrec_eval
 
@@ -86,6 +87,12 @@ def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, rele
                 if r_q_id not in topic2score:
                     topic2score[r_q_id] = []
                 topic2score[r_q_id].append(s)
+
+            for t, scores in topic2score.items():
+                mean = sum(scores) / len(scores)
+                std_dev = numpy.std(scores)
+
+                #print(f'{name}\t{measure}\t{t}\t: {round(mean, 2)} +/- {round(std_dev, 2)} (no. of docs: {len(scores)})')
 
             # average the scores per topic
             topic2score = {t: sum(scores) / len(scores) for t, scores in topic2score.items()}
