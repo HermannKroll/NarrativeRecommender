@@ -1,5 +1,5 @@
 from narraint.backend.database import SessionExtended
-from narrec.benchmark.benchmark import Benchmark, BenchmarkMode
+from narrec.benchmark.benchmark import Benchmark, BenchmarkMode, BenchmarkType
 from narrec.document.document import RecommenderDocument
 from narrec.firststage.base import FirstStageBase
 
@@ -12,8 +12,11 @@ class Perfect(FirstStageBase):
         self.session = SessionExtended.get()
 
     def retrieve_documents_for(self, document: RecommenderDocument):
-        rel, irr = self.benchmark.get_evaluation_data_for_topic(self.topic_idx,
-                                                                mode=BenchmarkMode.RELEVANT_PARTIAL_VS_IRRELEVANT)
+        key = self.topic_idx
+        if self.benchmark.type == BenchmarkType.REC_BENCHMARK:
+            key = (self.topic_idx, document.id)
+
+        rel, irr = self.benchmark.get_evaluation_data_for_topic(key, mode=BenchmarkMode.RELEVANT_PARTIAL_VS_IRRELEVANT)
         docs = set()
         docs.update(rel)
         docs.update(irr)
