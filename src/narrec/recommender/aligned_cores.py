@@ -7,8 +7,8 @@ from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
 class AlignedCoresRecommender(GraphBase):
-    def __init__(self, corpus: DocumentCorpus, threshold=NODE_SIMILARITY_THRESHOLD):
-        super().__init__(threshold, name="AlignedCoresRecommender")
+    def __init__(self, corpus: DocumentCorpus, name="AlignedCoresRecommender", threshold=NODE_SIMILARITY_THRESHOLD):
+        super().__init__(threshold, name=name)
         self.corpus = corpus
 
     def compute_document_score(self, doc: RecommenderDocument, candidate: RecommenderDocument,

@@ -16,7 +16,9 @@ from narrec.firststage.fscore_overlap import FSCoreOverlap
 from narrec.firststage.perfect import Perfect
 from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
+from narrec.recommender.aligned_cores_fallback import AlignedCoresFallbackRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
+from narrec.recommender.aligned_nodes_fallback import AlignedNodesFallbackRecommender
 from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.jaccard import Jaccard
 from narrec.recommender.jaccard_weighted import JaccardWeighted
@@ -84,9 +86,10 @@ def main():
     core_extractor = NarrativeCoreExtractor(corpus=corpus)
     retriever = DocumentRetriever()
     citation_graph = CitationGraph()
-    recommenders = [EqualRecommender(),
-                    AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
-                    StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
+    recommenders = [AlignedCoresFallbackRecommender(corpus),
+                    AlignedNodesFallbackRecommender(corpus)]#EqualRecommender(),
+                    #AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
+                    #StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
     DO_RECOMMENDATION = True
 
     for bench in benchmarks:
@@ -110,6 +113,8 @@ def main():
             # next load the documents for this first stage
             print(f'Loading first stage runfile: {fs_path}')
             fs_docs = load_document_ids_from_runfile(fs_path)
+            fs_topic2doc2scores = {t: {doc: score for doc, score in pair}
+                                   for t, pair in fs_docs.items()}
 
             recommender2result_lines = dict()
 
@@ -126,6 +131,10 @@ def main():
                     retrieved_doc_ids = [d[0] for d in retrieved_docs]
                     documents = retriever.retrieve_narrative_documents(retrieved_doc_ids,
                                                                        GLOBAL_DB_DOCUMENT_COLLECTION)
+                    # set first stage scores in documents
+                    for doc in documents:
+                        # get scores
+                        doc.set_first_stage_score(fs_topic2doc2scores[topicid][doc.id])
 
                     # only apply recommender if first stage returned a result
                     if len(documents) > 0:

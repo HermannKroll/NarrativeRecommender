@@ -11,6 +11,7 @@ class RecommenderDocument(NarrativeDocument):
                          metadata=nd.metadata, tags=nd.tags, sentences=nd.sentences,
                          extracted_statements=nd.extracted_statements)
 
+        self.first_stage_score = None
         self.extracted_statements = [s for s in self.extracted_statements if s.relation]
         self.extracted_statements = [s for s in self.extracted_statements if s.subject_type != s.object_type]
 
@@ -56,3 +57,7 @@ class RecommenderDocument(NarrativeDocument):
                     self.nodes.add(statement.object_id)
 
             self.max_statement_frequency = max(self.spo2frequency.values())
+
+
+    def set_first_stage_score(self, score):
+        self.first_stage_score = score

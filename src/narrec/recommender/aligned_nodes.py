@@ -8,8 +8,8 @@ from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
 class AlignedNodesRecommender(GraphBase):
-    def __init__(self, corpus: DocumentCorpus, threshold=NODE_SIMILARITY_THRESHOLD):
-        super().__init__(threshold, name="AlignedNodesRecommender")
+    def __init__(self, corpus: DocumentCorpus, name="AlignedNodesRecommender", threshold=NODE_SIMILARITY_THRESHOLD):
+        super().__init__(threshold, name=name)
         self.corpus = corpus
         self.extractor = NarrativeCoreExtractor(corpus=self.corpus)
 
