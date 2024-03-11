@@ -17,6 +17,7 @@ from narrec.firststage.fscore import FSCore
 from narrec.firststage.fscore_overlap import FSCoreOverlap
 from narrec.firststage.fscoreplusabstractbm25 import FSCorePlusAbstractBM25
 from narrec.firststage.fscoreplustitlebm25 import FSCorePlusTitleBM25
+from narrec.firststage.perfect import Perfect
 from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
@@ -64,6 +65,7 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
     for q_idx, doc_id in tqdm(doc_queries, total=len(doc_queries)):
         try:
             input_doc = docid2docs[int(doc_id)]
+            first_stage.set_current_topic(q_idx)
             retrieved_docs = first_stage.retrieve_documents_for(input_doc)
 
             for rank, (fs_docid, score) in enumerate(retrieved_docs):
@@ -94,10 +96,12 @@ def main():
     for bench in benchmarks:
         bench.load_benchmark_data()
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
-        first_stages = [FSCore(core_extractor, bench),
-                        FSCoreOverlap(core_extractor, bench, index_path, retriever),
-                        PubMedRecommender(bench),
-                        BM25Abstract(index_path)]
+        first_stages = [Perfect(bench)]
+        # first_stages = [FSCore(core_extractor, bench),
+        #                 FSCoreOverlap(core_extractor, bench, index_path, retriever),
+        #                 PubMedRecommender(bench),
+        #                 BM25Abstract(index_path),
+        #                 Perfect(bench)]
                         #FSCorePlusAbstractBM25(core_extractor, bench, index_path),
                         #FSCorePlusTitleBM25(core_extractor, bench, index_path),
                         #BM25Title(index_path),, BM25Yake(index_path)]
