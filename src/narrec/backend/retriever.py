@@ -8,7 +8,7 @@ from kgextractiontoolbox.document.document import TaggedEntity
 from kgextractiontoolbox.document.narrative_document import NarrativeDocument
 from narraint.backend.database import SessionExtended
 from narrant.entity.entityresolver import GeneResolver
-from narrant.preprocessing.enttypes import GENE
+from narrant.entitylinking.enttypes import GENE
 from narrec.document.document import RecommenderDocument
 
 
