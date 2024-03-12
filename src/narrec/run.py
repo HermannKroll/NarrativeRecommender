@@ -87,9 +87,9 @@ def main():
     retriever = DocumentRetriever()
     citation_graph = CitationGraph()
     recommenders = [AlignedCoresFallbackRecommender(corpus),
-                    AlignedNodesFallbackRecommender(corpus)]#EqualRecommender(),
-                    #AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
-                    #StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
+                    AlignedNodesFallbackRecommender(corpus), EqualRecommender(),
+                    AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
+                    StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
     DO_RECOMMENDATION = True
 
     for bench in benchmarks:

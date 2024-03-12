@@ -21,7 +21,9 @@ RECOMMENDER_NAMES = [
     "Jaccard",
     "JaccardWeighted",
     "AlignedNodesRecommender",
-    "AlignedCoresRecommender"
+    "AlignedCoresRecommender",
+    "AlignedNodesFallbackRecommender",
+    "AlignedCoresFallbackRecommender"
 ]
 
 BENCHMARKS = [
