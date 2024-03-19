@@ -77,14 +77,14 @@ class NarrativeCoreExtractor:
 
             s_score = score_edge_by_tf_and_concept_idf(spo, document, self.corpus)
             s_scores.append(s_score)
-            filtered_statements.append((statement, s_score))
+            filtered_statements.append(ScoredStatementExtraction(stmt=statement, score=s_score))
 
         # Only tak statements that have a score above the average score
         #  avg_score = sum(s_scores) / len(s_scores)
         #  filtered_statements = [fs for fs in filtered_statements if fs[1] >= avg_score]
 
         # sort filtered statements by score
-        filtered_statements.sort(key=lambda x: x[1], reverse=True)
+        filtered_statements.sort(key=lambda x: x.score, reverse=True)
 
         # take top-k
         filtered_statements = filtered_statements[:CORE_TOP_K]
@@ -105,7 +105,7 @@ class NarrativeCoreExtractor:
         # nodes because filtered statements are sorted by their score desc
         # for connected_nodes, size in connected_components:
         core_statements = []
-        for statement, score in filtered_statements:
+        for statement in filtered_statements:
             # add only the strongest edge between two nodes (could be caused by multiple extractions)
             so = (statement.subject_id, statement.object_id)
             os = (statement.object_id, statement.subject_id)
@@ -114,7 +114,7 @@ class NarrativeCoreExtractor:
                 continue
 
             # if statement.subject_id in connected_nodes and statement.object_id in connected_nodes:
-            core_statements.append(ScoredStatementExtraction(stmt=statement, score=score))
+            core_statements.append(statement)
             core_node_pairs.add(so)
 
         return NarrativeCore(core_statements)
