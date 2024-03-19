@@ -83,14 +83,12 @@ class NarrativeCoreExtractor:
         #  avg_score = sum(s_scores) / len(s_scores)
         #  filtered_statements = [fs for fs in filtered_statements if fs[1] >= avg_score]
 
+        if not filtered_statements:
+            return None
+
         # sort filtered statements by score
         filtered_statements.sort(key=lambda x: x.score, reverse=True)
 
-        # take top-k
-        filtered_statements = filtered_statements[:CORE_TOP_K]
-
-        if not filtered_statements:
-            return None
 
         # graph = nx.Graph()
         # for statement, score in filtered_statements:
@@ -116,5 +114,8 @@ class NarrativeCoreExtractor:
             # if statement.subject_id in connected_nodes and statement.object_id in connected_nodes:
             core_statements.append(statement)
             core_node_pairs.add(so)
+
+        # take top-k
+        core_statements = core_statements[:CORE_TOP_K]
 
         return NarrativeCore(core_statements)
