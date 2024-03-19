@@ -28,8 +28,8 @@ RECOMMENDER_NAMES = [
 
 BENCHMARKS = [
     PM2020Benchmark(),
- #   Genomics2005(),
- #   RelishBenchmark(),
+    Genomics2005(),
+    RelishBenchmark(),
     RelishDrugBenchmark()
 
 ]
