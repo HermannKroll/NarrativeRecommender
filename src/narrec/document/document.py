@@ -23,7 +23,14 @@ class RecommenderDocument(NarrativeDocument):
         self.sentence2spo = dict()
         self.graph = set()
         self.nodes = set()
+        self.statement_concept2frequency = dict()
         self.concept2frequency = dict()
+
+        for t in self.tags:
+            if t.ent_id not in self.concept2frequency:
+                self.concept2frequency[t.ent_id] = 1
+            else:
+                self.concept2frequency[t.ent_id] += 1
 
         if self.extracted_statements:
             for statement in self.extracted_statements:
@@ -47,10 +54,10 @@ class RecommenderDocument(NarrativeDocument):
                         self.spo2sentences[spo].add(statement.sentence_id)
 
                     for concept in [statement.subject_id, statement.object_id]:
-                        if concept in self.concept2frequency:
-                            self.concept2frequency[concept] += 1
+                        if concept in self.statement_concept2frequency:
+                            self.statement_concept2frequency[concept] += 1
                         else:
-                            self.concept2frequency[concept] = 1
+                            self.statement_concept2frequency[concept] = 1
 
                     self.graph.add(spo)
                     self.nodes.add(statement.subject_id)
@@ -58,6 +65,12 @@ class RecommenderDocument(NarrativeDocument):
 
             self.max_statement_frequency = max(self.spo2frequency.values())
 
+    def get_concept_tf(self, concept):
+        if concept in self.concept2frequency:
+            return self.concept2frequency[concept]
+        else:
+            # some strange concepts do not appear as tags although they are used on graphs
+            return 1
 
     def set_first_stage_score(self, score):
         self.first_stage_score = score
