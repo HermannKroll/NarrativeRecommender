@@ -1,6 +1,7 @@
 import json
 import logging
 import math
+from tqdm import tqdm
 
 from kgextractiontoolbox.backend.models import Document
 from narraint.backend.database import SessionExtended
@@ -26,10 +27,28 @@ class DocumentCorpus:
         self.cache_statement2count = dict()
         self.cache_concept2support = dict()
 
+    def load_all_support_into_memory(self):
+        session = SessionExtended.get()
+        # print('Caching all predication inverted index support entries...')
+        # total = session.query(PredicationInvertedIndex).count()
+        # q = session.query(PredicationInvertedIndex.subject_id,
+        #                   PredicationInvertedIndex.relation,
+        #                   PredicationInvertedIndex.object_id,
+        #                   PredicationInvertedIndex.support)
+        # for row in tqdm(q, desc="Loading db data...", total=total):
+        #     statement = row.subject_id, row.relation, row.object_id
+        #     self.cache_statement2count[statement] = row.support
+        print('Caching all concept inverted index support entries...')
+        total = session.query(TagInvertedIndex).count()
+        q = session.query(TagInvertedIndex.entity_id, TagInvertedIndex.support)
+        for row in tqdm(q, desc="Loading db data...", total=total):
+            self.cache_concept2support[row.entity_id] = row.support
+        print('Finished')
 
     def get_idf_score(self, statement: tuple):
         # Introduce normalization here
-        return math.log(self.get_document_count() / self.get_statement_documents(statement)) / math.log(self.document_count)
+        return math.log(self.get_document_count() / self.get_statement_documents(statement)) / math.log(
+            self.document_count)
 
     def get_concept_ifd_score(self, entity_id: str):
         return math.log(self.get_document_count() / self.get_concept_support(entity_id))
