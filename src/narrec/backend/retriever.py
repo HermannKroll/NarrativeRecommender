@@ -1,15 +1,86 @@
-from typing import List
+from collections import defaultdict
+from typing import List, Set
+
+from sqlalchemy import and_
 
 from kgextractiontoolbox.backend.database import Session
-from kgextractiontoolbox.backend.models import Document, DocumentTranslation
-from kgextractiontoolbox.backend.retrieve import iterate_over_all_documents_in_collection, \
-    retrieve_narrative_documents_from_database
+from kgextractiontoolbox.backend.models import Document, DocumentTranslation, Tag, Predication
+from kgextractiontoolbox.backend.retrieve import iterate_over_all_documents_in_collection
 from kgextractiontoolbox.document.document import TaggedEntity
-from kgextractiontoolbox.document.narrative_document import NarrativeDocument
+from kgextractiontoolbox.document.narrative_document import NarrativeDocument, StatementExtraction
 from narraint.backend.database import SessionExtended
 from narrant.entity.entityresolver import GeneResolver
 from narrant.entitylinking.enttypes import GENE
 from narrec.document.document import RecommenderDocument
+
+
+def retrieve_narrative_documents_from_database_small(session, document_ids: Set[int], document_collection: str) \
+        -> List[NarrativeDocument]:
+    """
+    Retrieves a set of Narrative Documents from the database
+    :param session: the current session
+    :param document_ids: a set of document ids
+    :param document_collection: the corresponding document collection
+    :return: a list of NarrativeDocuments
+    """
+    doc_results = {}
+
+    # logging.info(f'Querying {len(document_ids)} from collection: {document_collection}...')
+    # first query document titles and abstract
+    doc_query = session.query(Document).filter(and_(Document.id.in_(document_ids),
+                                                    Document.collection == document_collection))
+
+    for res in doc_query:
+        doc_results[res.id] = NarrativeDocument(document_id=res.id, title=res.title, abstract=res.abstract)
+
+    if len(doc_results) != len(document_ids):
+        diff = document_ids - doc_results.keys()
+        raise ValueError(f'Did not retrieve all required {document_collection} documents (missed ids: {diff})')
+
+    #  logging.info('Querying for tags...')
+    # Next query for all tagged entities in that document
+    tag_query = session.query(Tag).filter(and_(Tag.document_id.in_(document_ids),
+                                               Tag.document_collection == document_collection))
+    tag_result = defaultdict(list)
+    for res in tag_query:
+        tag_result[res.document_id].append(TaggedEntity(document=res.document_id,
+                                                        start=res.start,
+                                                        end=res.end,
+                                                        ent_id=res.ent_id,
+                                                        ent_type=res.ent_type,
+                                                        text=res.ent_str))
+    for doc_id, tags in tag_result.items():
+        doc_results[doc_id].tags = tags
+        doc_results[doc_id].sort_tags()
+
+    # logging.info('Querying for statement extractions...')
+    # Next query for extracted statements
+    es_query = session.query(Predication)
+    es_query = es_query.filter(Predication.document_collection == document_collection)
+    es_query = es_query.filter(Predication.document_id.in_(document_ids))
+    es_query = es_query.filter(Predication.relation != None)
+
+    es_for_doc = defaultdict(list)
+    sentence_ids = set()
+    sentenceid2doc = defaultdict(set)
+    for res in es_query:
+        es_for_doc[res.document_id].append(StatementExtraction(subject_id=res.subject_id,
+                                                               subject_type=res.subject_type,
+                                                               subject_str=res.subject_str,
+                                                               predicate=res.predicate,
+                                                               relation=res.relation,
+                                                               object_id=res.object_id,
+                                                               object_type=res.object_type,
+                                                               object_str=res.object_str,
+                                                               sentence_id=res.sentence_id,
+                                                               confidence=res.confidence))
+        sentence_ids.add(res.sentence_id)
+        sentenceid2doc[res.sentence_id].add(res.document_id)
+
+    for doc_id, extractions in es_for_doc.items():
+        doc_results[doc_id].extracted_statements = extractions
+
+    return list(doc_results.values())
 
 
 class DocumentTranslator:
@@ -58,7 +129,6 @@ class DocumentRetriever:
     def __init__(self):
         self.__cache = {}
         self.translator = DocumentTranslator()
-        self.session = SessionExtended.get()
         self.generesolver = GeneResolver()
         self.generesolver.load_index()
 
@@ -124,9 +194,10 @@ class DocumentRetriever:
         remaining_document_ids = document_ids - found_ids
         if len(remaining_document_ids) == 0:
             return narrative_documents
-        narrative_documents_queried = retrieve_narrative_documents_from_database(session=self.session,
-                                                                                 document_ids=remaining_document_ids,
-                                                                                 document_collection=document_collection)
+        session = SessionExtended.get()
+        narrative_documents_queried = retrieve_narrative_documents_from_database_small(session=session,
+                                                                                       document_ids=remaining_document_ids,
+                                                                                       document_collection=document_collection)
         # Gene IDs are only present in the Tag table.
         # The rest work with gene symbols
         for doc in narrative_documents_queried:
