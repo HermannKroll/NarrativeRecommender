@@ -194,7 +194,7 @@ class DocumentRetriever:
         remaining_document_ids = document_ids - found_ids
         if len(remaining_document_ids) == 0:
             return narrative_documents
-        session = SessionExtended.get()
+        session = Session.get()
         narrative_documents_queried = retrieve_narrative_documents_from_database_small(session=session,
                                                                                        document_ids=remaining_document_ids,
                                                                                        document_collection=document_collection)
