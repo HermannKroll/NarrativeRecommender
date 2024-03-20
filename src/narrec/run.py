@@ -1,5 +1,7 @@
 import os
+import sys
 from datetime import datetime
+from multiprocessing import Process
 
 from tqdm import tqdm
 
@@ -23,7 +25,7 @@ from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.jaccard import Jaccard
 from narrec.recommender.jaccard_weighted import JaccardWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
-from narrec.run_config import BENCHMARKS
+from narrec.run_config import BENCHMARKS, DO_RECOMMENDATION, MULTIPROCESSING, LOAD_FULL_IDF_CACHE
 
 
 def load_document_ids_from_runfile(path_to_runfile):
@@ -83,14 +85,17 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
 def main():
     benchmarks = BENCHMARKS
     corpus = DocumentCorpus(collections=[GLOBAL_DB_DOCUMENT_COLLECTION])
-    core_extractor = NarrativeCoreExtractor(corpus=corpus)
+    if LOAD_FULL_IDF_CACHE:
+        corpus.load_all_support_into_memory()
+
     retriever = DocumentRetriever()
+    core_extractor = NarrativeCoreExtractor(corpus=corpus)
+
     citation_graph = CitationGraph()
     recommenders = [AlignedCoresFallbackRecommender(corpus),
                     AlignedNodesFallbackRecommender(corpus), EqualRecommender(),
                     AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
                     StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
-    DO_RECOMMENDATION = True
 
     for bench in benchmarks:
         bench.load_benchmark_data()
@@ -100,12 +105,12 @@ def main():
                         PubMedRecommender(bench),
                         BM25Abstract(index_path),
                         Perfect(bench)]
+
         # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
         # FSCorePlusTitleBM25(core_extractor, bench, index_path),
         # BM25Title(index_path),, BM25Yake(index_path)]
 
-        for first_stage in first_stages:
-
+        def do_first_stage_and_recommendation(first_stage):
             fs_path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}.txt')
             if not os.path.isfile(fs_path):
                 # create first stage data
@@ -119,7 +124,14 @@ def main():
             recommender2result_lines = dict()
 
             if DO_RECOMMENDATION:
-                for topicid, retrieved_docs in tqdm(fs_docs.items(), desc="Evaluating topics"):
+                # don't print in multi processing setting
+                if MULTIPROCESSING:
+                    iter_obj = fs_docs.items()
+                    print('Disable progress bar for multiprocess setting')
+                else:
+                    iter_obj = tqdm(fs_docs.items(), desc="Evaluating topics")
+
+                for topicid, retrieved_docs in iter_obj:
                     # get the input ids for each doc
                     topic2doc = {str(top): doc for top, doc in bench.iterate_over_document_entries()}
 
@@ -176,6 +188,26 @@ def main():
                         if recommender.name in recommender2result_lines:
                             f.write('\n'.join(recommender2result_lines[recommender.name]))
 
+        if MULTIPROCESSING:
+            print('Using multiprocessing architecture...')
+            processes = []
+            for first_stage in first_stages:
+                print(f'Initialize process for first stage: {first_stage.name}')
+                processes.append(Process(target=do_first_stage_and_recommendation, args=(first_stage,)))
+
+            print('Starting all processes')
+            for p in processes:
+                p.start()
+
+            print('Waiting for process to finish...')
+            for p in processes:
+                p.join()
+
+            print('All processes were finished')
+
+        else:
+            for first_stage in first_stages:
+                do_first_stage_and_recommendation(first_stage)
 
 if __name__ == '__main__':
     main()

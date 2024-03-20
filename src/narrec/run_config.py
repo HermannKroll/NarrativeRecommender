@@ -43,6 +43,10 @@ assert CONFIDENCE_WEIGHT + TFIDF_WEIGHT == 1.0
 NARRATIVE_CORE_THRESHOLD = 0.4
 NODE_SIMILARITY_THRESHOLD = 0.3
 
+MULTIPROCESSING = True
+LOAD_FULL_IDF_CACHE = True
+DO_RECOMMENDATION = True
+
 # Experimental Configuration (because first stage will always find input doc)
 FS_DOCUMENT_CUTOFF = 1001
 
