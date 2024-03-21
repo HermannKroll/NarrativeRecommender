@@ -35,7 +35,7 @@ def retrieve_narrative_documents_from_database_small(session, document_ids: Set[
 
     if len(doc_results) != len(document_ids):
         diff = document_ids - doc_results.keys()
-        raise ValueError(f'Did not retrieve all required {document_collection} documents (missed ids: {diff})')
+        print(f'Did not retrieve all required {document_collection} documents (missed ids: {diff})')
 
     #  logging.info('Querying for tags...')
     # Next query for all tagged entities in that document
