@@ -32,4 +32,4 @@ class AlignedNodesRecommender(GraphBase):
             similarity = self.ontological_node_similarity(node_a, node_b)
             score = self.node_score(node_b, candidate)
             total_score += similarity * score
-        return total_score / len(doc.nodes)
+        return total_score # / len(doc.nodes)

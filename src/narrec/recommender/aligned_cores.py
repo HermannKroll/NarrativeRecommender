@@ -38,6 +38,6 @@ class AlignedCoresRecommender(GraphBase):
                         count_sum += 1
 
             if count_sum > 0:
-                similarity_score += sim_sum / count_sum
+                similarity_score += sim_sum #/ count_sum
 
-        return similarity_score / len(doc.nodes)
+        return similarity_score #/ len(doc.nodes)
