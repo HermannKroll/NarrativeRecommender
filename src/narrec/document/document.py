@@ -26,11 +26,18 @@ class RecommenderDocument(NarrativeDocument):
         self.statement_concept2frequency = dict()
         self.concept2frequency = dict()
 
+        self.concept2frequency = {}
+        self.concept2last_position = {}
+        self.text_len = len(self.get_text_content(sections=True))
         for t in self.tags:
             if t.ent_id not in self.concept2frequency:
                 self.concept2frequency[t.ent_id] = 1
+                self.concept2last_position[t.ent_id] = t.start
             else:
                 self.concept2frequency[t.ent_id] += 1
+                self.concept2last_position[t.ent_id] = max(self.concept2last_position[t.ent_id], t.start)
+
+        self.max_concept_frequency = max(v for _, v in self.concept2frequency.items())
 
         if self.extracted_statements:
             for statement in self.extracted_statements:
@@ -64,6 +71,14 @@ class RecommenderDocument(NarrativeDocument):
                     self.nodes.add(statement.object_id)
 
             self.max_statement_frequency = max(self.spo2frequency.values())
+
+    def get_concept_relative_text_position(self, concept):
+        # for problematic caseses
+        if concept in self.concept2last_position:
+            return self.concept2last_position[concept] / self.text_len
+        else:
+            return 0
+
 
     def get_concept_tf(self, concept):
         if concept in self.concept2frequency:

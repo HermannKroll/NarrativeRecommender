@@ -45,6 +45,20 @@ def score_edge(statement: tuple, document: RecommenderDocument, corpus: Document
     return 0.5 * confidence + 0.5 * tfidf
 
 
+PREDICATE_TO_SCORE = {
+    "associated": 0.25,
+    "administered": 1.0,
+    "compares": 1.0,
+    "decreases": 0.5,
+    "induces": 1.0,
+    "interacts": 0.5,
+    "inhibits": 1.0,
+    "metabolises": 1.0,
+    "treats": 1.0,
+    "method": 1.0
+}
+
+
 def score_edge_by_tf_and_concept_idf(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
     assert len(statement) == 3
 
@@ -52,19 +66,22 @@ def score_edge_by_tf_and_concept_idf(statement: tuple, document: RecommenderDocu
     assert 0.0 <= confidence <= 1.0
 
     # tf = len(document.spo2sentences[statement]) / document.max_statement_frequency
-    tf_s = document.get_concept_tf(statement[0])
-    tf_o = document.get_concept_tf(statement[2])
+    tf_s = document.get_concept_tf(statement[0]) / document.max_concept_frequency
+    tf_o = document.get_concept_tf(statement[2]) / document.max_concept_frequency
     idf_s = corpus.get_concept_ifd_score(statement[0])
     idf_o = corpus.get_concept_ifd_score(statement[2])
     # idf_statement = corpus.get_idf_score(statement)
 
-    tfidf = 0.5 * ((tf_s * idf_s) + (tf_o * idf_o))
+    tfidf = PREDICATE_TO_SCORE[statement[1]] * ((tf_s * idf_s) + (tf_o * idf_o))
+
+    position_score = min(document.get_concept_relative_text_position(statement[0]),
+                         document.get_concept_relative_text_position(statement[2]))
 
     # tfidf = tf * ((idf_s + idf_o) * 0.5)
 
     # assert 0.0 <= tf <= 1.0
 
-    return 0.2 * confidence + 0.8 * tfidf
+    return position_score * confidence * tfidf
 
 
 def score_edge_sentence(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
