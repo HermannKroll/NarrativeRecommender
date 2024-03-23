@@ -42,7 +42,10 @@ class DocumentCorpus:
         total = session.query(TagInvertedIndex).count()
         q = session.query(TagInvertedIndex.entity_id, TagInvertedIndex.support)
         for row in tqdm(q, desc="Loading db data...", total=total):
-            self.cache_concept2support[row.entity_id] = row.support
+            if row.entity_id in self.cache_concept2support:
+                self.cache_concept2support[row.entity_id] += row.support
+            else:
+                self.cache_concept2support[row.entity_id] = row.support
         print('Finished')
 
     def get_idf_score(self, statement: tuple):
