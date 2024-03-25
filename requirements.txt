@@ -7,3 +7,4 @@ git+https://github.com/LIAAD/yake
 networkx~=3.1
 tqdm~=4.66.1
 Flask~=3.0.2
+pytrec-eval-terrier==0.5.6
