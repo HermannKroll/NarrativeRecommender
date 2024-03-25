@@ -37,7 +37,10 @@ class RecommenderDocument(NarrativeDocument):
                 self.concept2frequency[t.ent_id] += 1
                 self.concept2last_position[t.ent_id] = max(self.concept2last_position[t.ent_id], t.start)
 
-        self.max_concept_frequency = max(v for _, v in self.concept2frequency.items())
+        if len(self.concept2frequency) > 0:
+            self.max_concept_frequency = max(v for _, v in self.concept2frequency.items())
+        else:
+            self.max_concept_frequency = 0 
 
         if self.extracted_statements:
             for statement in self.extracted_statements:
