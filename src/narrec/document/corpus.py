@@ -26,6 +26,7 @@ class DocumentCorpus:
         logging.info(f'{self.document_count} documents in corpus')
         self.cache_statement2count = dict()
         self.cache_concept2support = dict()
+        self.all_idf_data_cached = False
 
     def load_all_support_into_memory(self):
         session = SessionExtended.get()
@@ -46,6 +47,7 @@ class DocumentCorpus:
                 self.cache_concept2support[row.entity_id] += row.support
             else:
                 self.cache_concept2support[row.entity_id] = row.support
+        self.all_idf_data_cached = True
         print('Finished')
 
     def get_idf_score(self, statement: tuple):
@@ -63,6 +65,11 @@ class DocumentCorpus:
         # number of documents which support the statement
         if statement in self.cache_statement2count:
             return self.cache_statement2count[statement]
+
+        # not in index, but all data should be loaded. so no retrieval is needed any more
+        # however, some strange statement concept might not appear in the concept index
+        if self.all_idf_data_cached:
+            return 1
 
         session = SessionExtended.get()
         q = session.query(PredicationInvertedIndex.support)
@@ -90,6 +97,10 @@ class DocumentCorpus:
     def get_concept_support(self, entity_id):
         if entity_id in self.cache_concept2support:
             return self.cache_concept2support[entity_id]
+        # not in index, but all data should be loaded. so no retrieval is needed any more
+        # however, some strange statement concept might not appear in the concept index
+        if self.all_idf_data_cached:
+            return 1
 
         session = SessionExtended.get()
         q = session.query(TagInvertedIndex.support)
