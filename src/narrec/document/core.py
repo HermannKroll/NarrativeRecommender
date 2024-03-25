@@ -116,6 +116,6 @@ class NarrativeCoreExtractor:
             core_node_pairs.add(so)
 
         # take top-k
-        core_statements = core_statements[:CORE_TOP_K]
+        # core_statements = core_statements[:CORE_TOP_K]
 
         return NarrativeCore(core_statements)
