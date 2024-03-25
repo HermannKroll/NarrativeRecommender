@@ -66,8 +66,12 @@ def score_edge_by_tf_and_concept_idf(statement: tuple, document: RecommenderDocu
     assert 0.0 <= confidence <= 1.0
 
     # tf = len(document.spo2sentences[statement]) / document.max_statement_frequency
-    tf_s = document.get_concept_tf(statement[0]) / document.max_concept_frequency
-    tf_o = document.get_concept_tf(statement[2]) / document.max_concept_frequency
+    if document.max_concept_frequency > 0:
+        tf_s = document.get_concept_tf(statement[0]) / document.max_concept_frequency
+        tf_o = document.get_concept_tf(statement[2]) / document.max_concept_frequency
+    else:
+        tf_s = 0.0
+        tf_o = 0.0
     idf_s = corpus.get_concept_ifd_score(statement[0])
     idf_o = corpus.get_concept_ifd_score(statement[2])
     # idf_statement = corpus.get_idf_score(statement)
