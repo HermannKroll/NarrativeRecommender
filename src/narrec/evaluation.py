@@ -10,7 +10,7 @@ import pytrec_eval
 
 from narrec.benchmark.benchmark import Benchmark, BenchmarkType, IRBenchmark
 from narrec.config import RESULT_DIR
-from narrec.run_config import BENCHMARKS, FIRST_STAGES, RECOMMENDER_NAMES
+from narrec.run_config import BENCHMARKS, FIRST_STAGES, RECOMMENDER_NAMES, TOPIC_SCORES
 
 METRICS = {
     'recall_1000',
@@ -64,6 +64,7 @@ def calculate_table_data(measures: List[tuple], results: List, relevant_topics: 
         score_rows[name] = s_row
     return score_rows, max_m
 
+
 def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, relevant_topics: set):
     # an IR benchmark consists of each input queries X
     # each query X has Y documents rated
@@ -72,6 +73,7 @@ def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, rele
     # calculate the mean scores of the given measures per topic
     max_m = {m[0]: 0.0 for m in measures}
     score_rows = defaultdict(dict)
+    topic_scores = defaultdict(lambda: defaultdict(dict))
     for name, raw_run in results:
         s_row = dict()
         for measure, _ in measures:
@@ -92,7 +94,12 @@ def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, rele
                 mean = sum(scores) / len(scores)
                 std_dev = numpy.std(scores)
 
+                topic_scores[name][measure][t] = {
+                    'scores': scores,
+                    'std': std_dev
+                }
                 #print(f'{name}\t{measure}\t{t}\t: {round(mean, 2)} +/- {round(std_dev, 2)} (no. of docs: {len(scores)})')
+
 
             # average the scores per topic
             topic2score = {t: sum(scores) / len(scores) for t, scores in topic2score.items()}
@@ -101,7 +108,7 @@ def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, rele
             max_m[measure] = max(max_m[measure], score)
             s_row[measure] = score
         score_rows[name] = s_row
-    return score_rows, max_m
+    return score_rows, max_m, topic_scores
 
 
 def generate_diagram(input_json: str, output_dir: str):
@@ -163,7 +170,9 @@ def perform_evaluation(benchmark: Benchmark):
     if benchmark.type == BenchmarkType.REC_BENCHMARK:
         score_rows, max_m = calculate_table_data(measures, results, relevant_topics)
     else:
-        score_rows, max_m = calculate_table_data_ir_benchmark(measures, results, relevant_topics)
+        score_rows, max_m, topic_scores = calculate_table_data_ir_benchmark(measures, results, relevant_topics)
+        with open(os.path.join(TOPIC_SCORES, f'{benchmark.name}_topic_scores.json'), 'w') as json_file:
+            json.dump(topic_scores, json_file, indent=4)
 
     print("--" * 60)
     print("Creating table content")
