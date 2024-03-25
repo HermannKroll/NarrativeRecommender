@@ -59,8 +59,11 @@ class FSCore(FirstStageBase):
 
         # Get the maximum score to normalize the scores
         max_score = max(document_ids_scored.values())
-        # Convert to list
-        document_ids_scored = [(k, v / max_score) for k, v in document_ids_scored.items()]
+        if max_score > 0.0:
+            # Convert to list
+            document_ids_scored = [(k, v / max_score) for k, v in document_ids_scored.items()]
+        else:
+            document_ids_scored = [(k, v / max_score) for k, v in document_ids_scored.items()]
         # Sort by score and then doc desc
         document_ids_scored.sort(key=lambda x: (x[1], x[0]), reverse=True)
 
