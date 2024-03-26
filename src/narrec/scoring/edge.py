@@ -78,14 +78,13 @@ def score_edge_by_tf_and_concept_idf(statement: tuple, document: RecommenderDocu
 
     tfidf = PREDICATE_TO_SCORE[statement[1]] * ((tf_s * idf_s) + (tf_o * idf_o))
 
-    position_score = min(document.get_concept_relative_text_position(statement[0]),
-                         document.get_concept_relative_text_position(statement[2]))
+    coverage = min(document.get_concept_coverage(statement[0]), document.get_concept_coverage(statement[2]))
 
     # tfidf = tf * ((idf_s + idf_o) * 0.5)
 
     # assert 0.0 <= tf <= 1.0
 
-    return position_score * confidence * tfidf
+    return coverage * confidence * tfidf
 
 
 def score_edge_sentence(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):

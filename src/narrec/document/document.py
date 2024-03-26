@@ -28,14 +28,17 @@ class RecommenderDocument(NarrativeDocument):
 
         self.concept2frequency = {}
         self.concept2last_position = {}
+        self.concept2first_position = {}
         self.text_len = len(self.get_text_content(sections=True))
         for t in self.tags:
             if t.ent_id not in self.concept2frequency:
                 self.concept2frequency[t.ent_id] = 1
-                self.concept2last_position[t.ent_id] = t.start
+                self.concept2first_position[t.ent_id] = t.start
+                self.concept2last_position[t.ent_id] = t.end
             else:
                 self.concept2frequency[t.ent_id] += 1
-                self.concept2last_position[t.ent_id] = max(self.concept2last_position[t.ent_id], t.start)
+                self.concept2first_position[t.ent_id] = min(self.concept2first_position[t.ent_id], t.start)
+                self.concept2last_position[t.ent_id] = max(self.concept2last_position[t.ent_id], t.end)
 
         if len(self.concept2frequency) > 0:
             self.max_concept_frequency = max(v for _, v in self.concept2frequency.items())
@@ -80,7 +83,17 @@ class RecommenderDocument(NarrativeDocument):
         if concept in self.concept2last_position:
             return self.concept2last_position[concept] / self.text_len
         else:
-            return 0
+            return 0.0
+
+    def get_concept_coverage(self, concept):
+        if concept in self.concept2last_position:
+            diff = self.concept2last_position[concept] - self.concept2first_position[concept]
+            coverage = diff / self.text_len
+            # some taggers produced strange tag positions that may exceed the text range
+            coverage = max(0.0, min(1.0, coverage))
+            return coverage
+        else:
+            return 0.0
 
 
     def get_concept_tf(self, concept):
