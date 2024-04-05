@@ -1,5 +1,4 @@
 import os
-import sys
 from datetime import datetime
 from multiprocessing import Process
 
@@ -13,9 +12,9 @@ from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.base import FirstStageBase
 from narrec.firststage.bm25abstract import BM25Abstract
+from narrec.firststage.bm25title import BM25Title
+from narrec.firststage.fsconcept import FSConcept
 from narrec.firststage.fscore import FSCore
-from narrec.firststage.fscore_overlap import FSCoreOverlap
-from narrec.firststage.fscoreplusabstractbm25 import FSCorePlusAbstractBM25
 from narrec.firststage.perfect import Perfect
 from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
@@ -24,7 +23,9 @@ from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.aligned_nodes_fallback import AlignedNodesFallbackRecommender
 from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.jaccard import Jaccard
-from narrec.recommender.jaccard_weighted import JaccardWeighted
+from narrec.recommender.jaccard_combined import JaccardCombinedWeighted
+from narrec.recommender.jaccard_concepts_weighted import JaccardConceptWeighted
+from narrec.recommender.jaccard_graph_weighted import JaccardGraphWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
 from narrec.run_config import BENCHMARKS, DO_RECOMMENDATION, MULTIPROCESSING, LOAD_FULL_IDF_CACHE
 
@@ -93,19 +94,34 @@ def main():
     core_extractor = NarrativeCoreExtractor(corpus=corpus)
 
     citation_graph = CitationGraph()
+    jaccard_graph = JaccardGraphWeighted(corpus)
+    jaccard_concept = JaccardConceptWeighted(corpus)
+    jaccard_combined = JaccardCombinedWeighted(corpus,
+                                               jaccard_graph=jaccard_graph,
+                                               jaccard_concept=jaccard_concept)
+    # jaccard_with_bm25 = JaccardCombinedWeightedWithBM25(corpus,
+    #                                                     jaccard_graph=jaccard_graph,
+    #                                                     jaccard_concept=jaccard_concept,
+    #                                                     bm25_index=None)
+
     recommenders = [AlignedCoresFallbackRecommender(corpus),
                     AlignedNodesFallbackRecommender(corpus), EqualRecommender(),
                     AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
-                    StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
+                    StatementOverlap(core_extractor), Jaccard(),
+                    jaccard_graph, jaccard_concept, jaccard_combined]
 
     for bench in benchmarks:
         bench.load_benchmark_data()
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
-        first_stages = [FSCore(core_extractor, bench),
-                        FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-                        FSCoreOverlap(core_extractor, bench, index_path, retriever),
+        # jaccard_with_bm25.set_index(bm25_index=index_path)
+
+        first_stages = [FSConcept(core_extractor, bench),
+                        FSCore(core_extractor, bench),
+                        # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
+                        # FSCoreOverlap(core_extractor, bench, index_path, retriever),
                         PubMedRecommender(bench),
                         BM25Abstract(index_path),
+                        BM25Title(index_path),
                         Perfect(bench)]
 
         # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
@@ -210,6 +226,7 @@ def main():
         else:
             for first_stage in first_stages:
                 do_first_stage_and_recommendation(first_stage)
+
 
 if __name__ == '__main__':
     main()
