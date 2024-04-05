@@ -15,6 +15,8 @@ class AlignedNodesRecommender(GraphBase):
 
     def node_score(self, node, document_i: RecommenderDocument):
         core = self.extractor.extract_narrative_core_from_document(document_i)
+        if not core:
+            return 0.0
         scores = [score_edge_by_tf_and_concept_idf(statement.get_triple(), document_i, self.corpus)
                   for statement in core.statements
                   if statement.subject_id == node or statement.object_id == node]

@@ -23,6 +23,9 @@ class AlignedCoresRecommender(GraphBase):
 
         # compute the core of the candidate document
         core = self.extractor.extract_narrative_core_from_document(candidate)
+        if not core:
+            return 0.0
+
         for (node_a1, node_b1) in node_matchings:
             sim_sum = 0
             count_sum = 0
