@@ -43,7 +43,19 @@ class FSCore(FirstStageBase):
         document_ids_scored = {}
         # If a statement of the core is contained within a document, we increase the score
         # of the document by the score of the corresponding edge
-        for stmt in core.statements:
+        for idx, stmt in enumerate(core.statements):
+            # we already found enough documents
+            if len(document_ids_scored) >= FS_DOCUMENT_CUTOFF:
+                # get the remaining reachable score
+                # if all documents that we found are above the reachable score, we can stop
+                max_reachable_scores = sum(c.score for c in core.statements[idx:])
+                count = len([d for d, s in document_ids_scored.items()
+                             if s >= max_reachable_scores])
+                if count >= FS_DOCUMENT_CUTOFF:
+                    # we can't find better documents, stop here
+                    # the first K documents are filled
+                    break
+
             # retrieve matching documents
             document_ids = self.retrieve_documents((stmt.subject_id, stmt.relation, stmt.object_id))
 
