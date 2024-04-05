@@ -25,12 +25,15 @@ class RecommenderDocument(NarrativeDocument):
         self.nodes = set()
         self.statement_concept2frequency = dict()
         self.concept2frequency = dict()
+        self.concepts = set()
 
         self.concept2frequency = {}
         self.concept2last_position = {}
         self.concept2first_position = {}
         self.text_len = len(self.get_text_content(sections=True))
+        self.concept_count = len(self.tags)
         for t in self.tags:
+            self.concepts.add(t.ent_id)
             if t.ent_id not in self.concept2frequency:
                 self.concept2frequency[t.ent_id] = 1
                 self.concept2first_position[t.ent_id] = t.start
