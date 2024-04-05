@@ -5,9 +5,9 @@ from narrec.recommender.base import RecommenderBase
 from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
-class JaccardWeighted(RecommenderBase):
+class JaccardGraphWeighted(RecommenderBase):
 
-    def __init__(self, corpus: DocumentCorpus, name="JaccardWeighted"):
+    def __init__(self, corpus: DocumentCorpus, name="JaccardGraphWeighted"):
         super().__init__(name=name)
         self.corpus = corpus
 

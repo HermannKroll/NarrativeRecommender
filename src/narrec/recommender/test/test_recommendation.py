@@ -9,7 +9,7 @@ from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.jaccard import Jaccard
-from narrec.recommender.jaccard_weighted import JaccardWeighted
+from narrec.recommender.jaccard_graph_weighted import JaccardGraphWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
 
 relish_entry = """
@@ -63,7 +63,7 @@ docs = [d for d in docs if d.id != doc_id]
 
 recommenders = [EqualRecommender(),
                 AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
-                StatementOverlap(core_extractor), Jaccard(), JaccardWeighted(corpus)]
+                StatementOverlap(core_extractor), Jaccard(), JaccardGraphWeighted(corpus)]
 
 rec_doc = id2docs[doc_id]
 
