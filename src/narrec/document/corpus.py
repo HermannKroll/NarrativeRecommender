@@ -56,7 +56,8 @@ class DocumentCorpus:
             self.document_count)
 
     def get_concept_ifd_score(self, entity_id: str):
-        return math.log(self.get_document_count() / self.get_concept_support(entity_id))
+        return math.log(self.get_document_count() / self.get_concept_support(entity_id)) / math.log(
+            self.document_count)
 
     def get_document_count(self):
         return self.document_count
