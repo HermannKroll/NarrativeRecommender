@@ -3,8 +3,23 @@ from typing import List
 from kgextractiontoolbox.document.narrative_document import StatementExtraction
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.run_config import CORE_TOP_K
+from narrec.run_config import CORE_TOP_K, NARRATIVE_CORE_THRESHOLD
+from narrec.scoring.concept import score_concept_by_tf_idf_and_coverage, score_concept_by_tf_idf
 from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
+
+
+class ScoredConcept:
+
+    def __init__(self, concept: str, score: float, coverage: float):
+        self.concept = concept
+        self.score = score
+        self.coverage = coverage
+
+    def __str__(self):
+        return f'{round(self.score, 2)}: {self.concept} (coverage: {self.coverage})'
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class ScoredStatementExtraction(StatementExtraction):
@@ -32,6 +47,12 @@ class ScoredStatementExtraction(StatementExtraction):
 
     def __repr__(self):
         return self.__str__()
+
+
+class NarrativeConceptCore:
+
+    def __init__(self, concepts: List[ScoredConcept]):
+        self.concepts = concepts
 
 
 class NarrativeCore:
@@ -66,6 +87,28 @@ class NarrativeCoreExtractor:
     def __init__(self, corpus: DocumentCorpus):
         self.corpus = corpus
 
+    def extract_concept_core(self, document: RecommenderDocument) -> NarrativeConceptCore:
+        if not document.concepts:
+            return None
+
+        scored_concepts = []
+        for concept in document.concepts:
+            score = score_concept_by_tf_idf(concept, document, self.corpus)
+            coverage = document.get_concept_coverage(concept)
+            if score >= NARRATIVE_CORE_THRESHOLD:
+                scored_concepts.append(ScoredConcept(concept, score, coverage))
+
+        # sort scored concepts by their coverage
+        scored_concepts.sort(key=lambda x: x.coverage, reverse=True)
+
+        # get top k results scored concepts based on coverage
+        scored_concepts = scored_concepts[:CORE_TOP_K]
+
+        # sort remaining ones by score
+        scored_concepts.sort(key=lambda x: x.score, reverse=True)
+
+        return NarrativeConceptCore(scored_concepts)
+
     def extract_narrative_core_from_document(self, document: RecommenderDocument) -> NarrativeCore:
         if not document.extracted_statements:
             return None
@@ -76,8 +119,9 @@ class NarrativeCoreExtractor:
             spo = (statement.subject_id, statement.relation, statement.object_id)
 
             s_score = score_edge_by_tf_and_concept_idf(spo, document, self.corpus)
-            s_scores.append(s_score)
-            filtered_statements.append(ScoredStatementExtraction(stmt=statement, score=s_score))
+            if s_score >= NARRATIVE_CORE_THRESHOLD:
+                s_scores.append(s_score)
+                filtered_statements.append(ScoredStatementExtraction(stmt=statement, score=s_score))
 
         # Only tak statements that have a score above the average score
         #  avg_score = sum(s_scores) / len(s_scores)
