@@ -9,8 +9,8 @@ import pandas as pd
 import pytrec_eval
 
 from narrec.benchmark.benchmark import Benchmark, BenchmarkType, IRBenchmark
-from narrec.config import RESULT_DIR
-from narrec.run_config import BENCHMARKS, FIRST_STAGES, RECOMMENDER_NAMES, TOPIC_SCORES
+from narrec.config import RESULT_DIR, TOPIC_SCORES, SCORE_FREQUENCY
+from narrec.run_config import BENCHMARKS, FIRST_STAGES, RECOMMENDER_NAMES
 
 METRICS = {
     'recall_1000',
@@ -51,6 +51,7 @@ def calculate_table_data(measures: List[tuple], results: List, relevant_topics: 
     # calculate the mean scores of the given measures for each ranker
     max_m = {m[0]: 0.0 for m in measures}
     score_rows = defaultdict(dict)
+    score_frequency = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     for name, raw_run in results:
         s_row = dict()
         for measure, _ in measures:
@@ -58,11 +59,13 @@ def calculate_table_data(measures: List[tuple], results: List, relevant_topics: 
             # add missing scores
             for q in relevant_topics.difference(set(run.keys())):
                 run.update({q: 0.0})
+            for score in run.values():
+                score_frequency[name][measure][round(score, 2)] += 1
             score = round(sum(run.values()) / len(run.keys()), 2)
             max_m[measure] = max(max_m[measure], score)
             s_row[measure] = score
         score_rows[name] = s_row
-    return score_rows, max_m
+    return score_rows, max_m, score_frequency
 
 
 def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, relevant_topics: set):
@@ -74,6 +77,7 @@ def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, rele
     max_m = {m[0]: 0.0 for m in measures}
     score_rows = defaultdict(dict)
     topic_scores = defaultdict(lambda: defaultdict(dict))
+    score_frequency = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     for name, raw_run in results:
         s_row = dict()
         for measure, _ in measures:
@@ -94,6 +98,9 @@ def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, rele
                 mean = sum(scores) / len(scores)
                 std_dev = numpy.std(scores)
 
+                for score in scores:
+                    score_frequency[name][measure][round(score, 2)] += 1
+
                 topic_scores[name][measure][t] = {
                     'scores': scores,
                     'std': std_dev
@@ -108,7 +115,7 @@ def calculate_table_data_ir_benchmark(measures: List[tuple], results: List, rele
             max_m[measure] = max(max_m[measure], score)
             s_row[measure] = score
         score_rows[name] = s_row
-    return score_rows, max_m, topic_scores
+    return score_rows, max_m, topic_scores, score_frequency
 
 
 def generate_diagram(input_json: str, output_dir: str):
@@ -168,12 +175,14 @@ def perform_evaluation(benchmark: Benchmark):
 
     measures = [(k, v) for k, v in RESULT_MEASURES.items()]
     if benchmark.type == BenchmarkType.REC_BENCHMARK:
-        score_rows, max_m = calculate_table_data(measures, results, relevant_topics)
+        score_rows, max_m, score_frequency = calculate_table_data(measures, results, relevant_topics)
     else:
-        score_rows, max_m, topic_scores = calculate_table_data_ir_benchmark(measures, results, relevant_topics)
+        score_rows, max_m, topic_scores, score_frequency = calculate_table_data_ir_benchmark(measures, results, relevant_topics)
         with open(os.path.join(TOPIC_SCORES, f'{benchmark.name}_topic_scores.json'), 'w') as json_file:
             json.dump(topic_scores, json_file, indent=4)
 
+    with open(os.path.join(SCORE_FREQUENCY, f'{benchmark.name}_score_frequency.json'), 'w') as json_file:
+        json.dump(score_frequency, json_file, indent=4)
     print("--" * 60)
     print("Creating table content")
     print("--" * 60)

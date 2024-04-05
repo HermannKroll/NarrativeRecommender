@@ -10,6 +10,16 @@ DATA_DIR = "/ssd2/kroll/recommender/"
 RESULT_DIR = os.path.join(DATA_DIR, "results")
 INDEX_DIR = os.path.join(DATA_DIR, "indexes")
 BENCHMKARK_QRELS_DIR = os.path.join(DATA_DIR, "benchmark_qrels")
+DIAGRAM_DIR = os.path.join(DATA_DIR, "diagrams")
+
+TOPIC_SCORES = os.path.join(DIAGRAM_DIR, "topic_scores")
+SCORE_FREQUENCY = os.path.join(DIAGRAM_DIR, "score_frequency")
+
+if not os.path.isdir(TOPIC_SCORES):
+    os.makedirs(TOPIC_SCORES, exist_ok=True)
+
+if not os.path.isdir(SCORE_FREQUENCY):
+    os.makedirs(SCORE_FREQUENCY, exist_ok=True)
 
 if not os.path.isdir(RESULT_DIR):
     os.makedirs(RESULT_DIR, exist_ok=True)
@@ -19,6 +29,9 @@ if not os.path.isdir(INDEX_DIR):
 
 if not os.path.isdir(BENCHMKARK_QRELS_DIR):
     os.makedirs(BENCHMKARK_QRELS_DIR, exist_ok=True)
+
+if not os.path.isdir(DIAGRAM_DIR):
+    os.makedirs(DIAGRAM_DIR, exist_ok=True)
 
 BENCHMARK_DIR = os.path.join(RESOURCE_DIR, "benchmarks")
 

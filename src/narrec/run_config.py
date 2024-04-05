@@ -1,10 +1,7 @@
-import os
-
 from narrec.benchmark.genomics2005 import Genomics2005
 from narrec.benchmark.pm2020 import PM2020Benchmark
 from narrec.benchmark.relish import RelishBenchmark
 from narrec.benchmark.relishdrug import RelishDrugBenchmark
-from narrec.config import RESOURCE_DIR
 
 FIRST_STAGES = [
     "Perfect",
@@ -36,8 +33,6 @@ BENCHMARKS = [
     RelishDrugBenchmark()
 
 ]
-
-TOPIC_SCORES = RESULT_DIR = os.path.join(RESOURCE_DIR, "topic_scores")
 
 CONFIDENCE_WEIGHT = 0.5
 TFIDF_WEIGHT = 0.5
