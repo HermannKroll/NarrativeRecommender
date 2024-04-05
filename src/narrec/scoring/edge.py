@@ -59,6 +59,10 @@ PREDICATE_TO_SCORE = {
 }
 
 
+def score_edge_by_coverage(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
+    return min(document.get_concept_coverage(statement[0]), document.get_concept_coverage(statement[2]))
+
+
 def score_edge_by_tf_and_concept_idf(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):
     assert len(statement) == 3
 
@@ -66,9 +70,9 @@ def score_edge_by_tf_and_concept_idf(statement: tuple, document: RecommenderDocu
     assert 0.0 <= confidence <= 1.0
 
     # tf = len(document.spo2sentences[statement]) / document.max_statement_frequency
-    if document.max_concept_frequency > 0:
-        tf_s = document.get_concept_tf(statement[0]) / document.max_concept_frequency
-        tf_o = document.get_concept_tf(statement[2]) / document.max_concept_frequency
+    if document.concept_count > 0:
+        tf_s = document.get_concept_tf(statement[0]) / document.concept_count
+        tf_o = document.get_concept_tf(statement[2]) / document.concept_count
     else:
         tf_s = 0.0
         tf_o = 0.0
@@ -76,15 +80,19 @@ def score_edge_by_tf_and_concept_idf(statement: tuple, document: RecommenderDocu
     idf_o = corpus.get_concept_ifd_score(statement[2])
     # idf_statement = corpus.get_idf_score(statement)
 
-    tfidf = PREDICATE_TO_SCORE[statement[1]] * ((tf_s * idf_s) + (tf_o * idf_o))
+    tfidf = PREDICATE_TO_SCORE[statement[1]] * (0.5 * ((tf_s * idf_s) + (tf_o * idf_o)))
 
     coverage = min(document.get_concept_coverage(statement[0]), document.get_concept_coverage(statement[2]))
 
     # tfidf = tf * ((idf_s + idf_o) * 0.5)
 
     # assert 0.0 <= tf <= 1.0
+    assert 0.0 <= tfidf <= 1.0
+    assert 0.0 <= confidence <= 1.0
+    assert 0.0 <= coverage <= 1.0
 
     return coverage * confidence * tfidf
+    # return 0.4 * coverage + 0.2 * confidence + 0.4 * tfidf
 
 
 def score_edge_sentence(statement: tuple, document: RecommenderDocument, corpus: DocumentCorpus):

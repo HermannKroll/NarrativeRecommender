@@ -10,8 +10,7 @@ from narrec.backend.retriever import DocumentRetriever
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.scoring.edge import score_edge_connectivity, score_edge_confidence, \
-    score_edge_tfidf_sentences, score_edge_by_tf_and_concept_idf
+from narrec.scoring.edge import score_edge_by_tf_and_concept_idf, score_edge_by_coverage
 
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                     datefmt='%Y-%m-%d:%H:%M:%S',
@@ -23,12 +22,13 @@ corpus = DocumentCorpus(["PubMed"])
 core_extractor = NarrativeCoreExtractor(corpus=corpus)
 
 SCORE_FUNCTIONS = [
-    ("confidence", score_edge_confidence),
-    ("tfidfsentences", score_edge_tfidf_sentences),
+    #   ("confidence", score_edge_confidence),
+    #   ("tfidfsentences", score_edge_tfidf_sentences),
+    ("coverage", score_edge_by_coverage),
     ("final", score_edge_by_tf_and_concept_idf),
     #   ("tfidf+conf", score_edge),
     #   ("tfidf+conf+sentence", score_edge_sentence),
-    ("connectivity", score_edge_connectivity)
+    #    ("connectivity", score_edge_connectivity)
 ]
 
 
