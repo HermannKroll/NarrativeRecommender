@@ -2,7 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import os
 
-from narrec.config import TOPIC_SCORES, SCORE_FREQUENCY, RESOURCE_DIR
+from narrec.config import TOPIC_SCORES, SCORE_FREQUENCY
 
 
 def generate_boxplots(data_path):
@@ -39,23 +39,18 @@ def generate_boxplots(data_path):
 
 def generate_barplots(data_path):
     max_counts = {}
-
     for file_name in os.listdir(data_path):
         if file_name.endswith('.json'):
-            with open(os.path.join(data_path, file_name), 'r') as json_file:
-                data = json.load(json_file)
-            for method_data in data.values():
-                for measure, scores in method_data.items():
-                    max_counts.setdefault(measure, 0)
-                    max_counts[measure] = max(max_counts[measure], max(scores.values()))
-
-    for file_name in os.listdir(data_path):
-        if file_name.endswith('.json'):
+            print(file_name)
             benchmark = file_name.replace("_score_frequency.json", "")
             output_folder = os.path.join(data_path, f"{benchmark}_barplots")
             os.makedirs(output_folder, exist_ok=True)
             with open(os.path.join(data_path, file_name), 'r') as json_file:
                 data = json.load(json_file)
+            for method, method_data in data.items():
+                for measure, scores in method_data.items():
+                    max_counts.setdefault(measure, 0)
+                    max_counts[measure] = max(max_counts[measure], max(scores.values()))
             for method, method_data in data.items():
                 method_folder = os.path.join(output_folder, f"{method}")
                 os.makedirs(method_folder, exist_ok=True)
@@ -73,10 +68,9 @@ def generate_barplots(data_path):
                     print(f"Barplot for {benchmark} - {method} - {measure} was saved as {output_file}.")
 
 
-
 def main():
-    # generate_boxplots(TOPIC_SCORES)
-    generate_barplots(RESOURCE_DIR)
+    generate_boxplots(TOPIC_SCORES)
+    generate_barplots(SCORE_FREQUENCY)
 
 
 if __name__ == "__main__":
