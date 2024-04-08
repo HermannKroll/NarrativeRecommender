@@ -2,7 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import os
 
-from narrec.config import TOPIC_SCORES, SCORE_FREQUENCY
+from narrec.config import TOPIC_SCORES, SCORE_FREQUENCY, RESOURCE_DIR
 
 
 def generate_boxplots(data_path):
@@ -38,6 +38,17 @@ def generate_boxplots(data_path):
 
 
 def generate_barplots(data_path):
+    max_counts = {}
+
+    for file_name in os.listdir(data_path):
+        if file_name.endswith('.json'):
+            with open(os.path.join(data_path, file_name), 'r') as json_file:
+                data = json.load(json_file)
+            for method_data in data.values():
+                for measure, scores in method_data.items():
+                    max_counts.setdefault(measure, 0)
+                    max_counts[measure] = max(max_counts[measure], max(scores.values()))
+
     for file_name in os.listdir(data_path):
         if file_name.endswith('.json'):
             benchmark = file_name.replace("_score_frequency.json", "")
@@ -49,21 +60,23 @@ def generate_barplots(data_path):
                 method_folder = os.path.join(output_folder, f"{method}")
                 os.makedirs(method_folder, exist_ok=True)
                 for measure, scores in method_data.items():
-                    scores_dict = {float(score): count for score, count in scores.items()}  # Direkte Scores ohne Themen
+                    scores_dict = {float(score): count for score, count in scores.items()}
                     plt.figure(figsize=(10, 6))
                     plt.bar(scores_dict.keys(), scores_dict.values(), width=0.04, align='center')
                     plt.xlabel('Scores')
                     plt.ylabel('Count')
                     plt.title(f'Barplot for {benchmark} - {method} - {measure}')
+                    plt.ylim(0, max_counts[measure] + 1)
                     output_file = os.path.join(method_folder, f"{benchmark}_{method}_{measure}.png")
                     plt.savefig(output_file)
                     plt.close()
                     print(f"Barplot for {benchmark} - {method} - {measure} was saved as {output_file}.")
 
 
+
 def main():
-    generate_boxplots(TOPIC_SCORES)
-    generate_barplots(SCORE_FREQUENCY)
+    # generate_boxplots(TOPIC_SCORES)
+    generate_barplots(RESOURCE_DIR)
 
 
 if __name__ == "__main__":
