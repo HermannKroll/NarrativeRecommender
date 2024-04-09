@@ -4,21 +4,21 @@ from narrec.benchmark.relish import RelishBenchmark
 from narrec.benchmark.relishdrug import RelishDrugBenchmark
 
 FIRST_STAGES = [
-    "Perfect",
-   # "BM25Title",
+    #  "Perfect",
+    # "BM25Title",
     "BM25Abstract",
-   # "BM25Yake",
+    # "BM25Yake",
     "FSConcept",
     "FSCore",
-    "FSCoreOverlap",
-   # "FSCorePlusAbstractBM25",
-   # "FSCorePlusTitleBM25",
-    "PubMedRecommender"
+    #  "FSCoreOverlap",
+    # "FSCorePlusAbstractBM25",
+    # "FSCorePlusTitleBM25",
+    #  "PubMedRecommender"
 ]
 
 RECOMMENDER_NAMES = [
-    "EqualRecommender",
-    "StatementOverlap",
+    # "EqualRecommender",
+    # "StatementOverlap",
     "JaccardCombinedWeighted",
     "JaccardGraphWeighted",
     "JaccardConceptWeighted",
@@ -48,6 +48,7 @@ NODE_SIMILARITY_THRESHOLD = 0.3
 MULTIPROCESSING = False
 LOAD_FULL_IDF_CACHE = True
 DO_RECOMMENDATION = True
+JUDGED_DOCS_ONLY_FLAG = True
 
 # Experimental Configuration (because first stage will always find input doc)
 FS_DOCUMENT_CUTOFF = 1001
