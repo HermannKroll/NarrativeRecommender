@@ -4,45 +4,46 @@ from tabulate import tabulate
 
 from narrec.config import SCORE_FREQUENCY
 
-MIN_SCORE = 0.6
+MIN_SCORE = 0.0
 MAX_SCORE = 1.0
 
 FIRST_STAGES = [
     "Perfect",
-    # "BM25Abstract",
-    # "FSCore",
+    "BM25Abstract",
+    "FSCore",
+    "FSConcept",
     # "FSCoreOverlap",
-    # "PubMedRecommender"
+    "PubMedRecommender"
 ]
 
 RECOMMENDER_NAMES = [
-    "EqualRecommender",
-    "StatementOverlap",
-    # "JaccardCombinedWeighted",
+    # "EqualRecommender",
+    # "StatementOverlap",
+    "JaccardCombinedWeighted",
     # "JaccardGraphWeighted",
     # "JaccardConceptWeighted",
     "AlignedNodesRecommender",
     "AlignedCoresRecommender",
-    # "AlignedNodesFallbackRecommender",
-    # "AlignedCoresFallbackRecommender"
+    "AlignedNodesFallbackRecommender",
+    "AlignedCoresFallbackRecommender"
 ]
 
 BENCHMARKS = [
     "PM2020",
-    "Genomics2005",
-    # "RELISH",
+    # "Genomics2005",
+    "RELISH",
     # "RELISH_DRUG"
 ]
 
 RESULT_MEASURES = [
     # 'num_ret',
-    # 'recall_1000',
+    'recall_1000',
     # 'ndcg_cut_10',
-    # 'ndcg_cut_20',
+    'ndcg_cut_20',
     # 'ndcg_cut_100',
     # 'P_10',
     'P_20',
-    'P_100'
+    # 'P_100'
 ]
 
 
@@ -65,7 +66,8 @@ def compare_results():
     for bm in BENCHMARKS:
         for rm in RESULT_MEASURES:
             table = []
-            header = ["Method", f"Scores ({MIN_SCORE}-{MAX_SCORE})", "Percentage", f"Average Score ({MIN_SCORE}-{MAX_SCORE})"]
+            header = ["Method", f"Scores ({MIN_SCORE}-{MAX_SCORE})", "Percentage",
+                      f"Average Score ({MIN_SCORE}-{MAX_SCORE})"]
             covered_first_stages = []
             for fs in FIRST_STAGES:
                 for rn in RECOMMENDER_NAMES:
