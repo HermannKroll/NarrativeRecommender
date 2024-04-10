@@ -21,6 +21,7 @@ from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_cores_fallback import AlignedCoresFallbackRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.aligned_nodes_fallback import AlignedNodesFallbackRecommender
+from narrec.recommender.coreoverlap import CoreOverlap
 from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.jaccard import Jaccard
 from narrec.recommender.jaccard_combined import JaccardCombinedWeighted
@@ -107,7 +108,7 @@ def main():
     recommenders = [AlignedCoresFallbackRecommender(corpus),
                     AlignedNodesFallbackRecommender(corpus), EqualRecommender(),
                     AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
-                    StatementOverlap(core_extractor), Jaccard(),
+                    StatementOverlap(core_extractor), Jaccard(), CoreOverlap(extractor=core_extractor),
                     jaccard_graph, jaccard_concept, jaccard_combined]
 
     for bench in benchmarks:

@@ -17,15 +17,16 @@ FIRST_STAGES = [
 ]
 
 RECOMMENDER_NAMES = [
-    # "EqualRecommender",
-    # "StatementOverlap",
+    "EqualRecommender",
+    "StatementOverlap",
     "JaccardCombinedWeighted",
     "JaccardGraphWeighted",
     "JaccardConceptWeighted",
     "AlignedNodesRecommender",
     "AlignedCoresRecommender",
     "AlignedNodesFallbackRecommender",
-    "AlignedCoresFallbackRecommender"
+    "AlignedCoresFallbackRecommender",
+    "CoreOverlap"
 ]
 
 BENCHMARKS = [
