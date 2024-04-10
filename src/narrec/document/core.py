@@ -4,7 +4,7 @@ from kgextractiontoolbox.document.narrative_document import StatementExtraction
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
 from narrec.run_config import CORE_TOP_K, NARRATIVE_CORE_THRESHOLD
-from narrec.scoring.concept import score_concept_by_tf_idf_and_coverage, score_concept_by_tf_idf
+from narrec.scoring.concept import score_concept_by_tf_idf
 from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
@@ -86,6 +86,7 @@ class NarrativeCoreExtractor:
 
     def __init__(self, corpus: DocumentCorpus):
         self.corpus = corpus
+        self.cache = dict()
 
     def extract_concept_core(self, document: RecommenderDocument) -> NarrativeConceptCore:
         if not document.concepts:
@@ -110,6 +111,9 @@ class NarrativeCoreExtractor:
         return NarrativeConceptCore(scored_concepts)
 
     def extract_narrative_core_from_document(self, document: RecommenderDocument) -> NarrativeCore:
+        if document.id in self.cache:
+            return self.cache[document.id]
+
         if not document.extracted_statements:
             return None
 
@@ -164,4 +168,6 @@ class NarrativeCoreExtractor:
         # core_statements = [cs for cs in core_statements if cs.score >= avg_score]
         core_statements = core_statements[:CORE_TOP_K]
 
-        return NarrativeCore(core_statements)
+        core = NarrativeCore(core_statements)
+        self.cache[document.id] = core
+        return core
