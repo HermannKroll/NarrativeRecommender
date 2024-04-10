@@ -22,9 +22,9 @@ class CoreOverlap(RecommenderBase):
         document_ids_scored = {d.id: 0.0 for d in docs_from}
         for candidate in docs_from:
             cand_core = self.extractor.extract_narrative_core_from_document(candidate)
-
-            for stmt in core.intersect(cand_core):
-                document_ids_scored[candidate.id] += stmt.score
+            if cand_core:
+                for stmt in core.intersect(cand_core).statements:
+                    document_ids_scored[candidate.id] += stmt.score
 
         # Get the maximum score to normalize the scores
         max_score = max(document_ids_scored.values())
