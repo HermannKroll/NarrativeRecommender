@@ -36,8 +36,7 @@ class AlignedCoresRecommender(GraphBase):
                     if (edge[0] == node_b1 and edge[2] == node_b2) or (edge[2] == node_b1 and edge[0] == node_b2):
                         osim1 = self.ontological_node_similarity(node_a1, node_b1)
                         osim2 = self.ontological_node_similarity(node_a2, node_b2)
-                        tfidf = score_edge_by_tf_and_concept_idf(edge, candidate, self.corpus)
-                        sim_sum += osim1 * osim2 * tfidf
+                        sim_sum += osim1 * osim2 * stmt.score
                         count_sum += 1
 
             if count_sum > 0:
