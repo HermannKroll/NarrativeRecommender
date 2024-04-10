@@ -127,23 +127,11 @@ class NarrativeCoreExtractor:
                 s_scores.append(s_score)
                 filtered_statements.append(ScoredStatementExtraction(stmt=statement, score=s_score))
 
-        # Only tak statements that have a score above the average score
-        #  avg_score = sum(s_scores) / len(s_scores)
-        #  filtered_statements = [fs for fs in filtered_statements if fs[1] >= avg_score]
-
         if not filtered_statements:
             return None
 
         # sort filtered statements by score
         filtered_statements.sort(key=lambda x: x.score, reverse=True)
-
-        # graph = nx.Graph()
-        # for statement, score in filtered_statements:
-        #    graph.add_edge(statement.subject_id, statement.object_id)
-
-        # Find all connected components and sort them by their size (No. of nodes)
-        # Will produce a sorted list of nodes
-        # connected_components = [(c, len(c)) for c in sorted(nx.connected_components(graph), key=len, reverse=True)]
 
         core_node_pairs = set()
         # The following algorithm will be design select the highest scored edges between two
