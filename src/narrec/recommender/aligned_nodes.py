@@ -4,7 +4,6 @@ from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
 from narrec.recommender.graph_base import GraphBase
 from narrec.run_config import NODE_SIMILARITY_THRESHOLD
-from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
 class AlignedNodesRecommender(GraphBase):
@@ -17,7 +16,7 @@ class AlignedNodesRecommender(GraphBase):
         core = self.extractor.extract_narrative_core_from_document(document_i)
         if not core:
             return 0.0
-        scores = [score_edge_by_tf_and_concept_idf(statement.get_triple(), document_i, self.corpus)
+        scores = [statement.score
                   for statement in core.statements
                   if statement.subject_id == node or statement.object_id == node]
         if len(scores) == 0:
@@ -34,4 +33,4 @@ class AlignedNodesRecommender(GraphBase):
             similarity = self.ontological_node_similarity(node_a, node_b)
             score = self.node_score(node_b, candidate)
             total_score += similarity * score
-        return total_score # / len(doc.nodes)
+        return total_score  # / len(doc.nodes)
