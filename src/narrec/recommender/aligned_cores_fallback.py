@@ -14,7 +14,7 @@ class AlignedCoresFallbackRecommender(AlignedCoresRecommender):
         core_a = self.extractor.extract_narrative_core_from_document(doc)
         core_b = self.extractor.extract_narrative_core_from_document(candidate)
 
-        if len(core_a.intersect(core_b).statements) > 0:
+        if core_a and core_b and len(core_a.intersect(core_b).statements) > 0:
             return super().compute_document_score(doc, candidate, citation_graph)
         else:
             return candidate.first_stage_score
