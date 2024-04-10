@@ -162,12 +162,6 @@ class NarrativeCoreExtractor:
             core_statements.append(statement)
             core_node_pairs.add(so)
 
-        # take top-k
-        # s_scores = [s.score for s in core_statements]
-        # avg_score = sum(s_scores) / len(s_scores)
-        # core_statements = [cs for cs in core_statements if cs.score >= avg_score]
-        core_statements = core_statements[:CORE_TOP_K]
-
         core = NarrativeCore(core_statements)
         self.cache[document.id] = core
         return core
