@@ -3,6 +3,9 @@ from narrec.benchmark.pm2020 import PM2020Benchmark
 from narrec.benchmark.relish import RelishBenchmark
 from narrec.benchmark.relishdrug import RelishDrugBenchmark
 
+
+ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS = True
+
 FIRST_STAGES = [
     #  "Perfect",
     # "BM25Title",
@@ -24,10 +27,15 @@ RECOMMENDER_NAMES = [
     "JaccardConceptWeighted",
     "AlignedNodesRecommender",
     "AlignedCoresRecommender",
-    "AlignedNodesFallbackRecommender",
-    "AlignedCoresFallbackRecommender",
+    "AlignedNodesRecommender",
+    "AlignedCoresRecommender",
     "CoreOverlap"
 ]
+
+if ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS:
+    for r in RECOMMENDER_NAMES.copy():
+        RECOMMENDER_NAMES.append(f'{r}_BM25Fallback')
+
 
 BENCHMARKS = [
     PM2020Benchmark(),
@@ -51,7 +59,7 @@ BM25_WEIGHT = 0.4
 
 assert GRAPH_WEIGHT + BM25_WEIGHT == 1.0
 
-ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS = True
+
 
 MULTIPROCESSING = False
 LOAD_FULL_IDF_CACHE = True
