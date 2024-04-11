@@ -52,7 +52,7 @@ class GraphBase(RecommenderBase):
             if node_a_pref not in mapped and node_b_pref not in mapped:
                 mapped.add(node_a_pref)
                 mapped.add(node_b_pref)
-                matchings.append((node_a, node_b))
+                matchings.append((node_a, node_b, similarity))
 
         return matchings
 
