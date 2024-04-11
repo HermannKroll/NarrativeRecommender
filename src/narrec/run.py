@@ -23,12 +23,15 @@ from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.aligned_nodes_fallback import AlignedNodesFallbackRecommender
 from narrec.recommender.coreoverlap import CoreOverlap
 from narrec.recommender.equal import EqualRecommender
+from narrec.recommender.graph_base_fallback_bm25 import GraphBaseFallbackBM25
 from narrec.recommender.jaccard import Jaccard
 from narrec.recommender.jaccard_combined import JaccardCombinedWeighted
 from narrec.recommender.jaccard_concepts_weighted import JaccardConceptWeighted
 from narrec.recommender.jaccard_graph_weighted import JaccardGraphWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
-from narrec.run_config import BENCHMARKS, DO_RECOMMENDATION, MULTIPROCESSING, LOAD_FULL_IDF_CACHE
+from narrec.run_config import BENCHMARKS, DO_RECOMMENDATION, MULTIPROCESSING, LOAD_FULL_IDF_CACHE, \
+    ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS
+from narrec.scoring.BM25Scorer import BM25Scorer
 
 
 def load_document_ids_from_runfile(path_to_runfile):
@@ -93,28 +96,22 @@ def main():
 
     retriever = DocumentRetriever()
     core_extractor = NarrativeCoreExtractor(corpus=corpus)
+    bm25_scorer = BM25Scorer(None)
 
     citation_graph = CitationGraph()
-    jaccard_graph = JaccardGraphWeighted(corpus)
-    jaccard_concept = JaccardConceptWeighted(corpus)
-    jaccard_combined = JaccardCombinedWeighted(corpus,
-                                               jaccard_graph=jaccard_graph,
-                                               jaccard_concept=jaccard_concept)
-    # jaccard_with_bm25 = JaccardCombinedWeightedWithBM25(corpus,
-    #                                                     jaccard_graph=jaccard_graph,
-    #                                                     jaccard_concept=jaccard_concept,
-    #                                                     bm25_index=None)
 
-    recommenders = [AlignedCoresFallbackRecommender(corpus),
-                    AlignedNodesFallbackRecommender(corpus), EqualRecommender(),
-                    AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
+    recommenders = [EqualRecommender(), AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
                     StatementOverlap(core_extractor), Jaccard(), CoreOverlap(extractor=core_extractor),
-                    jaccard_graph, jaccard_concept, jaccard_combined]
+                    JaccardGraphWeighted(corpus), JaccardConceptWeighted(corpus), JaccardCombinedWeighted(corpus)]
+
+    if ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS:
+        for r in recommenders.copy():
+            recommenders.append(GraphBaseFallbackBM25(bm25scorer=bm25_scorer, graph_recommender=r))
 
     for bench in benchmarks:
         bench.load_benchmark_data()
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
-        # jaccard_with_bm25.set_index(bm25_index=index_path)
+        bm25_scorer.set_index(index_path)
 
         first_stages = [FSConcept(core_extractor, bench),
                         FSCore(core_extractor, bench),

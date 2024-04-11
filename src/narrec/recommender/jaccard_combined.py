@@ -8,14 +8,11 @@ from narrec.recommender.jaccard_concepts_weighted import JaccardConceptWeighted
 
 class JaccardCombinedWeighted(RecommenderBase):
 
-    def __init__(self, corpus: DocumentCorpus,
-                 jaccard_graph: JaccardGraphWeighted,
-                 jaccard_concept: JaccardConceptWeighted,
-                 name="JaccardCombinedWeighted"):
+    def __init__(self, corpus: DocumentCorpus, name="JaccardCombinedWeighted"):
         super().__init__(name=name)
         self.corpus = corpus
-        self.jaccard_graph = jaccard_graph
-        self.jaccard_concept = jaccard_concept
+        self.jaccard_graph = JaccardGraphWeighted(corpus)
+        self.jaccard_concept = JaccardConceptWeighted(corpus)
 
     def compute_document_score(self, doc: RecommenderDocument, candidate: RecommenderDocument,
                                citation_graph: CitationGraph) -> float:

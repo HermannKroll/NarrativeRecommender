@@ -1,16 +1,24 @@
 import json
+import os
 from datetime import datetime
 
 from narrec.backend.retriever import DocumentRetriever
 from narrec.citation.graph import CitationGraph
+from narrec.config import INDEX_DIR
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
+from narrec.recommender.coreoverlap import CoreOverlap
 from narrec.recommender.equal import EqualRecommender
+from narrec.recommender.graph_base_fallback_bm25 import GraphBaseFallbackBM25
 from narrec.recommender.jaccard import Jaccard
+from narrec.recommender.jaccard_combined import JaccardCombinedWeighted
+from narrec.recommender.jaccard_concepts_weighted import JaccardConceptWeighted
 from narrec.recommender.jaccard_graph_weighted import JaccardGraphWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
+from narrec.run_config import ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS
+from narrec.scoring.BM25Scorer import BM25Scorer
 
 relish_entry = """
 {
@@ -61,9 +69,16 @@ id2docs = {d.id: d for d in docs}
 # don't recommend the input id
 docs = [d for d in docs if d.id != doc_id]
 
-recommenders = [EqualRecommender(),
-                AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
-                StatementOverlap(core_extractor), Jaccard(), JaccardGraphWeighted(corpus)]
+index_path = os.path.join(INDEX_DIR, "PM2020")
+bm25_scorer = BM25Scorer(index_path)
+
+recommenders = [EqualRecommender(), AlignedNodesRecommender(corpus), AlignedCoresRecommender(corpus),
+                StatementOverlap(core_extractor), Jaccard(), CoreOverlap(extractor=core_extractor),
+                JaccardGraphWeighted(corpus), JaccardConceptWeighted(corpus), JaccardCombinedWeighted(corpus)]
+
+if ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS:
+    for r in recommenders.copy():
+        recommenders.append(GraphBaseFallbackBM25(bm25scorer=bm25_scorer, graph_recommender=r))
 
 rec_doc = id2docs[doc_id]
 

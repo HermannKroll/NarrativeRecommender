@@ -3,12 +3,11 @@ from narrec.document.core import NarrativeCoreExtractor, NarrativeCore
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
 from narrec.recommender.graph_base import GraphBase
-from narrec.run_config import NODE_SIMILARITY_THRESHOLD
 
 
 class AlignedNodesRecommender(GraphBase):
-    def __init__(self, corpus: DocumentCorpus, name="AlignedNodesRecommender", threshold=NODE_SIMILARITY_THRESHOLD):
-        super().__init__(threshold, name=name)
+    def __init__(self, corpus: DocumentCorpus, name="AlignedNodesRecommender"):
+        super().__init__(name=name)
         self.corpus = corpus
         self.extractor = NarrativeCoreExtractor(corpus=self.corpus)
 

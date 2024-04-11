@@ -1,17 +1,13 @@
-import itertools
-
 from narrec.citation.graph import CitationGraph
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
 from narrec.recommender.graph_base import GraphBase
-from narrec.run_config import NODE_SIMILARITY_THRESHOLD
-from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
 class AlignedCoresRecommender(GraphBase):
-    def __init__(self, corpus: DocumentCorpus, name="AlignedCoresRecommender", threshold=NODE_SIMILARITY_THRESHOLD):
-        super().__init__(threshold, name=name)
+    def __init__(self, corpus: DocumentCorpus, name="AlignedCoresRecommender"):
+        super().__init__(name=name)
         self.corpus = corpus
         self.extractor = NarrativeCoreExtractor(corpus=self.corpus)
 

@@ -2,10 +2,11 @@ from narrec.citation.graph import CitationGraph
 from narrec.document.document import RecommenderDocument
 from narrec.ontology.ontology import Ontology
 from narrec.recommender.base import RecommenderBase
+from narrec.run_config import NODE_SIMILARITY_THRESHOLD
 
 
 class GraphBase(RecommenderBase):
-    def __init__(self, threshold, name):
+    def __init__(self, name, threshold=NODE_SIMILARITY_THRESHOLD):
         super().__init__(name=name)
         self.threshold = threshold
         self.ontology = Ontology()
