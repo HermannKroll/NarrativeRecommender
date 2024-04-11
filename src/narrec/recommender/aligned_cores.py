@@ -1,3 +1,5 @@
+import itertools
+
 from narrec.citation.graph import CitationGraph
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
@@ -22,24 +24,15 @@ class AlignedCoresRecommender(GraphBase):
         similarity_score = 0
 
         # compute the core of the candidate document
-        core = self.extractor.extract_narrative_core_from_document(candidate)
-        if not core:
+        candidate_core = self.extractor.extract_narrative_core_from_document(candidate)
+        if not candidate_core:
             return 0.0
 
-        for (node_a1, node_b1) in node_matchings:
-            sim_sum = 0
-            count_sum = 0
-
-            for (node_a2, node_b2) in node_matchings:
-                for stmt in core.statements:
+        for node_a1, node_b1, osim1 in node_matchings:
+            for node_a2, node_b2, osim2 in node_matchings:
+                for stmt in candidate_core.statements:
                     edge = stmt.get_triple()
-                    if (edge[0] == node_b1 and edge[2] == node_b2) or (edge[2] == node_b1 and edge[0] == node_b2):
-                        osim1 = self.ontological_node_similarity(node_a1, node_b1)
-                        osim2 = self.ontological_node_similarity(node_a2, node_b2)
-                        sim_sum += osim1 * osim2 * stmt.score
-                        count_sum += 1
+                    if edge[0] == node_b1 and edge[2] == node_b2:
+                        similarity_score += osim1 * osim2 * stmt.score
 
-            if count_sum > 0:
-                similarity_score += sim_sum #/ count_sum
-
-        return similarity_score #/ len(doc.nodes)
+        return similarity_score
