@@ -18,6 +18,7 @@ class BM25Scorer:
             self.set_index(bm25_index)
 
     def set_index(self, bm25_index):
+        self.cache.clear()
         bm25_index = pt.IndexFactory.of(bm25_index, memory=True)
         self.bm25pipeline = pt.BatchRetrieve(
             bm25_index,
