@@ -3,12 +3,11 @@ from narrec.benchmark.pm2020 import PM2020Benchmark
 from narrec.benchmark.relish import RelishBenchmark
 from narrec.benchmark.relishdrug import RelishDrugBenchmark
 
-
 ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS = True
 
 FIRST_STAGES = [
-    #  "Perfect",
-    # "BM25Title",
+    "Perfect",
+    "BM25Title",
     "BM25Abstract",
     # "BM25Yake",
     "FSConcept",
@@ -16,7 +15,7 @@ FIRST_STAGES = [
     #  "FSCoreOverlap",
     # "FSCorePlusAbstractBM25",
     # "FSCorePlusTitleBM25",
-    #  "PubMedRecommender"
+    "PubMedRecommender"
 ]
 
 RECOMMENDER_NAMES = [
@@ -35,7 +34,6 @@ RECOMMENDER_NAMES = [
 if ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS:
     for r in RECOMMENDER_NAMES.copy():
         RECOMMENDER_NAMES.append(f'{r}_BM25Fallback')
-
 
 BENCHMARKS = [
     PM2020Benchmark(),
@@ -58,8 +56,6 @@ GRAPH_WEIGHT = 0.6
 BM25_WEIGHT = 0.4
 
 assert GRAPH_WEIGHT + BM25_WEIGHT == 1.0
-
-
 
 MULTIPROCESSING = False
 LOAD_FULL_IDF_CACHE = True
