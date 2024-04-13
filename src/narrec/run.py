@@ -18,9 +18,7 @@ from narrec.firststage.fscore import FSCore
 from narrec.firststage.perfect import Perfect
 from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
-from narrec.recommender.aligned_cores_fallback import AlignedCoresFallbackRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
-from narrec.recommender.aligned_nodes_fallback import AlignedNodesFallbackRecommender
 from narrec.recommender.coreoverlap import CoreOverlap
 from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.graph_base_fallback_bm25 import GraphBaseFallbackBM25
@@ -30,7 +28,7 @@ from narrec.recommender.jaccard_concepts_weighted import JaccardConceptWeighted
 from narrec.recommender.jaccard_graph_weighted import JaccardGraphWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
 from narrec.run_config import BENCHMARKS, DO_RECOMMENDATION, MULTIPROCESSING, LOAD_FULL_IDF_CACHE, \
-    ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS
+    ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS, RERUN_FIRST_STAGES
 from narrec.scoring.BM25Scorer import BM25Scorer
 
 
@@ -128,7 +126,7 @@ def main():
 
         def do_first_stage_and_recommendation(first_stage):
             fs_path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}.txt')
-            if not os.path.isfile(fs_path):
+            if not os.path.isfile(fs_path) or RERUN_FIRST_STAGES:
                 # create first stage data
                 run_first_stage_for_benchmark(retriever, bench, first_stage, fs_path)
             # next load the documents for this first stage
