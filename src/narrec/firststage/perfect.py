@@ -15,7 +15,11 @@ class Perfect(FirstStageBase):
         self.document_ids_in_db = set()
         print(f'Perfect stage: querying document ids for collection: {GLOBAL_DB_DOCUMENT_COLLECTION}')
         for row in session.query(Document.id).filter(Document.collection == GLOBAL_DB_DOCUMENT_COLLECTION):
+            if self.benchmark.document_collection == "PubMed" and self.benchmark.get_documents_for_baseline():
+                if row.id not in self.benchmark.get_documents_for_baseline():
+                    continue
             self.document_ids_in_db.add(row.id)
+
         print(f'{len(self.document_ids_in_db)} document ids in DB')
 
     def retrieve_documents_for(self, document: RecommenderDocument):
