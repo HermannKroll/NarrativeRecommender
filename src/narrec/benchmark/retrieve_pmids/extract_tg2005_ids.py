@@ -10,8 +10,7 @@ def main():
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
     output_file_path = os.path.join(DATA_DIR, "pmids_tg2005.txt")
-    dataset = ir_datasets.load("medline/2004/trec-g"
-                               "enomics-2005")
+    dataset = ir_datasets.load("medline/2004/trec-genomics-2005")
 
     with open(output_file_path, 'w') as output_file:
         for doc in dataset.docs_iter():
