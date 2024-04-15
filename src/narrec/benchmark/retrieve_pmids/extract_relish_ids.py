@@ -1,98 +1,84 @@
-import tarfile
-import os
-import shutil
+import glob
 import gzip
-import subprocess
 import logging
-import concurrent.futures
-import xml.etree.ElementTree as ET
+import os
+import re
+
+import requests
+from lxml import etree
+from tqdm import tqdm
 
 from narrec.config import DATA_DIR
 
 
-def download_data():
-    current_directory = os.getcwd()
-    data_path = os.join(current_directory, "path")
-    if not os.path.exists(data_path):
-        os.makedirs(data_path)
-    subprocess.run(['cd', data_path])
+# First of all, MEDLINE data 2018 must be crawled
+# wget -m https://lhncbc.nlm.nih.gov/ii/information/MBR/Baselines/ -P 2018
 
-    def download_url(url):
-        logging.info(f"Downloading from {url}")
-        subprocess.run(["wget", url])
+# wget -m -r https://data.lhncbc.nlm.nih.gov/public/ii/information/MBR/Baselines/2018
 
-    urls_to_download = ["https://bionlp.nlm.nih.gov/trec2017precisionmedicine/medline_xml.part1.tar.gz",
-                        "https://bionlp.nlm.nih.gov/trec2017precisionmedicine/medline_xml.part2.tar.gz",
-                        "https://bionlp.nlm.nih.gov/trec2017precisionmedicine/medline_xml.part3.tar.gz",
-                        "https://bionlp.nlm.nih.gov/trec2017precisionmedicine/medline_xml.part4.tar.gz",
-                        "https://bionlp.nlm.nih.gov/trec2017precisionmedicine/medline_xml.part5.tar.gz"]
+def crawl_pubmed_medline_data(medline_directory):
+    MASTER_URL = "https://lhncbc.nlm.nih.gov/ii/information/MBR/Baselines/2018.html"
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.map(download_url, urls_to_download)
+    r = requests.get(MASTER_URL)
+    content = str(r.content)
 
-    logging.info("Finished downloading")
+    # extract all downloadable medlines files from URL
+    regex = re.compile('href="[\w\\\/:.]+"')
+    matches = regex.findall(content)
+    for match in tqdm(matches, total=len(matches)):
+        # dissemble url
+        file_url = match.split('"')[1]
+        file_name = file_url.split('/')[-1]
 
+        file_path = os.path.join(medline_directory, file_name)
+        if os.path.exists(file_path):
+            print(f'Skipping existing file {file_path}')
+            continue
 
-def extract_pmids_from_xml(xml_content):
-    root = ET.fromstring(xml_content)
-    pmid_elements = root.findall('.//PMID')
+        with open(file_path, 'wb') as f_out:
+            medline_data = requests.get(file_url).content
+            f_out.write(medline_data)
 
-    return {pmid.text for pmid in pmid_elements}
-
-
-def unpack_data(data_folder, tar_files, unpacked_folder):
-    for file in tar_files:
-        logging.info(f"Processing {file}...")
-        with tarfile.open(os.path.join(data_folder, file), "r:gz") as tar:
-            tar.extractall(path=unpacked_folder)
-
-    for file in os.listdir(unpacked_folder):
-        if file.endswith(".gz"):
-            logging.info(f"Processing {file}...")
-            with gzip.open(os.path.join(unpacked_folder, file), 'rb') as f_in:
-                with open(os.path.join(unpacked_folder, file[:-3]), 'wb') as f_out:
-                    shutil.copyfileobj(f_in, f_out)
-            os.remove(os.path.join(unpacked_folder, file))
-        if file.endswith(".md5"):
-            os.remove(os.path.join(unpacked_folder, file))
+    print("Finished crawling medline data")
 
 
-def process_folder(folder_path, output_file):
+def pubmed_medline_extract_document_ids(directory, output):
+    print(f'Collecting all PubMed ids in {directory}')
+    if directory[-1] == '/':
+        directory = directory[:-1]
+    files = list(glob.glob(f'{directory}/**/*.xml.gz', recursive=True) +
+                 glob.glob(f'{directory}/**/*.xml', recursive=True))
     all_pmids = set()
-    for filename in os.listdir(folder_path):
+    for idx, filename in tqdm(enumerate(files), total=len(files)):
         if filename.endswith('.xml'):
-            logging.info(f"Processing {filename}...")
-            file_path = os.path.join(folder_path, filename)
+            with open(filename) as f:
+                tree = etree.parse(f)
+        elif filename.endswith('.xml.gz'):
+            with gzip.open(filename) as f:
+                tree = etree.parse(f)
 
-            with open(file_path, 'r', encoding='utf-8') as file:
-                xml_content = file.read()
-                pmids = extract_pmids_from_xml(xml_content)
-                logging.info(f"{len(pmids)} found")
-                all_pmids.update(pmids)
+        for article in tree.iterfind("PubmedArticle"):
+            # Get PMID
+            pmids = article.findall("./MedlineCitation/PMID")
+            for pmid in pmids:
+                all_pmids.add(int(pmid.text))
 
-    logging.info(f"{len(all_pmids)} were found")
-    logging.info(f"writing to txt file...")
-    with open(output_file, 'w') as output:
-        for pmid in all_pmids:
-            output.write(f"{pmid}\n")
+    print('Finished')
+
+    print(f"{len(all_pmids)} were found")
+    print(f"writing to txt file...")
+    with open(output, 'w') as f_out:
+        f_out.write('\n'.join([str(p) for p in all_pmids]))
 
 
 def main():
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
-    download_data()
-    data_folder = "data/"
-    tar_files = ["medline_xml.part1.tar.gz", "medline_xml.part2.tar.gz", "medline_xml.part3.tar.gz",
-                 "medline_xml.part4.tar.gz", "medline_xml.part5.tar.gz"]
-    unpacked_folder = os.path.join(data_folder, "unpacked_data")
-    os.makedirs(unpacked_folder, exist_ok=True)
-
-    unpack_data(data_folder, tar_files, unpacked_folder)
-
+    input_dir = os.path.join(DATA_DIR, "medline_2018")
     output_file = os.path.join(DATA_DIR, 'pmids_pm2018.txt')
-
-    process_folder(unpacked_folder, output_file)
+    crawl_pubmed_medline_data(input_dir)
+    pubmed_medline_extract_document_ids(input_dir, output_file)
 
 
 if __name__ == "__main__":
