@@ -1,16 +1,9 @@
-import os
-
 from tqdm import tqdm
 
-from narrant.preprocessing.enttypes import DRUG
+from narrant.entitylinking.enttypes import DRUG
 from narrec.backend.retriever import DocumentRetriever
-from narrec.benchmark.benchmark import BenchmarkType, Benchmark
-from narrec.benchmark.relish import RelishBenchmark
-from narrec.citation.graph import CitationGraph
-from narrec.config import RESULT_DIR, INDEX_DIR, GLOBAL_DB_DOCUMENT_COLLECTION
-from narrec.document.core import NarrativeCoreExtractor
-from narrec.document.corpus import DocumentCorpus
-from narrec.recommender.simple import EqualRecommender
+from narrec.benchmark.benchmark import Benchmark
+from narrec.run_config import BENCHMARKS
 
 
 def analyze_benchmark(retriever: DocumentRetriever, benchmark: Benchmark):
@@ -26,12 +19,13 @@ def analyze_benchmark(retriever: DocumentRetriever, benchmark: Benchmark):
     print('Perform first stage retrieval')
 
     graph_size2count = {}
-    count_less_5 = 0
-    count_less_10 = 0
+    concept_count2count = {}
     count_has_drug = 0
     count_has_drug_in_graph = 0
+    no_docs = 0
     doc_queries = list(benchmark.iterate_over_document_entries())
     for q_idx, doc_id in tqdm(doc_queries, total=len(doc_queries)):
+        no_docs += 1
         try:
             input_doc = docid2docs[int(doc_id)]
 
@@ -41,11 +35,10 @@ def analyze_benchmark(retriever: DocumentRetriever, benchmark: Benchmark):
                 graph_size2count[doc_graph_size] = 0
             graph_size2count[doc_graph_size] += 1
 
-            if doc_graph_size < 5:
-                count_less_5 += 1
-
-            if doc_graph_size < 10:
-                count_less_10 += 1
+            concept_count = len(input_doc.tags)
+            if concept_count not in concept_count2count:
+                concept_count2count[concept_count] = 0
+            concept_count2count[concept_count] += 1
 
             if DRUG in {t.ent_type for t in input_doc.tags}:
                 count_has_drug += 1
@@ -58,28 +51,31 @@ def analyze_benchmark(retriever: DocumentRetriever, benchmark: Benchmark):
         except KeyError:
             print(f'Document {doc_id} not known in our collection - skipping')
 
-    graph_size2count = sorted([(k, v) for k, v in graph_size2count.items()], key=lambda x: x[0])
-    for size, count in graph_size2count:
-        print(f'graph of {size}: {count}')
+    ranges_to_repot = [(0, 5), (0, 10), (10, 100000)]
+    print(f'Count of documents is: {no_docs}')
+    for r_min, r_max in ranges_to_repot:
+        sum_concepts = 0
+        sum_graph_size = 0
+        for i in range(r_min, r_max + 1):
+            if i in graph_size2count:
+                sum_graph_size += graph_size2count[i]
+
+            if i in concept_count2count:
+                sum_concepts += concept_count2count[i]
+
+        print(f'Documents with concept count in range {r_min} - {r_max} - Sum: {sum_concepts}')
+        print(f'Documents with graph size    in range {r_min} - {r_max} - Sum: {sum_graph_size}')
 
     print()
-    print('Less than 5 edges   : ', count_less_5)
-    print('Less than 10 edges  : ', count_less_10)
     print('Has a drug concept  : ', count_has_drug)
     print('Has a drug statement: ', count_has_drug_in_graph)
 
 
 def main():
-    benchmarks = [RelishBenchmark()]
-    corpus = DocumentCorpus(collections=[GLOBAL_DB_DOCUMENT_COLLECTION])
-    core_extractor = NarrativeCoreExtractor(corpus=corpus)
     retriever = DocumentRetriever()
-    citation_graph = CitationGraph()
-    recommenders = [EqualRecommender()]
-    DO_RECOMMENDATION = False
 
-    for bench in benchmarks:
-        index_path = os.path.join(INDEX_DIR, bench.name)
+    for bench in BENCHMARKS:
+        bench.load_benchmark_data()
         analyze_benchmark(retriever, bench)
 
 

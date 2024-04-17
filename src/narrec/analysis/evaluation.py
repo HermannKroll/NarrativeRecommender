@@ -26,16 +26,16 @@ METRICS = {
 }
 
 RESULT_MEASURES = {
-    'num_ret': 'Retrieved',
+ #   'num_ret': 'Retrieved',
     'recall_1000': 'Recall@1000',
     'ndcg_cut_10': 'nDCG@10',
     'ndcg_cut_20': 'nDCG@20',
-    'ndcg_cut_100': 'nDCG@100',
+ #   'ndcg_cut_100': 'nDCG@100',
     #   'map': 'MAP',
     #   'bpref': 'bpref',
     'P_10': 'P@10',
     'P_20': 'P@20',
-    "P_100": 'P@100'
+  #  "P_100": 'P@100'
 }
 
 
