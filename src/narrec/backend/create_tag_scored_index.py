@@ -1,16 +1,16 @@
 import json
-
 from collections import defaultdict
 from datetime import datetime
 
+from narrant.entity.entityidtranslator import EntityIDTranslator
 from sqlalchemy import delete
 from tqdm import tqdm
 
 from kgextractiontoolbox.document.document import TaggedEntity
 from kgextractiontoolbox.document.narrative_document import NarrativeDocument
 from kgextractiontoolbox.progress import Progress
-from narraint.backend.models import Tag, TagInvertedIndex, Document
-from narrant.entity.entityidtranslator import EntityIDTranslator
+from narraint.backend.models import Tag, Document
+from narraint.config import QUERY_YIELD_PER_K
 from narrec.backend.database import SessionRecommender
 from narrec.backend.models import TagInvertedIndexScored
 from narrec.config import GLOBAL_DB_DOCUMENT_COLLECTION
@@ -42,7 +42,7 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
     print('Retrieving document data...')
     doc_query = session.query(Document).filter(Document.collection == collection)
     doc_query = doc_query.order_by(Document.id)
-    
+
     for doc in tqdm(doc_query, total=doc_count):
         docid2narrative_doc[doc.id] = NarrativeDocument(document_id=doc.id, title=doc.title, abstract=doc.abstract)
 
@@ -55,11 +55,12 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
 
     query = session.query(Tag).filter(Tag.document_collection == collection)
     query = query.order_by(Tag.document_id)
+    query = query.yield_per(QUERY_YIELD_PER_K * 100)
 
     index = defaultdict(set)
     print('Using the Gene Resolver to replace gene ids by symbols')
     entityidtranslator = EntityIDTranslator()
-    for idx, tag_row in enumerate(query):
+    for idx, tag_row in tqdm(enumerate(query), total=tag_count):
         progress.print_progress(idx)
         try:
             translated_id = entityidtranslator.translate_entity_id(tag_row.ent_id, tag_row.ent_type)
@@ -85,10 +86,9 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
 
     corpus = DocumentCorpus(collections=[GLOBAL_DB_DOCUMENT_COLLECTION])
 
-    progress = Progress(total=len(index.items()), print_every=1000, text="Computing insert values...")
-    progress.start_time()
+    print("Computing insert values...")
     insert_list = []
-    for row_key, doc_ids in index.items():
+    for row_key, doc_ids in tqdm(index.items(), total=len(index)):
         entity_id, entity_type, doc_col = row_key.split(SEPERATOR_STRING)
 
         doc2score = {}
