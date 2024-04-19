@@ -11,6 +11,7 @@ FIRST_STAGES = [
     "BM25Abstract",
     # "BM25Yake",
     "FSConcept",
+    "FSConceptPlus",
     "FSCore",
     #  "FSCoreOverlap",
     # "FSCorePlusAbstractBM25",
@@ -59,7 +60,7 @@ assert GRAPH_WEIGHT + BM25_WEIGHT == 1.0
 
 MULTIPROCESSING = False
 LOAD_FULL_IDF_CACHE = True
-DO_RECOMMENDATION = True
+DO_RECOMMENDATION = False
 RERUN_FIRST_STAGES = True
 JUDGED_DOCS_ONLY_FLAG = True
 

@@ -14,6 +14,7 @@ from narrec.firststage.base import FirstStageBase
 from narrec.firststage.bm25abstract import BM25Abstract
 from narrec.firststage.bm25title import BM25Title
 from narrec.firststage.fsconcept import FSConcept
+from narrec.firststage.fsconceptplus import FSConceptPlus
 from narrec.firststage.fscore import FSCore
 from narrec.firststage.perfect import Perfect
 from narrec.firststage.pubmed import PubMedRecommender
@@ -111,14 +112,15 @@ def main():
         index_path = os.path.join(INDEX_DIR, bench.get_index_name())
         bm25_scorer.set_index(index_path)
 
-        first_stages = [FSConcept(core_extractor, bench),
-                        FSCore(core_extractor, bench),
+        first_stages = [FSConceptPlus(core_extractor, bench),
+                        FSConcept(core_extractor, bench)]
+                        #FSCore(core_extractor, bench),
                         # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
                         # FSCoreOverlap(core_extractor, bench, index_path, retriever),
-                        PubMedRecommender(bench),
-                        BM25Abstract(index_path),
-                        BM25Title(index_path),
-                        Perfect(bench)]
+                        #PubMedRecommender(bench),
+                        #BM25Abstract(index_path),
+                        #BM25Title(index_path),
+                        #Perfect(bench)]
 
         # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
         # FSCorePlusTitleBM25(core_extractor, bench, index_path),
