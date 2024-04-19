@@ -77,7 +77,7 @@ class FSCore(FirstStageBase):
         else:
             document_ids_scored = [(k, v) for k, v in document_ids_scored.items()]
         # Sort by score and then doc desc
-        document_ids_scored.sort(key=lambda x: (x[1], x[0]), reverse=True)
+        document_ids_scored.sort(key=lambda x: (x[1], int(x[0])), reverse=True)
 
         return document_ids_scored
 
