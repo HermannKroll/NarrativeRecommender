@@ -5,8 +5,8 @@ from narrant.entity.meshontology import MeSHOntology
 class Ontology:
 
     def __init__(self):
-        self.mesh_ontology = MeSHOntology.instance()
-        self.atc = ATCTree.instance()
+        self.mesh_ontology = MeSHOntology()
+        self.atc = ATCTree()
 
     @staticmethod
     def prefix_based_distance(a: str, b: str, denominator: str = '.') -> int:
