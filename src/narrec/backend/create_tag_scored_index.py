@@ -29,7 +29,7 @@ SEPERATOR_STRING = "_;_"
 def compute_scored_inverted_index_for_tags(collection="PubMed"):
     start_time = datetime.now()
     session = SessionRecommender.get()
-
+    print('V2')
     print('Deleting old inverted index for tags...')
     stmt = delete(TagInvertedIndexScored)
     session.execute(stmt)
@@ -41,7 +41,6 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
     print(f'{doc_count} documents found')
     print('Retrieving document data...')
     doc_query = session.query(Document).filter(Document.collection == collection)
-    doc_query = doc_query.order_by(Document.id)
 
     for doc in tqdm(doc_query, total=doc_count):
         docid2narrative_doc[doc.id] = NarrativeDocument(document_id=doc.id, title=doc.title, abstract=doc.abstract)
@@ -54,13 +53,12 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
     progress.start_time()
 
     query = session.query(Tag).filter(Tag.document_collection == collection)
-    query = query.order_by(Tag.document_id)
-    query = query.yield_per(QUERY_YIELD_PER_K * 100)
+    query = query.yield_per(QUERY_YIELD_PER_K)
 
     index = defaultdict(set)
     print('Using the Gene Resolver to replace gene ids by symbols')
     entityidtranslator = EntityIDTranslator()
-    for idx, tag_row in tqdm(enumerate(query), total=tag_count):
+    for idx, tag_row in enumerate(query):
         progress.print_progress(idx)
         try:
             translated_id = entityidtranslator.translate_entity_id(tag_row.ent_id, tag_row.ent_type)
