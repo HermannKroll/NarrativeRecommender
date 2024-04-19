@@ -27,7 +27,7 @@ class FSConceptPlus(FirstStageBase):
         q = q.filter(TagInvertedIndexScored.entity_id == concept)
         q = q.filter(TagInvertedIndexScored.document_collection == self.benchmark.document_collection)
 
-        docid2score = dict()
+        doc_scores = list()
         for row in q:
             scored_docs = ast.literal_eval(row.scored_document_ids)
             for did, tf, score in scored_docs:
@@ -35,16 +35,11 @@ class FSConceptPlus(FirstStageBase):
                 if self.benchmark.document_collection == "PubMed" and self.benchmark.get_documents_for_baseline():
                     if did not in self.benchmark.get_documents_for_baseline():
                         continue
-                # if its the first document for this concept, take the score
-                # otherwise take the maximum score for this document
-                if did not in docid2score:
-                    docid2score[did] = score
-                else:
-                    docid2score[did] = max(docid2score[did], score)
+                doc_scores.append((did, tf, score))
 
         # add to cache
-        self.concept2documents[concept] = docid2score
-        return docid2score
+        self.concept2documents[concept] = doc_scores
+        return doc_scores
 
     def score_document_ids_with_core(self, core: NarrativeConceptCore):
         # Core statements are also sorted by their score
@@ -55,7 +50,7 @@ class FSConceptPlus(FirstStageBase):
             # retrieve matching documents
             doc2score = self.retrieve_documents(concept.concept)
 
-            for doc_id, score in doc2score.items():
+            for doc_id, tf, score in doc2score.items():
                 if doc_id not in document_ids_scored:
                     document_ids_scored[doc_id] = score
                 else:
