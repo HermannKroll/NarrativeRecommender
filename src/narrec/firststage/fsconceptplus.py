@@ -47,14 +47,25 @@ class FSConceptPlus(FirstStageBase):
         # If a statement of the core is contained within a document, we increase the score
         # of the document by the score of the corresponding edge
         for idx, concept in enumerate(core.concepts):
+            # we already found enough documents
+            if len(document_ids_scored) >= FS_DOCUMENT_CUTOFF:
+                # get the remaining reachable score
+                # if all documents that we found are above the reachable score, we can stop
+                max_reachable_scores = sum(c.score for c in core.concepts[idx:])
+                count = len([d for d, s in document_ids_scored.items()
+                             if s >= max_reachable_scores])
+                if count >= FS_DOCUMENT_CUTOFF:
+                    # we can't find better documents, stop here
+                    # the first K documents are filled
+                    break
             # retrieve matching documents
             doc2score = self.retrieve_documents(concept.concept)
 
-            for doc_id, tf, score in doc2score.items():
+            for doc_id, tf, score in doc2score:
                 if doc_id not in document_ids_scored:
-                    document_ids_scored[doc_id] = score
+                    document_ids_scored[doc_id] = concept.score * score
                 else:
-                    document_ids_scored[doc_id] += score
+                    document_ids_scored[doc_id] += concept.score * score
 
         # We did not find any documents
         if len(document_ids_scored) == 0:
@@ -68,7 +79,7 @@ class FSConceptPlus(FirstStageBase):
         else:
             document_ids_scored = [(k, v) for k, v in document_ids_scored.items()]
         # Sort by score and then doc desc
-        document_ids_scored.sort(key=lambda x: (x[1], x[0]), reverse=True)
+        document_ids_scored.sort(key=lambda x: (x[1], int(x[0])), reverse=True)
 
         return document_ids_scored
 

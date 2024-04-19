@@ -3,20 +3,21 @@ from typing import List
 from kgextractiontoolbox.document.narrative_document import StatementExtraction
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.run_config import CORE_TOP_K, NARRATIVE_CORE_THRESHOLD
-from narrec.scoring.concept import score_concept_by_tf_idf
+from narrec.run_config import NARRATIVE_CORE_THRESHOLD
+from narrec.scoring.concept import score_concept_by_tf_idf_and_coverage
 from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 
 class ScoredConcept:
 
-    def __init__(self, concept: str, score: float, coverage: float):
+    def __init__(self, concept: str, score: float, coverage: float, support: int):
         self.concept = concept
         self.score = score
         self.coverage = coverage
+        self.support = support
 
     def __str__(self):
-        return f'{round(self.score, 2)}: {self.concept} (coverage: {self.coverage})'
+        return f'{round(self.score, 2)}: {self.concept} (coverage: {self.coverage} / support: {self.support})'
 
     def __repr__(self):
         return self.__str__()
@@ -93,17 +94,19 @@ class NarrativeCoreExtractor:
             return None
 
         scored_concepts = []
+        max_score = 0.0
         for concept in document.concepts:
-            score = score_concept_by_tf_idf(concept, document, self.corpus)
+            score = score_concept_by_tf_idf_and_coverage(concept, document, self.corpus)
+            max_score = max(max_score, score)
             coverage = document.get_concept_coverage(concept)
-            if score >= NARRATIVE_CORE_THRESHOLD:
-                scored_concepts.append(ScoredConcept(concept, score, coverage))
+            support = self.corpus.get_concept_support(concept)
+            if score >= NARRATIVE_CORE_THRESHOLD and support <= 1000000:
+                scored_concepts.append(ScoredConcept(concept, score, coverage, support))
 
-        # sort scored concepts by their coverage
-        scored_concepts.sort(key=lambda x: x.coverage, reverse=True)
-
-        # get top k results scored concepts based on coverage
-        scored_concepts = scored_concepts[:CORE_TOP_K]
+        # normalize all scores
+        if max_score > 0.0:
+            for sc in scored_concepts:
+                sc.score = sc.score / max_score
 
         # sort remaining ones by score
         scored_concepts.sort(key=lambda x: x.score, reverse=True)

@@ -6,7 +6,7 @@ from narrec.benchmark.benchmark import Benchmark
 from narrec.document.core import NarrativeCoreExtractor, NarrativeConceptCore
 from narrec.document.document import RecommenderDocument
 from narrec.firststage.base import FirstStageBase
-from narrec.run_config import FS_DOCUMENT_CUTOFF
+from narrec.run_config import FS_DOCUMENT_CUTOFF, CORE_TOP_K
 
 
 class FSConcept(FirstStageBase):
@@ -79,7 +79,7 @@ class FSConcept(FirstStageBase):
         else:
             document_ids_scored = [(k, v) for k, v in document_ids_scored.items()]
         # Sort by score and then doc desc
-        document_ids_scored.sort(key=lambda x: (x[1], x[0]), reverse=True)
+        document_ids_scored.sort(key=lambda x: (x[1], int(x[0])), reverse=True)
 
         return document_ids_scored
 
