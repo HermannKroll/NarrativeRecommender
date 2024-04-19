@@ -29,7 +29,7 @@ SEPERATOR_STRING = "_;_"
 def compute_scored_inverted_index_for_tags(collection="PubMed"):
     start_time = datetime.now()
     session = SessionRecommender.get()
-    print('V2')
+    print('V3')
     print('Deleting old inverted index for tags...')
     stmt = delete(TagInvertedIndexScored)
     session.execute(stmt)
@@ -65,7 +65,7 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
         except (KeyError, ValueError):
             continue
 
-        key = SEPERATOR_STRING.join([str(translated_id), str(tag_row.ent_type), str(tag_row.document_collection)])
+        key = SEPERATOR_STRING.join([str(translated_id), str(tag_row.document_collection)])
         doc_id = tag_row.document_id
 
         docid2narrative_doc[doc_id].tags.append(TaggedEntity(document=tag_row.document_id,
@@ -73,7 +73,7 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
                                                              end=tag_row.end,
                                                              text=tag_row.ent_str,
                                                              ent_type=tag_row.ent_type,
-                                                             ent_id=tag_row.ent_id))
+                                                             ent_id=translated_id))
         index[key].add(doc_id)
 
     # Convert all narrative documents to recommender documents to get the statistics
@@ -87,7 +87,7 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
     print("Computing insert values...")
     insert_list = []
     for row_key, doc_ids in tqdm(index.items(), total=len(index)):
-        entity_id, entity_type, doc_col = row_key.split(SEPERATOR_STRING)
+        entity_id, doc_col = row_key.split(SEPERATOR_STRING)
 
         doc2score = {}
         for did in doc_ids:
@@ -96,10 +96,9 @@ def compute_scored_inverted_index_for_tags(collection="PubMed"):
             doc2score[did] = (tf, score_concept_by_tf_idf_and_coverage(entity_id, doc, corpus))
 
         doc2score = sorted([(doc, tf, score) for doc, (tf, score) in doc2score.items()],
-                           key=lambda x: int(x[0]),
+                           key=lambda x: x[2],
                            reverse=True)
         insert_list.append(dict(entity_id=entity_id,
-                                entity_type=entity_type,
                                 document_collection=doc_col,
                                 support=len(doc_ids),
                                 scored_document_ids=json.dumps(doc2score)))
