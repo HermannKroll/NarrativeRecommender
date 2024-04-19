@@ -26,7 +26,6 @@ class TagInvertedIndexScored(Extended, DatabaseTable):
     __tablename__ = "tag_inverted_index_scored"
 
     entity_id = Column(String, nullable=False, index=True, primary_key=True)
-    entity_type = Column(String, nullable=False, index=True, primary_key=True)
     document_collection = Column(String, nullable=False, index=True, primary_key=True)
     support = Column(Integer, nullable=False)
     scored_document_ids = Column(String, nullable=False)
