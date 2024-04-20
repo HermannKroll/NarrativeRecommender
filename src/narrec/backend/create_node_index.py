@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import delete
 
-from kgextractiontoolbox.backend.models import Predication
+from kgextractiontoolbox.backend.models import Predication, BULK_INSERT_AFTER_K
 from kgextractiontoolbox.progress import Progress
 from narraint.config import QUERY_YIELD_PER_K
 from narrec.backend.database import SessionRecommender
@@ -51,6 +51,10 @@ def compute_node_inverted_index(collection="PubMed"):
     progress2 = Progress(total=key_count, print_every=100, text="insert values...")
     progress2.start_time()
     for idx, concept in enumerate(concept2docs):
+        if idx % BULK_INSERT_AFTER_K == 0:
+            NodeInvertedIndex.bulk_insert_values_into_table(session, insert_list, check_constraints=False)
+            insert_list.clear()
+
         progress2.print_progress(idx)
         assert len(concept2docs[concept]) > 0
 
@@ -64,7 +68,7 @@ def compute_node_inverted_index(collection="PubMed"):
         ))
     progress2.done()
 
-    NodeInvertedIndex.bulk_insert_values_into_table(session, insert_list)
+    NodeInvertedIndex.bulk_insert_values_into_table(session, insert_list, check_constraints=False)
     insert_list.clear()
     session.commit()
 
