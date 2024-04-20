@@ -52,9 +52,9 @@ class FSConceptPlus(FirstStageBase):
 
             for doc_id, tf, score in doc2score:
                 if doc_id not in document_ids_scored:
-                    document_ids_scored[doc_id] = score
+                    document_ids_scored[doc_id] = min(concept.score, score)
                 else:
-                    document_ids_scored[doc_id] += score
+                    document_ids_scored[doc_id] += min(concept.score, score)
 
         return FirstStageBase.normalize_and_sort_document_scores(document_ids_scored)
 
