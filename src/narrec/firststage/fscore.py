@@ -18,14 +18,22 @@ class FSCore(FirstStageBase):
         self.extractor = extractor
         self.benchmark = benchmark
         self.session = SessionExtended.get()
+        self.cache = dict()
 
     def retrieve_documents(self, spo: tuple):
+        if spo[0] < spo[2]:
+            so_key = (spo[0], spo[2])
+        else:
+            so_key = (spo[2], spo[0])
+
+        if so_key in self.cache:
+            return self.cache[so_key]
+
         q = self.session.query(PredicationInvertedIndex)
         # Search for matching nodes but not for predicates (ignore direction)
         q = q.filter(
             or_(and_(PredicationInvertedIndex.subject_id == spo[0], PredicationInvertedIndex.object_id == spo[2]),
                 and_(PredicationInvertedIndex.subject_id == spo[2], PredicationInvertedIndex.object_id == spo[0])))
-        #    q = q.filter(PredicationInvertedIndex.relation == spo[1])
         q = q.filter(PredicationInvertedIndex.document_collection == self.benchmark.document_collection)
 
         document_ids = set()
@@ -38,6 +46,7 @@ class FSCore(FirstStageBase):
                         continue
                     document_ids.add(doc_id_int)
 
+        self.cache[so_key] = document_ids
         return document_ids
 
     def score_document_ids_with_core(self, core: NarrativeCore):
