@@ -47,25 +47,14 @@ class FSConceptPlus(FirstStageBase):
         # If a statement of the core is contained within a document, we increase the score
         # of the document by the score of the corresponding edge
         for idx, concept in enumerate(core.concepts):
-            # we already found enough documents
-            if len(document_ids_scored) >= FS_DOCUMENT_CUTOFF:
-                # get the remaining reachable score
-                # if all documents that we found are above the reachable score, we can stop
-                max_reachable_scores = sum(c.score for c in core.concepts[idx:])
-                count = len([d for d, s in document_ids_scored.items()
-                             if s >= max_reachable_scores])
-                if count >= FS_DOCUMENT_CUTOFF:
-                    # we can't find better documents, stop here
-                    # the first K documents are filled
-                    break
             # retrieve matching documents
             doc2score = self.retrieve_documents(concept.concept)
 
             for doc_id, tf, score in doc2score:
                 if doc_id not in document_ids_scored:
-                    document_ids_scored[doc_id] = concept.score * score
+                    document_ids_scored[doc_id] = score
                 else:
-                    document_ids_scored[doc_id] += concept.score * score
+                    document_ids_scored[doc_id] += score
 
         # We did not find any documents
         if len(document_ids_scored) == 0:
