@@ -29,3 +29,11 @@ class TagInvertedIndexScored(Extended, DatabaseTable):
     document_collection = Column(String, nullable=False, index=True, primary_key=True)
     support = Column(Integer, nullable=False)
     scored_document_ids = Column(String, nullable=False)
+
+class NodeInvertedIndex(Extended, DatabaseTable):
+    __tablename__ = "node_inverted_index"
+
+    entity_id = Column(String, nullable=False, index=True, primary_key=True)
+    document_collection = Column(String, nullable=False, index=True, primary_key=True)
+    support = Column(Integer, nullable=False)
+    document_ids = Column(String, nullable=False)
