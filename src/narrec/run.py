@@ -11,10 +11,14 @@ from narrec.config import RESULT_DIR, INDEX_DIR, GLOBAL_DB_DOCUMENT_COLLECTION
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.base import FirstStageBase
+from narrec.firststage.bm25abstract import BM25Abstract
+from narrec.firststage.bm25title import BM25Title
 from narrec.firststage.fsconcept import FSConcept
 from narrec.firststage.fsconceptplus import FSConceptPlus
 from narrec.firststage.fscore import FSCore
 from narrec.firststage.fsnode import FSNode
+from narrec.firststage.perfect import Perfect
+from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.coreoverlap import CoreOverlap
@@ -115,13 +119,13 @@ def process_benchmark(bench: Benchmark):
     first_stages = [FSConceptPlus(core_extractor, bench),
                     FSConcept(core_extractor, bench),
                     FSCore(core_extractor, bench),
-                    FSNode(core_extractor, bench)]
-    # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-    # FSCoreOverlap(core_extractor, bench, index_path, retriever),
-    # PubMedRecommender(bench),
-    # BM25Abstract(index_path),
-    # BM25Title(index_path),
-    # Perfect(bench)]
+                    FSNode(core_extractor, bench),
+                    # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
+                    # FSCoreOverlap(core_extractor, bench, index_path, retriever),
+                    PubMedRecommender(bench),
+                    BM25Abstract(index_path),
+                    BM25Title(index_path),
+                    Perfect(bench)]
 
     # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
     # FSCorePlusTitleBM25(core_extractor, bench, index_path),
