@@ -6,7 +6,7 @@ from narrec.benchmark.benchmark import Benchmark
 from narrec.document.core import NarrativeCoreExtractor, NarrativeConceptCore
 from narrec.document.document import RecommenderDocument
 from narrec.firststage.base import FirstStageBase
-from narrec.run_config import FS_DOCUMENT_CUTOFF, CORE_TOP_K
+from narrec.run_config import FS_DOCUMENT_CUTOFF
 
 
 class FSConcept(FirstStageBase):
@@ -46,18 +46,6 @@ class FSConcept(FirstStageBase):
         # If a statement of the core is contained within a document, we increase the score
         # of the document by the score of the corresponding edge
         for idx, concept in enumerate(core.concepts):
-            # we already found enough documents
-            if len(document_ids_scored) >= FS_DOCUMENT_CUTOFF:
-                # get the remaining reachable score
-                # if all documents that we found are above the reachable score, we can stop
-                max_reachable_scores = sum(c.score for c in core.concepts[idx:])
-                count = len([d for d, s in document_ids_scored.items()
-                             if s >= max_reachable_scores])
-                if count >= FS_DOCUMENT_CUTOFF:
-                    # we can't find better documents, stop here
-                    # the first K documents are filled
-                    break
-
             # retrieve matching documents
             document_ids = self.retrieve_documents(concept.concept)
 
