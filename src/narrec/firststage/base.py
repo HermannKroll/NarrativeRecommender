@@ -16,7 +16,7 @@ class FirstStageBase:
         pass
 
     @staticmethod
-    def normalize_and_sort_document_scores(document_ids_scored: Dict[str: float]) -> List[Tuple[str, float]]:
+    def normalize_and_sort_document_scores(document_ids_scored):
         # We did not find any documents
         if len(document_ids_scored) == 0:
             return []
