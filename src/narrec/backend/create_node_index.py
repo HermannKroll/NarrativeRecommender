@@ -28,8 +28,9 @@ def compute_node_inverted_index(collection="PubMed"):
     start_time = datetime.now()
     # "is not None" instead of "!=" None" DOES NOT WORK!
     prov_query = session.query(Predication.document_id, Predication.subject_id, Predication.object_id)
+    prov_query = prov_query.filter(Predication.document_collection == collection)
     prov_query = prov_query.filter(Predication.relation != None)
-    prov_query = prov_query.yield_per(100 * QUERY_YIELD_PER_K)
+    prov_query = prov_query.yield_per(10 * QUERY_YIELD_PER_K)
 
     insert_list = []
     print("Starting...")
