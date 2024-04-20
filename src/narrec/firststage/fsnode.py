@@ -44,7 +44,7 @@ class FSNode(FirstStageBase):
         document_ids_scored = {}
         # If a statement of the core is contained within a document, we increase the score
         # of the document by the score of the corresponding edge
-        for idx, concept in enumerate(core.concepts[:CORE_TOP_K]):
+        for idx, concept in enumerate(core.concepts):
             # retrieve matching documents
             document_ids = self.retrieve_documents(concept.concept)
 
