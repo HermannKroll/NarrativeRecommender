@@ -44,7 +44,7 @@ def compute_node_inverted_index(collection="PubMed"):
         o_id = prov.object_id
 
         for concept in [s_id, o_id]:
-            concept2docs[concept].add(prov.prov.document_id)
+            concept2docs[concept].add(prov.document_id)
 
     key_count = len(concept2docs)
     progress2 = Progress(total=key_count, print_every=100, text="insert values...")
