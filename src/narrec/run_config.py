@@ -9,10 +9,11 @@ FIRST_STAGES = [
     "Perfect",
     "BM25Title",
     "BM25Abstract",
-    # "BM25Yake",
+    "BM25Yake",
     "FSConcept",
     "FSConceptPlus",
     "FSCore",
+    "FSNode",
     #  "FSCoreOverlap",
     # "FSCorePlusAbstractBM25",
     # "FSCorePlusTitleBM25",
@@ -58,7 +59,7 @@ BM25_WEIGHT = 0.4
 
 assert GRAPH_WEIGHT + BM25_WEIGHT == 1.0
 
-MULTIPROCESSING = False
+MULTIPROCESSING = True
 LOAD_FULL_IDF_CACHE = True
 DO_RECOMMENDATION = False
 RERUN_FIRST_STAGES = True
