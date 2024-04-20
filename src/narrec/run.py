@@ -11,13 +11,10 @@ from narrec.config import RESULT_DIR, INDEX_DIR, GLOBAL_DB_DOCUMENT_COLLECTION
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.base import FirstStageBase
-from narrec.firststage.bm25abstract import BM25Abstract
-from narrec.firststage.bm25title import BM25Title
 from narrec.firststage.fsconcept import FSConcept
 from narrec.firststage.fsconceptplus import FSConceptPlus
 from narrec.firststage.fscore import FSCore
-from narrec.firststage.perfect import Perfect
-from narrec.firststage.pubmed import PubMedRecommender
+from narrec.firststage.fsnode import FSNode
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.coreoverlap import CoreOverlap
@@ -67,7 +64,12 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
 
     print('Perform first stage retrieval')
     doc_queries = list(benchmark.iterate_over_document_entries())
-    for q_idx, doc_id in tqdm(doc_queries, total=len(doc_queries)):
+    if MULTIPROCESSING:
+        iter_obj = doc_queries
+    else:
+        iter_obj = tqdm(doc_queries, total=len(doc_queries))
+
+    for q_idx, doc_id in iter_obj:
         try:
             input_doc = docid2docs[int(doc_id)]
             first_stage.set_current_topic(q_idx)
@@ -87,8 +89,7 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
         f.write('\n'.join([l for l in result_lines]))
 
 
-def main():
-    benchmarks = BENCHMARKS
+def process_benchmark(bench: Benchmark):
     corpus = DocumentCorpus(collections=[GLOBAL_DB_DOCUMENT_COLLECTION])
     if LOAD_FULL_IDF_CACHE:
         corpus.load_all_support_into_memory()
@@ -107,123 +108,124 @@ def main():
         for r in recommenders.copy():
             recommenders.append(GraphBaseFallbackBM25(bm25scorer=bm25_scorer, graph_recommender=r))
 
-    for bench in benchmarks:
-        bench.load_benchmark_data()
-        index_path = os.path.join(INDEX_DIR, bench.get_index_name())
-        bm25_scorer.set_index(index_path)
+    bench.load_benchmark_data()
+    index_path = os.path.join(INDEX_DIR, bench.get_index_name())
+    bm25_scorer.set_index(index_path)
 
-        first_stages = [FSConceptPlus(core_extractor, bench),
-                        FSConcept(core_extractor, bench)]
-                        #FSCore(core_extractor, bench),
-                        # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-                        # FSCoreOverlap(core_extractor, bench, index_path, retriever),
-                        #PubMedRecommender(bench),
-                        #BM25Abstract(index_path),
-                        #BM25Title(index_path),
-                        #Perfect(bench)]
+    first_stages = [FSConceptPlus(core_extractor, bench),
+                    FSConcept(core_extractor, bench),
+                    FSCore(core_extractor, bench),
+                    FSNode(core_extractor, bench)]
+    # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
+    # FSCoreOverlap(core_extractor, bench, index_path, retriever),
+    # PubMedRecommender(bench),
+    # BM25Abstract(index_path),
+    # BM25Title(index_path),
+    # Perfect(bench)]
 
-        # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-        # FSCorePlusTitleBM25(core_extractor, bench, index_path),
-        # BM25Title(index_path),, BM25Yake(index_path)]
+    # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
+    # FSCorePlusTitleBM25(core_extractor, bench, index_path),
+    # BM25Title(index_path),, BM25Yake(index_path)]
+    for first_stage in first_stages:
+        fs_path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}.txt')
+        if not os.path.isfile(fs_path) or RERUN_FIRST_STAGES:
+            # create first stage data
+            run_first_stage_for_benchmark(retriever, bench, first_stage, fs_path)
+        # next load the documents for this first stage
+        print(f'Loading first stage runfile: {fs_path}')
+        fs_docs = load_document_ids_from_runfile(fs_path)
+        fs_topic2doc2scores = {t: {doc: score for doc, score in pair}
+                               for t, pair in fs_docs.items()}
 
-        def do_first_stage_and_recommendation(first_stage):
-            fs_path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}.txt')
-            if not os.path.isfile(fs_path) or RERUN_FIRST_STAGES:
-                # create first stage data
-                run_first_stage_for_benchmark(retriever, bench, first_stage, fs_path)
-            # next load the documents for this first stage
-            print(f'Loading first stage runfile: {fs_path}')
-            fs_docs = load_document_ids_from_runfile(fs_path)
-            fs_topic2doc2scores = {t: {doc: score for doc, score in pair}
-                                   for t, pair in fs_docs.items()}
+        recommender2result_lines = dict()
 
-            recommender2result_lines = dict()
+        if DO_RECOMMENDATION:
+            # don't print in multi processing setting
+            if MULTIPROCESSING:
+                iter_obj = fs_docs.items()
+                print('Disable progress bar for multiprocess setting')
+            else:
+                iter_obj = tqdm(fs_docs.items(), desc="Evaluating topics")
 
-            if DO_RECOMMENDATION:
-                # don't print in multi processing setting
-                if MULTIPROCESSING:
-                    iter_obj = fs_docs.items()
-                    print('Disable progress bar for multiprocess setting')
-                else:
-                    iter_obj = tqdm(fs_docs.items(), desc="Evaluating topics")
+            for topicid, retrieved_docs in iter_obj:
+                # get the input ids for each doc
+                topic2doc = {str(top): doc for top, doc in bench.iterate_over_document_entries()}
 
-                for topicid, retrieved_docs in iter_obj:
-                    # get the input ids for each doc
-                    topic2doc = {str(top): doc for top, doc in bench.iterate_over_document_entries()}
+                # Retrieve the input document
+                input_doc = retriever.retrieve_narrative_documents([topic2doc[topicid]],
+                                                                   GLOBAL_DB_DOCUMENT_COLLECTION)[0]
 
-                    # Retrieve the input document
-                    input_doc = retriever.retrieve_narrative_documents([topic2doc[topicid]],
-                                                                       GLOBAL_DB_DOCUMENT_COLLECTION)[0]
+                # Retrieve the documents to score
+                retrieved_doc_ids = [d[0] for d in retrieved_docs]
+                documents = retriever.retrieve_narrative_documents(retrieved_doc_ids,
+                                                                   GLOBAL_DB_DOCUMENT_COLLECTION)
+                # set first stage scores in documents
+                for doc in documents:
+                    # get scores
+                    doc.set_first_stage_score(fs_topic2doc2scores[topicid][doc.id])
 
-                    # Retrieve the documents to score
-                    retrieved_doc_ids = [d[0] for d in retrieved_docs]
-                    documents = retriever.retrieve_narrative_documents(retrieved_doc_ids,
-                                                                       GLOBAL_DB_DOCUMENT_COLLECTION)
-                    # set first stage scores in documents
-                    for doc in documents:
-                        # get scores
-                        doc.set_first_stage_score(fs_topic2doc2scores[topicid][doc.id])
+                # only apply recommender if first stage returned a result
+                if len(documents) > 0:
+                    for recommender in recommenders:
 
-                    # only apply recommender if first stage returned a result
-                    if len(documents) > 0:
-                        for recommender in recommenders:
+                        if recommender.name not in recommender2result_lines:
+                            recommender2result_lines[recommender.name] = list()
 
-                            if recommender.name not in recommender2result_lines:
-                                recommender2result_lines[recommender.name] = list()
+                        start = datetime.now()
+                        rec_docs = recommender.recommend_documents(input_doc, documents, citation_graph)
+                        assert len(rec_docs) == len(documents)
 
-                            start = datetime.now()
-                            rec_docs = recommender.recommend_documents(input_doc, documents, citation_graph)
-                            assert len(rec_docs) == len(documents)
+                        if len(rec_docs) > 0:
+                            max_score = rec_docs[0][1]
+                            if max_score < 0.0:
+                                raise ValueError(f'Max score {max_score} <= (score = {max_score} /'
+                                                 f' ranker = {recommender.name})')
 
-                            if len(rec_docs) > 0:
-                                max_score = rec_docs[0][1]
-                                if max_score < 0.0:
-                                    raise ValueError(f'Max score {max_score} <= (score = {max_score} /'
-                                                     f' ranker = {recommender.name})')
+                            for rank, (doc_id, score) in enumerate(rec_docs):
+                                if max_score > 0.0:
+                                    norm_score = score / max_score
+                                else:
+                                    norm_score = 0.0
 
-                                for rank, (doc_id, score) in enumerate(rec_docs):
-                                    if max_score > 0.0:
-                                        norm_score = score / max_score
-                                    else:
-                                        norm_score = 0.0
+                                if norm_score < 0.0 or norm_score > 1.0:
+                                    raise ValueError(f'Document {doc_id} received a score not in (score = '
+                                                     f'{norm_score} / ranker = {recommender.name})')
 
-                                    if norm_score < 0.0 or norm_score > 1.0:
-                                        raise ValueError(f'Document {doc_id} received a score not in (score = '
-                                                         f'{norm_score} / ranker = {recommender.name})')
+                                result_line = f'{topicid}\tQ0\t{doc_id}\t{rank + 1}\t{norm_score}\t{recommender.name}'
+                                recommender2result_lines[recommender.name].append(result_line)
 
-                                    result_line = f'{topicid}\tQ0\t{doc_id}\t{rank + 1}\t{norm_score}\t{recommender.name}'
-                                    recommender2result_lines[recommender.name].append(result_line)
+                            time_taken = datetime.now() - start
+                            # print(f'{time_taken}s to compute {recommender.name}')
 
-                                time_taken = datetime.now() - start
-                                # print(f'{time_taken}s to compute {recommender.name}')
+            for recommender in recommenders:
+                path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}_{recommender.name}.txt')
+                print(f'Writing results to {path}')
+                with open(path, 'wt') as f:
+                    if recommender.name in recommender2result_lines:
+                        f.write('\n'.join(recommender2result_lines[recommender.name]))
 
-                for recommender in recommenders:
-                    path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}_{recommender.name}.txt')
-                    print(f'Writing results to {path}')
-                    with open(path, 'wt') as f:
-                        if recommender.name in recommender2result_lines:
-                            f.write('\n'.join(recommender2result_lines[recommender.name]))
 
-        if MULTIPROCESSING:
-            print('Using multiprocessing architecture...')
-            processes = []
-            for first_stage in first_stages:
-                print(f'Initialize process for first stage: {first_stage.name}')
-                processes.append(Process(target=do_first_stage_and_recommendation, args=(first_stage,)))
+def main():
+    if MULTIPROCESSING:
+        print('Using multiprocessing architecture...')
+        processes = []
+        for benchmark in BENCHMARKS:
+            print(f'Initialize process for benchmark: {benchmark.name}')
+            processes.append(Process(target=process_benchmark, args=(benchmark,)))
 
-            print('Starting all processes')
-            for p in processes:
-                p.start()
+        print('Starting all processes')
+        for p in processes:
+            p.start()
 
-            print('Waiting for process to finish...')
-            for p in processes:
-                p.join()
+        print('Waiting for process to finish...')
+        for p in processes:
+            p.join()
 
-            print('All processes were finished')
+        print('All processes were finished')
 
-        else:
-            for first_stage in first_stages:
-                do_first_stage_and_recommendation(first_stage)
+    else:
+        for benchmark in BENCHMARKS:
+            process_benchmark(benchmark)
 
 
 if __name__ == '__main__':
