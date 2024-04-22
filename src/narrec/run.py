@@ -14,9 +14,12 @@ from narrec.firststage.base import FirstStageBase
 from narrec.firststage.bm25abstract import BM25Abstract
 from narrec.firststage.bm25title import BM25Title
 from narrec.firststage.fsconcept import FSConcept
+from narrec.firststage.fsconceptflex import FSConceptFlex
 from narrec.firststage.fsconceptplus import FSConceptPlus
 from narrec.firststage.fscore import FSCore
+from narrec.firststage.fscoreflex import FSCoreFlex
 from narrec.firststage.fsnode import FSNode
+from narrec.firststage.fsnodeflex import FSNodeFlex
 from narrec.firststage.perfect import Perfect
 from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
@@ -56,19 +59,22 @@ def load_document_ids_from_runfile(path_to_runfile):
 
 
 def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Benchmark, first_stage: FirstStageBase,
-                                  result_path: str):
-    print(f'Creating first stage runfile for benchmark: {benchmark.name} with stage: {first_stage.name}')
+                                  result_path: str, write_results=True, verbose=True):
+    if verbose:
+        print(f'Creating first stage runfile for benchmark: {benchmark.name} with stage: {first_stage.name}')
     result_lines = []
 
-    print('Retrieve document contents...')
+    if verbose:
+        print('Retrieve document contents...')
     doc_ids = [d[1] for d in benchmark.iterate_over_document_entries()]
     input_docs = retriever.retrieve_narrative_documents(document_ids=doc_ids,
                                                         document_collection=benchmark.document_collection)
     docid2docs = {d.id: d for d in input_docs}
 
-    print('Perform first stage retrieval')
+    if verbose:
+        print('Perform first stage retrieval')
     doc_queries = list(benchmark.iterate_over_document_entries())
-    if MULTIPROCESSING:
+    if MULTIPROCESSING or not verbose:
         iter_obj = doc_queries
     else:
         iter_obj = tqdm(doc_queries, total=len(doc_queries))
@@ -86,11 +92,13 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
                 result_line = f'{q_idx}\tQ0\t{fs_docid}\t{rank + 1}\t{score}\t{first_stage.name}'
                 result_lines.append(result_line)
         except KeyError:
-            print(f'Document {doc_id} not known in our collection - skipping')
+            if verbose:
+                print(f'Document {doc_id} not known in our collection - skipping')
 
-    print(f'Results will be written to {result_path}')
-    with open(result_path, 'wt') as f:
-        f.write('\n'.join([l for l in result_lines]))
+    if write_results:
+        print(f'Results will be written to {result_path}')
+        with open(result_path, 'wt') as f:
+            f.write('\n'.join([l for l in result_lines]))
 
 
 def process_benchmark(bench: Benchmark):
@@ -116,14 +124,17 @@ def process_benchmark(bench: Benchmark):
     index_path = os.path.join(INDEX_DIR, bench.get_index_name())
     bm25_scorer.set_index(index_path)
 
-    first_stages = [FSConceptPlus(core_extractor, bench),
-                    FSConcept(core_extractor, bench),
-                    FSCore(core_extractor, bench),
-                    FSNode(core_extractor, bench),
-                    PubMedRecommender(bench),
-                    BM25Abstract(index_path),
-                    BM25Title(index_path),
-                    Perfect(bench)]
+    first_stages = [FSConceptFlex(core_extractor, bench),
+                    FSCoreFlex(core_extractor, bench),
+                    FSNodeFlex(core_extractor, bench)]
+    # FSConceptPlus(core_extractor, bench),
+    #                 FSConcept(core_extractor, bench),
+    #                 FSCore(core_extractor, bench),
+    #                 FSNode(core_extractor, bench),
+    #                 PubMedRecommender(bench),
+    #                 BM25Abstract(index_path),
+    #                 BM25Title(index_path),
+    #                 Perfect(bench)]
 
     for first_stage in first_stages:
         fs_path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}.txt')
