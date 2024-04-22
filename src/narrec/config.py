@@ -46,3 +46,9 @@ RELISH_PMIDS_FILE = os.path.join(DATA_DIR, "pmids_pm2018.txt")
 PM2020_PMIDS_FILE = os.path.join(DATA_DIR, "pmids_pm2020.txt")
 # DB Backend
 BACKEND_CONFIG = os.path.join(CONFIG_DIR, "backend.json")
+
+ANALYSIS_DIR = os.path.join(DATA_DIR, "analysis")
+if not os.path.isdir(ANALYSIS_DIR):
+    os.makedirs(ANALYSIS_DIR, exist_ok=True)
+
+RUNTIME_MEASUREMENT_RESULT_FILE = os.path.join(ANALYSIS_DIR, "firststage_runtimes.json")
