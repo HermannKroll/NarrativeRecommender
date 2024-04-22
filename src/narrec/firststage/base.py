@@ -1,6 +1,5 @@
-from typing import Dict, List, Tuple
-
 from narrec.document.document import RecommenderDocument
+from narrec.run_config import FS_DOCUMENT_CUTOFF
 
 
 class FirstStageBase:
@@ -31,3 +30,19 @@ class FirstStageBase:
         # Sort by score and then doc desc
         document_ids_scored.sort(key=lambda x: (x[1], int(x[0])), reverse=True)
         return document_ids_scored
+
+    @staticmethod
+    def apply_dynamic_cutoff(document_ids_scored):
+        if len(document_ids_scored) > FS_DOCUMENT_CUTOFF:
+            # get score at position
+            score_at_cutoff = document_ids_scored[FS_DOCUMENT_CUTOFF][1]
+            # search position where score is lower
+            new_cutoff_position = 0
+            for idx, (d, score) in enumerate(document_ids_scored[FS_DOCUMENT_CUTOFF:]):
+                if score < score_at_cutoff:
+                    new_cutoff_position = idx
+                    break
+            return document_ids_scored[:FS_DOCUMENT_CUTOFF + new_cutoff_position]
+        else:
+            # Ensure cutoff
+            return document_ids_scored[:FS_DOCUMENT_CUTOFF]
