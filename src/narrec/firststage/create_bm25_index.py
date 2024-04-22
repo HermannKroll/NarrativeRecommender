@@ -36,7 +36,7 @@ class BenchmarkIndex:
         if self.benchmark.get_documents_for_baseline():
             logging.info(f'{len(self.benchmark.get_documents_for_baseline())} documents relevant for benchmark')
         else:
-            logging.exception('All documents of collections are relevant')
+            logging.info('All documents of collections are relevant')
 
         total = session.query(Document).filter(Document.collection == self.collection).count()
         doc_query = session.query(Document).filter(Document.collection == self.collection)

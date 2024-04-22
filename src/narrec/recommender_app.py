@@ -1,6 +1,7 @@
 import logging
 
 from flask import Flask
+import pyterrier as pt
 
 from narraint.queryengine.engine import QueryEngine
 from narraint.queryengine.result import QueryDocumentResult
@@ -19,6 +20,7 @@ logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:
 
 CREATE_PUBMED_BM25_INDEX = True
 
+pt.init()
 
 # Faked benchmark object that allows all documents within our db
 class PubMedBenchmark(Benchmark):
