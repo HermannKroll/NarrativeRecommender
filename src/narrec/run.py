@@ -120,16 +120,11 @@ def process_benchmark(bench: Benchmark):
                     FSConcept(core_extractor, bench),
                     FSCore(core_extractor, bench),
                     FSNode(core_extractor, bench),
-                    # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-                    # FSCoreOverlap(core_extractor, bench, index_path, retriever),
                     PubMedRecommender(bench),
                     BM25Abstract(index_path),
                     BM25Title(index_path),
                     Perfect(bench)]
 
-    # FSCorePlusAbstractBM25(core_extractor, bench, index_path),
-    # FSCorePlusTitleBM25(core_extractor, bench, index_path),
-    # BM25Title(index_path),, BM25Yake(index_path)]
     for first_stage in first_stages:
         fs_path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}.txt')
         if not os.path.isfile(fs_path) or RERUN_FIRST_STAGES:
