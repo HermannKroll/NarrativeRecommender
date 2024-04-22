@@ -31,8 +31,12 @@ class BenchmarkIndex:
         values = []
         session = SessionRecommender.get()
         logging.info(f'Create index for {self.name} (collections = {self.collection})')
+        logging.info(f'Index will be stored at: {self.path}')
         logging.info(f'Iterating over all documents in {self.collection}')
-        logging.info(f'{len(self.benchmark.get_documents_for_baseline())} documents relevant for benchmark')
+        if self.benchmark.get_documents_for_baseline():
+            logging.info(f'{len(self.benchmark.get_documents_for_baseline())} documents relevant for benchmark')
+        else:
+            logging.exception('All documents of collections are relevant')
 
         total = session.query(Document).filter(Document.collection == self.collection).count()
         doc_query = session.query(Document).filter(Document.collection == self.collection)
