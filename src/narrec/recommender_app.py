@@ -1,4 +1,5 @@
 import logging
+import os
 
 from flask import Flask
 import pyterrier as pt
@@ -8,11 +9,14 @@ from narraint.queryengine.result import QueryDocumentResult
 from narrant.entity.entityresolver import EntityResolver
 from narrec.backend.retriever import DocumentRetriever
 from narrec.benchmark.benchmark import Benchmark, BenchmarkType
+from narrec.config import INDEX_DIR
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.create_bm25_index import BenchmarkIndex
 from narrec.firststage.fsnodeflex import FSNodeFlex
 from narrec.recommender.coreoverlap import CoreOverlap
+from narrec.recommender.graph_base_fallback_bm25 import GraphBaseFallbackBM25
+from narrec.scoring.BM25Scorer import BM25Scorer
 
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                     datefmt='%Y-%m-%d:%H:%M:%S',
@@ -43,15 +47,40 @@ core_extractor = NarrativeCoreExtractor(corpus=corpus)
 
 first_stage = FSNodeFlex(extractor=core_extractor, benchmark=PubMedBenchmark())
 
-recommender = CoreOverlap(extractor=core_extractor)
+recommender_coreoverlap = CoreOverlap(extractor=core_extractor)
 
-# index_path = os.path.join(INDEX_DIR, "pubmed")
-# bm25_scorer = BM25Scorer(index_path)
+index_path = os.path.join(INDEX_DIR, "PubMed")
+bm25_scorer = BM25Scorer(index_path)
 
-# recommender = GraphBaseFallbackBM25(bm25scorer=bm25_scorer, graph_recommender=recommender_coreoverlap)
+recommender = GraphBaseFallbackBM25(bm25scorer=bm25_scorer, graph_recommender=recommender_coreoverlap)
 
 app = Flask(__name__)
 
+enttype2colour = {
+    "Disease": "#aeff9a",
+    "Drug": "#ff8181",
+    "Species": "#b88cff",
+    "Excipient": "#ffcf97",
+    "LabMethod": "#9eb8ff",
+    "Chemical": "#fff38c",
+    "Gene": "#87e7ff",
+    "Target": "#1fe7ff",
+    "Method": "#7897ff",
+    "DosageForm": "#9189ff",
+    "Mutation": "#8cffa9",
+    "ProteinMutation": "#b9ffcb",
+    "DNAMutation": "#4aff78",
+    "Variant": "#ffa981",
+    "CellLine": "#00bc0f",
+    "SNP": "#fd83ca",
+    "DomainMotif": "#f383fd",
+    "Plant": "#dcfd83",
+    "Strain": "#75c4c7",
+    "Vaccine": "#c7767d",
+    "HealthStatus": "#bbaabb",
+    "Organism": "#00bc0f",
+    "Tissue": "#dc8cff"
+}
 
 @app.route("/<document_id>")
 def hello(document_id):
@@ -66,7 +95,10 @@ def hello(document_id):
         return "Error"
 
     input_doc = input_docs[0]
+    input_core = core_extractor.extract_narrative_core_from_document(input_doc)
+    input_core_concept = core_extractor.extract_concept_core(input_doc)
     candidate_document_ids = first_stage.retrieve_documents_for(input_doc)
+    candidate_document_ids = [d for d in candidate_document_ids if d[0] != input_doc.id]
 
     # Step 2: document data retrieval
     print('Step 2: Query document data...')
@@ -103,9 +135,46 @@ def hello(document_id):
     results_converted = [r.to_dict() for r in results]
     print('Step 6: Enriching with graph data...')
     for r in results_converted:
-        facts = [{'s': 'Metformin', 'p': 'treats', 'o': 'Diabetes Mellitus'}]
-        nodes = ['Metformin', 'Diabetes Mellitus']
+        NO_STATEMENTS_TO_SHOW = 5
+        rec_doc = docid2doc[int(r["docid"])]
+        rec_core = core_extractor.extract_narrative_core_from_document(rec_doc)
+        facts = []
+        nodes = set()
 
+        if rec_core:
+            core_intersection = input_core.intersect(rec_core)
+            core_intersection.statements.sort(key=lambda x: x.score, reverse=True)
+
+            if core_intersection and len(core_intersection.statements) > 0:
+                for s in core_intersection.statements[:NO_STATEMENTS_TO_SHOW]:
+                    subject_name = resolver.get_name_for_var_ent_id(s.subject_id, s.subject_type, resolve_gene_by_id=False)
+                    object_name = resolver.get_name_for_var_ent_id(s.object_id, s.object_type, resolve_gene_by_id=False)
+
+                    facts.append({'s': subject_name, 'p': s.relation, 'o': object_name})
+                    nodes.add((subject_name, s.subject_type))
+                    nodes.add((object_name, s.object_type))
+
+            if len(facts) < NO_STATEMENTS_TO_SHOW:
+                #rec_core_concept = core_extractor.extract_concept_core(rec_doc)
+                for concept in input_core_concept.concepts:
+                    for s in rec_core.statements[:NO_STATEMENTS_TO_SHOW]:
+                        if s.subject_id == concept or s.object_id == concept:
+                            subject_name = resolver.get_name_for_var_ent_id(s.subject_id, s.subject_type,
+                                                                            resolve_gene_by_id=False)
+                            object_name = resolver.get_name_for_var_ent_id(s.object_id, s.object_type,
+                                                                           resolve_gene_by_id=False)
+
+                            facts.append({'s': subject_name, 'p': s.relation, 'o': object_name})
+                            nodes.add((subject_name, s.subject_type))
+                            nodes.add((object_name, s.object_type))
+        else:
+            facts = []
+            nodes = set()
+
+
+        # facts = [{'s': 'Metformin', 'p': 'treats', 'o': 'Diabetes Mellitus'}]
+        # nodes = ['Metformin', 'Diabetes Mellitus']
+        #
         data = {
             "nodes": [],
             "edges": []
@@ -114,10 +183,10 @@ def hello(document_id):
         node_id_map = {}
         next_node_id = 1
 
-        for node in nodes:
+        for node, node_type in nodes:
             node_id = next_node_id
             node_id_map[node] = node_id
-            data["nodes"].append({"id": node_id, "label": node})
+            data["nodes"].append({"id": node_id, "label": node, "color": enttype2colour[node_type]})
             next_node_id += 1
 
         for fact in facts:
