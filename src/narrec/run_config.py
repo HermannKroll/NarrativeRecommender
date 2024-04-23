@@ -6,21 +6,21 @@ from narrec.benchmark.relishdrug import RelishDrugBenchmark
 ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS = True
 
 FIRST_STAGES = [
- #  "Perfect",
- #  "BM25Title",
- #  "BM25Abstract",
- #  #  "BM25Yake",
- #  "FSConcept",
-  # "FSConceptPlus",
-   "FSConceptFlex",
- #  "FSNode",
-   "FSNodeFlex",
- #  "FSCore",
-   "FSCoreFlex",
- #  #  "FSCoreOverlap",
- #  # "FSCorePlusAbstractBM25",
- #  # "FSCorePlusTitleBM25",
- #  "PubMedRecommender"
+    "Perfect",
+    "BM25Title",
+    "BM25Abstract",
+    #  "BM25Yake",
+    "FSConcept",
+    "FSConceptPlus",
+    "FSConceptFlex",
+    "FSNode",
+    "FSNodeFlex",
+    "FSCore",
+    "FSCoreFlex",
+    #  "FSCoreOverlap",
+    # "FSCorePlusAbstractBM25",
+    # "FSCorePlusTitleBM25",
+    "PubMedRecommender"
 ]
 
 RECOMMENDER_NAMES = [
