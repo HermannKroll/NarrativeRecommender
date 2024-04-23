@@ -51,17 +51,18 @@ def perform_benchmark_first_stage_runtime_measurement(bench: Benchmark):
     print('Perform first stage runtime measurement...')
     result_dict = dict()
     for first_stage in first_stages:
-        print(f'Measuring runtime for first stage: {bench.name}')
+        print(f'Measuring runtime for first stage: {first_stage}')
         fs_path = os.path.join(RESULT_DIR, f'performance_{bench.name}_{first_stage.name}.txt')
         run_name = f'{first_stage.name}'
         if run_name not in result_dict:
             result_dict[run_name] = dict()
-        for i in tqdm(range(0, NO_PERFORMANCE_MEASUREMENTS), total=NO_PERFORMANCE_MEASUREMENTS):
+        for i in range(0, NO_PERFORMANCE_MEASUREMENTS):
             time_start = datetime.now()
             run_first_stage_for_benchmark(retriever, bench, first_stage, fs_path, write_results=False, verbose=False)
             time_taken = datetime.now() - time_start
 
             result_dict[run_name][i] = str(time_taken)
+            print(f'Elapsed time: {str(time_taken)}')
 
     return result_dict
 
