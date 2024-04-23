@@ -51,7 +51,7 @@ def perform_benchmark_first_stage_runtime_measurement(bench: Benchmark):
     print('Perform first stage runtime measurement...')
     result_dict = dict()
     for first_stage in first_stages:
-        print(f'Measuring runtime for first stage: {first_stage}')
+        print(f'Measuring runtime for first stage: {first_stage.name}')
         fs_path = os.path.join(RESULT_DIR, f'performance_{bench.name}_{first_stage.name}.txt')
         run_name = f'{first_stage.name}'
         if run_name not in result_dict:

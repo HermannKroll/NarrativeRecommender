@@ -74,7 +74,7 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
     if verbose:
         print('Perform first stage retrieval')
     doc_queries = list(benchmark.iterate_over_document_entries())
-    if MULTIPROCESSING or not verbose:
+    if MULTIPROCESSING:
         iter_obj = doc_queries
     else:
         iter_obj = tqdm(doc_queries, total=len(doc_queries))
