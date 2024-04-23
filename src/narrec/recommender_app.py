@@ -18,7 +18,7 @@ logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:
                     datefmt='%Y-%m-%d:%H:%M:%S',
                     level=logging.INFO)
 
-CREATE_PUBMED_BM25_INDEX = True
+CREATE_PUBMED_BM25_INDEX = False
 
 pt.init()
 
