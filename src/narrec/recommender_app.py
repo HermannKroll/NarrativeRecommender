@@ -26,6 +26,7 @@ CREATE_PUBMED_BM25_INDEX = False
 
 pt.init()
 
+
 # Faked benchmark object that allows all documents within our db
 class PubMedBenchmark(Benchmark):
 
@@ -82,6 +83,9 @@ enttype2colour = {
     "Tissue": "#dc8cff"
 }
 
+NOT_CONTAINED_COLOUR = "#FFFFFF"
+NOT_CONTAINED_COLOUR_EDGE = "#E5E4E2"
+
 @app.route("/<document_id>")
 def hello(document_id):
     document_id = int(document_id)
@@ -131,46 +135,87 @@ def hello(document_id):
     # Load metadata for the documents
     results = QueryEngine.enrich_document_results_with_metadata(results, {"PubMed": rec_doc_ids})
 
+    # get input core concepts
+    input_core_concepts = set([sc.concept for sc in input_core_concept.concepts])
+
     # Convert to a json structure
     results_converted = [r.to_dict() for r in results]
     print('Step 6: Enriching with graph data...')
     for r in results_converted:
-        NO_STATEMENTS_TO_SHOW = 5
+        NO_STATEMENTS_TO_SHOW = 6
         rec_doc = docid2doc[int(r["docid"])]
         rec_core = core_extractor.extract_narrative_core_from_document(rec_doc)
         facts = []
         nodes = set()
+        # nodes that overlap between input doc and rec doc
+        overlapping_nodes = set()
 
         if rec_core:
             core_intersection = input_core.intersect(rec_core)
             core_intersection.statements.sort(key=lambda x: x.score, reverse=True)
+            visited = set()
 
             if core_intersection and len(core_intersection.statements) > 0:
-                for s in core_intersection.statements[:NO_STATEMENTS_TO_SHOW]:
-                    subject_name = resolver.get_name_for_var_ent_id(s.subject_id, s.subject_type, resolve_gene_by_id=False)
-                    object_name = resolver.get_name_for_var_ent_id(s.object_id, s.object_type, resolve_gene_by_id=False)
+                for s in core_intersection.statements:
+                    if len(facts) > NO_STATEMENTS_TO_SHOW:
+                        break
 
-                    facts.append({'s': subject_name, 'p': s.relation, 'o': object_name})
-                    nodes.add((subject_name, s.subject_type))
-                    nodes.add((object_name, s.object_type))
+                    try:
+                        subject_name = resolver.get_name_for_var_ent_id(s.subject_id, s.subject_type,
+                                                                        resolve_gene_by_id=False)
+                        object_name = resolver.get_name_for_var_ent_id(s.object_id, s.object_type,
+                                                                       resolve_gene_by_id=False)
 
-            if len(facts) < NO_STATEMENTS_TO_SHOW:
-                #rec_core_concept = core_extractor.extract_concept_core(rec_doc)
-                for concept in input_core_concept.concepts:
-                    for s in rec_core.statements[:NO_STATEMENTS_TO_SHOW]:
-                        if s.subject_id == concept or s.object_id == concept:
-                            subject_name = resolver.get_name_for_var_ent_id(s.subject_id, s.subject_type,
-                                                                            resolve_gene_by_id=False)
-                            object_name = resolver.get_name_for_var_ent_id(s.object_id, s.object_type,
-                                                                           resolve_gene_by_id=False)
+                        if (subject_name, object_name) in visited:
+                            continue
+                        if (object_name, subject_name) in visited:
+                            continue
 
-                            facts.append({'s': subject_name, 'p': s.relation, 'o': object_name})
-                            nodes.add((subject_name, s.subject_type))
-                            nodes.add((object_name, s.object_type))
+                        visited.add((subject_name, object_name))
+                        visited.add((object_name, subject_name))
+
+                        # none means default colour
+                        facts.append(({'s': subject_name, 'p': s.relation, 'o': object_name}, None))
+                        nodes.add((subject_name, s.subject_type))
+                        nodes.add((object_name, s.object_type))
+
+                        overlapping_nodes.add((subject_name, s.subject_type))
+                        overlapping_nodes.add((object_name, s.object_type))
+                    except KeyError:
+                        pass
+
+            for s in rec_core.statements:
+                if len(facts) > NO_STATEMENTS_TO_SHOW * 2:
+                    break
+                if s.subject_id in input_core_concepts or s.object_id in input_core_concepts:
+                    try:
+                        subject_name = resolver.get_name_for_var_ent_id(s.subject_id, s.subject_type,
+                                                                        resolve_gene_by_id=False)
+                        object_name = resolver.get_name_for_var_ent_id(s.object_id, s.object_type,
+                                                                       resolve_gene_by_id=False)
+
+                        if (subject_name, object_name) in visited:
+                            continue
+                        if (object_name, subject_name) in visited:
+                            continue
+
+                        visited.add((subject_name, object_name))
+                        visited.add((object_name, subject_name))
+
+                        facts.append(({'s': subject_name, 'p': s.relation, 'o': object_name}, NOT_CONTAINED_COLOUR_EDGE))
+                        nodes.add((subject_name, s.subject_type))
+                        nodes.add((object_name, s.object_type))
+
+                        if s.subject_id in input_core_concepts:
+                            overlapping_nodes.add((subject_name, s.subject_type))
+                        else:
+                            overlapping_nodes.add((object_name, s.object_type))
+                    except KeyError:
+                        pass
+
         else:
             facts = []
             nodes = set()
-
 
         # facts = [{'s': 'Metformin', 'p': 'treats', 'o': 'Diabetes Mellitus'}]
         # nodes = ['Metformin', 'Diabetes Mellitus']
@@ -186,13 +231,21 @@ def hello(document_id):
         for node, node_type in nodes:
             node_id = next_node_id
             node_id_map[node] = node_id
-            data["nodes"].append({"id": node_id, "label": node, "color": enttype2colour[node_type]})
+
+            if (node, node_type) in overlapping_nodes:
+                data["nodes"].append({"id": node_id, "label": node, "color": enttype2colour[node_type]})
+            else:
+                data["nodes"].append({"id": node_id, "label": node, "color": NOT_CONTAINED_COLOUR})
             next_node_id += 1
 
-        for fact in facts:
+        for fact, colour in facts:
             source_id = node_id_map[fact["s"]]
             target_id = node_id_map[fact["o"]]
-            data["edges"].append({"from": source_id, "to": target_id, "label": fact["p"]})
+            if colour == NOT_CONTAINED_COLOUR_EDGE:
+                data["edges"].append({"from": source_id, "to": target_id, "label": fact["p"],
+                                      "color": NOT_CONTAINED_COLOUR_EDGE, "dashes": "true"})
+            else:
+                data["edges"].append({"from": source_id, "to": target_id, "label": fact["p"]})
         r["graph_data"] = data
 
     return results_converted
