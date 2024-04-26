@@ -59,7 +59,7 @@ def load_document_ids_from_runfile(path_to_runfile):
 
 
 def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Benchmark, first_stage: FirstStageBase,
-                                  result_path: str, write_results=True, verbose=True):
+                                  result_path: str, write_results=True, verbose=True, progress=False):
     if verbose:
         print(f'Creating first stage runfile for benchmark: {benchmark.name} with stage: {first_stage.name}')
     result_lines = []
@@ -74,7 +74,7 @@ def run_first_stage_for_benchmark(retriever: DocumentRetriever, benchmark: Bench
     if verbose:
         print('Perform first stage retrieval')
     doc_queries = list(benchmark.iterate_over_document_entries())
-    if MULTIPROCESSING:
+    if MULTIPROCESSING and not progress:
         iter_obj = doc_queries
     else:
         iter_obj = tqdm(doc_queries, total=len(doc_queries))
