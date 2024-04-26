@@ -37,14 +37,11 @@ def perform_benchmark_first_stage_runtime_measurement(bench: Benchmark):
     first_stages = [FSConceptFlex(core_extractor, bench),
                     FSCoreFlex(core_extractor, bench),
                     FSNodeFlex(core_extractor, bench),
-                    FSConceptPlus(core_extractor, bench),
                     FSConcept(core_extractor, bench),
                     FSCore(core_extractor, bench),
                     FSNode(core_extractor, bench),
-                    PubMedRecommender(bench),
                     BM25Abstract(index_path),
-                    BM25Title(index_path),
-                    Perfect(bench)]
+                    BM25Title(index_path)]
     print('==' * 60)
     print(f'Measuring runtime on benchmark: {bench.name}')
     print('==' * 60)
@@ -58,7 +55,8 @@ def perform_benchmark_first_stage_runtime_measurement(bench: Benchmark):
             result_dict[run_name] = dict()
         for i in range(0, NO_PERFORMANCE_MEASUREMENTS):
             time_start = datetime.now()
-            run_first_stage_for_benchmark(retriever, bench, first_stage, fs_path, write_results=False, verbose=False)
+            run_first_stage_for_benchmark(retriever, bench, first_stage, fs_path, write_results=False, verbose=False,
+                                          progress=True)
             time_taken = datetime.now() - time_start
 
             result_dict[run_name][i] = str(time_taken)
