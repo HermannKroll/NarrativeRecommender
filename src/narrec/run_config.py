@@ -73,6 +73,7 @@ JUDGED_DOCS_ONLY_FLAG = True
 
 # Experimental Configuration (because first stage will always find input doc)
 FS_DOCUMENT_CUTOFF = 1001
+FS_DOCUMENT_CUTOFF_HARD = FS_DOCUMENT_CUTOFF * 5
 
 print('--' * 60)
 print(f'Confidence weight : {CONFIDENCE_WEIGHT}')

@@ -11,17 +11,9 @@ from narrec.config import RESULT_DIR, INDEX_DIR, GLOBAL_DB_DOCUMENT_COLLECTION
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.base import FirstStageBase
-from narrec.firststage.bm25abstract import BM25Abstract
-from narrec.firststage.bm25title import BM25Title
-from narrec.firststage.fsconcept import FSConcept
 from narrec.firststage.fsconceptflex import FSConceptFlex
-from narrec.firststage.fsconceptplus import FSConceptPlus
-from narrec.firststage.fscore import FSCore
 from narrec.firststage.fscoreflex import FSCoreFlex
-from narrec.firststage.fsnode import FSNode
 from narrec.firststage.fsnodeflex import FSNodeFlex
-from narrec.firststage.perfect import Perfect
-from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.coreoverlap import CoreOverlap
@@ -33,7 +25,7 @@ from narrec.recommender.jaccard_concepts_weighted import JaccardConceptWeighted
 from narrec.recommender.jaccard_graph_weighted import JaccardGraphWeighted
 from narrec.recommender.statementoverlap import StatementOverlap
 from narrec.run_config import BENCHMARKS, DO_RECOMMENDATION, MULTIPROCESSING, LOAD_FULL_IDF_CACHE, \
-    ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS, RERUN_FIRST_STAGES
+    ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS, RERUN_FIRST_STAGES, FS_DOCUMENT_CUTOFF_HARD
 from narrec.scoring.BM25Scorer import BM25Scorer
 
 
@@ -157,7 +149,17 @@ def process_benchmark(bench: Benchmark):
             else:
                 iter_obj = tqdm(fs_docs.items(), desc="Evaluating topics")
 
+            count = 0
             for topicid, retrieved_docs in iter_obj:
+                count += 1
+                if len(retrieved_docs) >= FS_DOCUMENT_CUTOFF_HARD:
+                    print(f'No of retrieved documents exceed {FS_DOCUMENT_CUTOFF_HARD} - cutting list (benchmark: {bench.name} / first stage: {first_stage.name})')
+                    retrieved_docs = retrieved_docs[:FS_DOCUMENT_CUTOFF_HARD]
+
+                if MULTIPROCESSING:
+                    if count % 250 == 0:
+                        print(f'{bench.name}-{first_stage.name}: Processed {count} of {len(fs_docs.items())} topics')
+
                 # get the input ids for each doc
                 topic2doc = {str(top): doc for top, doc in bench.iterate_over_document_entries()}
 
