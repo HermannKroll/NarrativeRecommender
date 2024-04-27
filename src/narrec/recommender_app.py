@@ -16,6 +16,7 @@ from narrec.firststage.create_bm25_index import BenchmarkIndex
 from narrec.firststage.fsnodeflex import FSNodeFlex
 from narrec.recommender.coreoverlap import CoreOverlap
 from narrec.recommender.graph_base_fallback_bm25 import GraphBaseFallbackBM25
+from narrec.run_config import FS_DOCUMENT_CUTOFF_HARD
 from narrec.scoring.BM25Scorer import BM25Scorer
 
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
@@ -103,6 +104,10 @@ def hello(document_id):
     input_core_concept = core_extractor.extract_concept_core(input_doc)
     candidate_document_ids = first_stage.retrieve_documents_for(input_doc)
     candidate_document_ids = [d for d in candidate_document_ids if d[0] != input_doc.id]
+
+    # Apply hard cutoff
+    if len(candidate_document_ids) > FS_DOCUMENT_CUTOFF_HARD:
+        candidate_document_ids = candidate_document_ids[:FS_DOCUMENT_CUTOFF_HARD]
 
     # Step 2: document data retrieval
     print('Step 2: Query document data...')
