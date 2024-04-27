@@ -73,12 +73,13 @@ JUDGED_DOCS_ONLY_FLAG = True
 
 # Experimental Configuration (because first stage will always find input doc)
 FS_DOCUMENT_CUTOFF = 1001
-FS_DOCUMENT_CUTOFF_HARD = FS_DOCUMENT_CUTOFF * 5
+FS_DOCUMENT_CUTOFF_HARD = FS_DOCUMENT_CUTOFF * 2
 
 print('--' * 60)
 print(f'Confidence weight : {CONFIDENCE_WEIGHT}')
 print(f'TF-IDF weight     : {TFIDF_WEIGHT}')
 print(f'Core threshold    : {NARRATIVE_CORE_THRESHOLD}')
 print(f'Document FS cutoff: {FS_DOCUMENT_CUTOFF}')
+print(f'Document FS cutoff Hard: {FS_DOCUMENT_CUTOFF_HARD}')
 print(f'Node similarity t.: {NODE_SIMILARITY_THRESHOLD}')
 print('--' * 60)
