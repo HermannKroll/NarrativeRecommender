@@ -1,8 +1,8 @@
 import logging
 import os
 
-from flask import Flask
 import pyterrier as pt
+from flask import Flask
 
 from narraint.queryengine.engine import QueryEngine
 from narraint.queryengine.result import QueryDocumentResult
@@ -13,7 +13,7 @@ from narrec.config import INDEX_DIR
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.create_bm25_index import BenchmarkIndex
-from narrec.firststage.fsnodeflex import FSNodeFlex
+from narrec.firststage.fsconceptflex import FSConceptFlex
 from narrec.recommender.coreoverlap import CoreOverlap
 from narrec.recommender.graph_base_fallback_bm25 import GraphBaseFallbackBM25
 from narrec.run_config import FS_DOCUMENT_CUTOFF_HARD
@@ -47,7 +47,7 @@ corpus = DocumentCorpus(["PubMed"])
 corpus.load_all_support_into_memory()
 core_extractor = NarrativeCoreExtractor(corpus=corpus)
 
-first_stage = FSNodeFlex(extractor=core_extractor, benchmark=PubMedBenchmark())
+first_stage = FSConceptFlex(extractor=core_extractor, benchmark=PubMedBenchmark())
 
 recommender_coreoverlap = CoreOverlap(extractor=core_extractor)
 
@@ -86,6 +86,42 @@ enttype2colour = {
 
 NOT_CONTAINED_COLOUR = "#FFFFFF"
 NOT_CONTAINED_COLOUR_EDGE = "#E5E4E2"
+
+
+@app.route("/core/<document_id>")
+def get_core(document_id):
+    collection = "PubMed"
+    # Step 1: First stage retrieval
+    print('Step 1: Perform first stage retrieval...')
+    input_docs = retriever.retrieve_narrative_documents(document_ids=[document_id],
+                                                        document_collection=collection)
+    if len(input_docs) != 1:
+        return "Error"
+
+    input_doc = input_docs[0]
+    input_core = core_extractor.extract_narrative_core_from_document(input_doc)
+
+    facts = []
+    nodes = set()
+    for s in input_core.statements:
+        try:
+            subject_name = resolver.get_name_for_var_ent_id(s.subject_id, s.subject_type,
+                                                            resolve_gene_by_id=False)
+            subject_name = f'{subject_name} ({s.subject_type})'
+
+            object_name = resolver.get_name_for_var_ent_id(s.object_id, s.object_type,
+                                                           resolve_gene_by_id=False)
+            object_name = f'{object_name} ({s.object_type})'
+
+            facts.append({'s': subject_name, 'p': s.relation, 'o': object_name})
+            nodes.add(subject_name)
+            nodes.add(object_name)
+
+        except KeyError:
+            pass
+
+    return dict(nodes=list(nodes), facts=facts)
+
 
 @app.route("/<document_id>")
 def hello(document_id):
@@ -207,7 +243,8 @@ def hello(document_id):
                         visited.add((subject_name, object_name))
                         visited.add((object_name, subject_name))
 
-                        facts.append(({'s': subject_name, 'p': s.relation, 'o': object_name}, NOT_CONTAINED_COLOUR_EDGE))
+                        facts.append(({'s': subject_name, 'p': s.relation, 'o': object_name},
+                                      NOT_CONTAINED_COLOUR_EDGE))
                         nodes.add((subject_name, s.subject_type))
                         nodes.add((object_name, s.object_type))
 
@@ -235,12 +272,13 @@ def hello(document_id):
 
         for node, node_type in nodes:
             node_id = next_node_id
-            node_id_map[node] = node_id
-
-            if (node, node_type) in overlapping_nodes:
-                data["nodes"].append({"id": node_id, "label": node, "color": enttype2colour[node_type]})
-            else:
-                data["nodes"].append({"id": node_id, "label": node, "color": NOT_CONTAINED_COLOUR})
+            # ignore duplicated nodes (different types)
+            if node not in node_id_map:
+                node_id_map[node] = node_id
+                if (node, node_type) in overlapping_nodes:
+                    data["nodes"].append({"id": node_id, "label": node, "color": enttype2colour[node_type]})
+                else:
+                    data["nodes"].append({"id": node_id, "label": node, "color": NOT_CONTAINED_COLOUR})
             next_node_id += 1
 
         for fact, colour in facts:
