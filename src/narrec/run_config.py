@@ -33,7 +33,8 @@ RECOMMENDER_NAMES = [
     "AlignedCoresRecommender",
     "AlignedNodesRecommender",
     "AlignedCoresRecommender",
-    "CoreOverlap"
+    "CoreOverlap",
+    "BM25Recommender"
 ]
 
 if ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS:
