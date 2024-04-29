@@ -41,12 +41,15 @@ class DocumentCorpus:
         #     self.cache_statement2count[statement] = row.support
         print('Caching all concept inverted index support entries...')
         total = session.query(TagInvertedIndex).count()
-        q = session.query(TagInvertedIndex.entity_id, TagInvertedIndex.support)
+        q = session.query(TagInvertedIndex.entity_id,
+                          TagInvertedIndex.document_collection,
+                          TagInvertedIndex.support)
         for row in tqdm(q, desc="Loading db data...", total=total):
-            if row.entity_id in self.cache_concept2support:
-                self.cache_concept2support[row.entity_id] += row.support
-            else:
-                self.cache_concept2support[row.entity_id] = row.support
+            if row.document_collection in self.collections:
+                if row.entity_id in self.cache_concept2support:
+                    self.cache_concept2support[row.entity_id] += row.support
+                else:
+                    self.cache_concept2support[row.entity_id] = row.support
         self.all_idf_data_cached = True
         print('Finished')
 
