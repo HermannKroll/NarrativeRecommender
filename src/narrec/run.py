@@ -11,9 +11,16 @@ from narrec.config import RESULT_DIR, INDEX_DIR, GLOBAL_DB_DOCUMENT_COLLECTION
 from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.corpus import DocumentCorpus
 from narrec.firststage.base import FirstStageBase
+from narrec.firststage.bm25abstract import BM25Abstract
+from narrec.firststage.bm25title import BM25Title
+from narrec.firststage.fsconcept import FSConcept
 from narrec.firststage.fsconceptflex import FSConceptFlex
+from narrec.firststage.fscore import FSCore
 from narrec.firststage.fscoreflex import FSCoreFlex
+from narrec.firststage.fsnode import FSNode
 from narrec.firststage.fsnodeflex import FSNodeFlex
+from narrec.firststage.perfect import Perfect
+from narrec.firststage.pubmed import PubMedRecommender
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
 from narrec.recommender.bm25 import BM25Recommender
@@ -122,15 +129,14 @@ def process_benchmark(bench: Benchmark):
 
     first_stages = [FSConceptFlex(core_extractor, bench),
                     FSCoreFlex(core_extractor, bench),
-                    FSNodeFlex(core_extractor, bench)]
-    # FSConceptPlus(core_extractor, bench),
-    #                 FSConcept(core_extractor, bench),
-    #                 FSCore(core_extractor, bench),
-    #                 FSNode(core_extractor, bench),
-    #                 PubMedRecommender(bench),
-    #                 BM25Abstract(index_path),
-    #                 BM25Title(index_path),
-    #                 Perfect(bench)]
+                    FSNodeFlex(core_extractor, bench),
+                    FSConcept(core_extractor, bench),
+                    FSCore(core_extractor, bench),
+                    FSNode(core_extractor, bench),
+                    PubMedRecommender(bench),
+                    BM25Abstract(index_path),
+                    BM25Title(index_path),
+                    Perfect(bench)]
 
     for first_stage in first_stages:
         fs_path = os.path.join(RESULT_DIR, f'{bench.name}_{first_stage.name}.txt')
