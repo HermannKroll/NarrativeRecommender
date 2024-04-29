@@ -162,7 +162,7 @@ def process_benchmark(bench: Benchmark):
             count = 0
             for topicid, retrieved_docs in iter_obj:
                 count += 1
-                if len(retrieved_docs) >= FS_DOCUMENT_CUTOFF_HARD:
+                if len(retrieved_docs) > FS_DOCUMENT_CUTOFF_HARD:
                     print(
                         f'No of retrieved documents exceed {FS_DOCUMENT_CUTOFF_HARD} - cutting list (benchmark: {bench.name} / first stage: {first_stage.name})')
                     retrieved_docs = retrieved_docs[:FS_DOCUMENT_CUTOFF_HARD]
