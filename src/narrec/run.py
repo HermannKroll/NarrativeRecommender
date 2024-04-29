@@ -16,6 +16,7 @@ from narrec.firststage.fscoreflex import FSCoreFlex
 from narrec.firststage.fsnodeflex import FSNodeFlex
 from narrec.recommender.aligned_cores import AlignedCoresRecommender
 from narrec.recommender.aligned_nodes import AlignedNodesRecommender
+from narrec.recommender.bm25 import BM25Recommender
 from narrec.recommender.coreoverlap import CoreOverlap
 from narrec.recommender.equal import EqualRecommender
 from narrec.recommender.graph_base_fallback_bm25 import GraphBaseFallbackBM25
@@ -112,6 +113,9 @@ def process_benchmark(bench: Benchmark):
         for r in recommenders.copy():
             recommenders.append(GraphBaseFallbackBM25(bm25scorer=bm25_scorer, graph_recommender=r))
 
+    # append after fall back (BM25 with BM25 fallback does not make sense)
+    recommenders.append(BM25Recommender(bm25scorer=bm25_scorer))
+
     bench.load_benchmark_data()
     index_path = os.path.join(INDEX_DIR, bench.get_index_name())
     bm25_scorer.set_index(index_path)
@@ -153,7 +157,8 @@ def process_benchmark(bench: Benchmark):
             for topicid, retrieved_docs in iter_obj:
                 count += 1
                 if len(retrieved_docs) >= FS_DOCUMENT_CUTOFF_HARD:
-                    print(f'No of retrieved documents exceed {FS_DOCUMENT_CUTOFF_HARD} - cutting list (benchmark: {bench.name} / first stage: {first_stage.name})')
+                    print(
+                        f'No of retrieved documents exceed {FS_DOCUMENT_CUTOFF_HARD} - cutting list (benchmark: {bench.name} / first stage: {first_stage.name})')
                     retrieved_docs = retrieved_docs[:FS_DOCUMENT_CUTOFF_HARD]
 
                 if MULTIPROCESSING:
