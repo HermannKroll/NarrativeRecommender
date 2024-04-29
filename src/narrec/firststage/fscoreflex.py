@@ -1,15 +1,8 @@
-import json
-
-from sqlalchemy import or_, and_
-
-from narraint.backend.database import SessionExtended
-from narraint.backend.models import PredicationInvertedIndex
 from narrec.benchmark.benchmark import Benchmark
-from narrec.document.core import NarrativeCoreExtractor, NarrativeCore
+from narrec.document.core import NarrativeCoreExtractor
 from narrec.document.document import RecommenderDocument
 from narrec.firststage.base import FirstStageBase
 from narrec.firststage.fscore import FSCore
-from narrec.run_config import FS_DOCUMENT_CUTOFF, CORE_TOP_K
 
 
 class FSCoreFlex(FSCore):

@@ -45,8 +45,7 @@ BENCHMARKS = [
     PM2020Benchmark(),
     Genomics2005(),
     RelishBenchmark(),
-    RelishDrugBenchmark()
-
+ #   RelishDrugBenchmark()
 ]
 
 # cold start + 3 runs
@@ -54,11 +53,11 @@ NO_PERFORMANCE_MEASUREMENTS = 4
 
 CONFIDENCE_WEIGHT = 0.5
 TFIDF_WEIGHT = 0.5
-CORE_TOP_K = 10
+
+CONCEPT_MAX_SUPPORT = 1000000
 
 assert CONFIDENCE_WEIGHT + TFIDF_WEIGHT == 1.0
 
-NARRATIVE_CORE_THRESHOLD = 0.0
 NODE_SIMILARITY_THRESHOLD = 0.3
 
 GRAPH_WEIGHT = 0.6
@@ -79,7 +78,6 @@ FS_DOCUMENT_CUTOFF_HARD = FS_DOCUMENT_CUTOFF * 2
 print('--' * 60)
 print(f'Confidence weight : {CONFIDENCE_WEIGHT}')
 print(f'TF-IDF weight     : {TFIDF_WEIGHT}')
-print(f'Core threshold    : {NARRATIVE_CORE_THRESHOLD}')
 print(f'Document FS cutoff: {FS_DOCUMENT_CUTOFF}')
 print(f'Document FS cutoff Hard: {FS_DOCUMENT_CUTOFF_HARD}')
 print(f'Node similarity t.: {NODE_SIMILARITY_THRESHOLD}')

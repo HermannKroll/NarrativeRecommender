@@ -6,7 +6,7 @@ from narrec.benchmark.benchmark import Benchmark
 from narrec.document.core import NarrativeCoreExtractor, NarrativeConceptCore
 from narrec.document.document import RecommenderDocument
 from narrec.firststage.base import FirstStageBase
-from narrec.run_config import FS_DOCUMENT_CUTOFF, CORE_TOP_K
+from narrec.run_config import FS_DOCUMENT_CUTOFF
 
 
 class FSNode(FirstStageBase):

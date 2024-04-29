@@ -8,7 +8,7 @@ from narrec.benchmark.benchmark import Benchmark
 from narrec.document.core import NarrativeCoreExtractor, NarrativeCore
 from narrec.document.document import RecommenderDocument
 from narrec.firststage.base import FirstStageBase
-from narrec.run_config import FS_DOCUMENT_CUTOFF, CORE_TOP_K
+from narrec.run_config import FS_DOCUMENT_CUTOFF
 
 
 class FSCore(FirstStageBase):
@@ -54,7 +54,7 @@ class FSCore(FirstStageBase):
         document_ids_scored = {}
         # If a statement of the core is contained within a document, we increase the score
         # of the document by the score of the corresponding edge
-        for idx, stmt in enumerate(core.statements[:CORE_TOP_K]):
+        for idx, stmt in enumerate(core.statements):
             # retrieve matching documents
             document_ids = self.retrieve_documents((stmt.subject_id, stmt.relation, stmt.object_id))
 

@@ -3,7 +3,7 @@ from typing import List
 from kgextractiontoolbox.document.narrative_document import StatementExtraction
 from narrec.document.corpus import DocumentCorpus
 from narrec.document.document import RecommenderDocument
-from narrec.run_config import NARRATIVE_CORE_THRESHOLD, CORE_TOP_K
+from narrec.run_config import CONCEPT_MAX_SUPPORT
 from narrec.scoring.concept import score_concept_by_tf_idf_and_coverage
 from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
@@ -98,7 +98,7 @@ class NarrativeCoreExtractor:
             score = score_concept_by_tf_idf_and_coverage(concept, document, self.corpus)
             coverage = document.get_concept_coverage(concept)
             support = self.corpus.get_concept_support(concept)
-            if score >= NARRATIVE_CORE_THRESHOLD and support <= 1000000:
+            if support <= CONCEPT_MAX_SUPPORT:
                 scored_concepts.append(ScoredConcept(concept, score, coverage, support))
 
         # sort remaining ones by score
@@ -119,9 +119,8 @@ class NarrativeCoreExtractor:
             spo = (statement.subject_id, statement.relation, statement.object_id)
 
             s_score = score_edge_by_tf_and_concept_idf(spo, document, self.corpus)
-            if s_score >= NARRATIVE_CORE_THRESHOLD:
-                s_scores.append(s_score)
-                filtered_statements.append(ScoredStatementExtraction(stmt=statement, score=s_score))
+            s_scores.append(s_score)
+            filtered_statements.append(ScoredStatementExtraction(stmt=statement, score=s_score))
 
         if not filtered_statements:
             return None
