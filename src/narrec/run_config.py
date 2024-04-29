@@ -69,7 +69,7 @@ assert GRAPH_WEIGHT + BM25_WEIGHT == 1.0
 MULTIPROCESSING = True
 LOAD_FULL_IDF_CACHE = True
 DO_RECOMMENDATION = True
-RERUN_FIRST_STAGES = False
+RERUN_FIRST_STAGES = True
 JUDGED_DOCS_ONLY_FLAG = True
 
 # Experimental Configuration (because first stage will always find input doc)
