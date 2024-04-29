@@ -1,5 +1,5 @@
 from narrec.document.document import RecommenderDocument
-from narrec.run_config import FS_DOCUMENT_CUTOFF
+from narrec.run_config import FS_DOCUMENT_CUTOFF, FS_DOCUMENT_CUTOFF_HARD
 
 
 class FirstStageBase:
@@ -42,7 +42,10 @@ class FirstStageBase:
                 if score < score_at_cutoff:
                     new_cutoff_position = idx
                     break
-            return document_ids_scored[:FS_DOCUMENT_CUTOFF + new_cutoff_position]
+            if FS_DOCUMENT_CUTOFF + new_cutoff_position < FS_DOCUMENT_CUTOFF_HARD:
+                return document_ids_scored[:FS_DOCUMENT_CUTOFF + new_cutoff_position]
+            else:
+                return document_ids_scored[:FS_DOCUMENT_CUTOFF_HARD]
         else:
             # Ensure cutoff
             return document_ids_scored[:FS_DOCUMENT_CUTOFF]
