@@ -44,6 +44,11 @@ def perform_benchmark_first_stage_runtime_measurement(bench: Benchmark):
     print('==' * 60)
     print('Perform first stage runtime measurement...')
     for first_stage in first_stages:
+        path = os.path.join(RUNTIME_MEASUREMENT_RESULT_DIR, f'{bench.name}_{first_stage.name}.json')
+        if os.path.isfile(path):
+            print(f'Runtimes exists - skipping: {path}')
+            continue
+
         print(f'Measuring runtime for first stage: {first_stage.name}')
         fs_path = os.path.join(RESULT_DIR, f'performance_{bench.name}_{first_stage.name}.txt')
         result_dict = dict()
@@ -66,7 +71,6 @@ def perform_benchmark_first_stage_runtime_measurement(bench: Benchmark):
         result_dict["mean"] = sum(times) / len(times)
         result_dict["std"] = numpy.std(times)
 
-        path = os.path.join(RUNTIME_MEASUREMENT_RESULT_DIR, f'{bench.name}_{first_stage.name}.json')
         print(f'Writing runtime measurement results to: {path}')
         with open(path, 'wt') as f:
             json.dump(result_dict, f, indent=4)
