@@ -44,7 +44,7 @@ def analyse_times():
                         data["mean"], data["std"],
                         no_documents, seconds_per_doc, seconds_per_doc_std]
 
-            rows_to_print.append(f'{benchmark.name} & {fs_name} & ${round(seconds_per_doc, 1)}s')
+            rows_to_print.append(f'{benchmark.name} & {fs_name} & {round(seconds_per_doc, 1)}s')
 
             rows.append('\t'.join([str(r) for r in data_row]))
 
