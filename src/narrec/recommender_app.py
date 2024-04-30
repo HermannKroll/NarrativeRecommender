@@ -77,6 +77,7 @@ enttype2colour = {
     "SNP": "#fd83ca",
     "DomainMotif": "#f383fd",
     "Plant": "#dcfd83",
+    "PlantFamily/Genus": "#dcfd83",
     "Strain": "#75c4c7",
     "Vaccine": "#c7767d",
     "HealthStatus": "#bbaabb",
