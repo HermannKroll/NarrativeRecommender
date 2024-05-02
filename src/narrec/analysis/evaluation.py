@@ -148,7 +148,7 @@ def perform_evaluation_for_run(qrel, run_file: str):
     with open(run_file, 'r') as f_run:
         run = pytrec_eval.parse_run(f_run)
 
-    evaluator = pytrec_eval.RelevanceEvaluator(qrel, METRICS, judged_docs_only_flag=True)
+    evaluator = pytrec_eval.RelevanceEvaluator(qrel, METRICS)
     return evaluator.evaluate(run)
 
 
