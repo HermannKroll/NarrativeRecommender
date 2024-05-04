@@ -54,3 +54,7 @@ if not os.path.isdir(ANALYSIS_DIR):
 RUNTIME_MEASUREMENT_RESULT_DIR = os.path.join(ANALYSIS_DIR, "firststage_runtimes")
 if not os.path.isdir(RUNTIME_MEASUREMENT_RESULT_DIR):
     os.makedirs(RUNTIME_MEASUREMENT_RESULT_DIR, exist_ok=True)
+
+RUNTIME_MEASUREMENT_RECOMMENDATION_RESULT_DIR = os.path.join(ANALYSIS_DIR, "recommendation_runtimes")
+if not os.path.isdir(RUNTIME_MEASUREMENT_RECOMMENDATION_RESULT_DIR):
+    os.makedirs(RUNTIME_MEASUREMENT_RECOMMENDATION_RESULT_DIR, exist_ok=True)
