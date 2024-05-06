@@ -1,6 +1,7 @@
 import os
 from typing import List
 
+import numpy
 import pytrec_eval
 
 from narrec.config import RESULT_DIR
@@ -51,6 +52,7 @@ def main():
         print('--' * 60)
         for run_name, run in results:
             for topic, _ in benchmark.iterate_over_document_entries():
+                topic = str(topic)
                 missing_documents = list()
                 wrongly_retrieved = list()
                 correctly_retrieved = list()
@@ -83,7 +85,11 @@ def main():
         print(f'{len(documents_to_review)} documents to review:')
         for run_name, unrated_doc_lists in run2unrated_document_lists.items():
             avg = sum(len(l) for l in unrated_doc_lists) / len(unrated_doc_lists)
+            std = numpy.std([len(l) for l in unrated_doc_lists])
+            doc_sum = sum(len(l) for l in unrated_doc_lists)
             print(f'{run_name}: avg no of unrated documents:  {round(avg, 2)}')
+            print(f'{run_name}: std no of unrated documents:  {round(std, 2)}')
+            print(f'{run_name}: sum of unrated documents:  {doc_sum}')
 
 
 if __name__ == "__main__":
