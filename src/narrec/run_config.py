@@ -6,17 +6,17 @@ from narrec.benchmark.relishdrug import RelishDrugBenchmark
 ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS = True
 
 FIRST_STAGES = [
-    "Perfect",
-    "BM25Title",
-    "BM25Abstract",
+   # "Perfect",
+   # "BM25Title",
+   # "BM25Abstract",
     #  "BM25Yake",
-    "FSConcept",
-    "FSConceptPlus",
+   # "FSConcept",
+   # "FSConceptPlus",
     "FSConceptFlex",
-    "FSNode",
-    "FSNodeFlex",
-    "FSCore",
-    "FSCoreFlex",
+   # "FSNode",
+   # "FSNodeFlex",
+   # "FSCore",
+   # "FSCoreFlex",
     #  "FSCoreOverlap",
     # "FSCorePlusAbstractBM25",
     # "FSCorePlusTitleBM25",
@@ -24,15 +24,15 @@ FIRST_STAGES = [
 ]
 
 RECOMMENDER_NAMES = [
-    "EqualRecommender",
-    "StatementOverlap",
-    "JaccardCombinedWeighted",
-    "JaccardGraphWeighted",
-    "JaccardConceptWeighted",
-    "AlignedNodesRecommender",
-    "AlignedCoresRecommender",
-    "AlignedNodesRecommender",
-    "AlignedCoresRecommender",
+    # "EqualRecommender",
+    # "StatementOverlap",
+    # "JaccardCombinedWeighted",
+    # "JaccardGraphWeighted",
+    # "JaccardConceptWeighted",
+    # "AlignedNodesRecommender",
+    # "AlignedCoresRecommender",
+    # "AlignedNodesRecommender",
+    # "AlignedCoresRecommender",
     "CoreOverlap",
     "BM25Recommender"
 ]

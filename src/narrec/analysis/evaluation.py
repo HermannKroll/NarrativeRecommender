@@ -37,6 +37,7 @@ RESULT_MEASURES = {
     #   'bpref': 'bpref',
     'P_10': 'P@10',
     'P_20': 'P@20',
+    "bpref" : "bpref"
   #  "P_100": 'P@100'
 }
 
