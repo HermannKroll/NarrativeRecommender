@@ -107,6 +107,7 @@ http://localhost:5000/37895839
 ```
 
 
-# Create Benchmark id lists
-execute [extract_tg2005_ids.py](src%2Fnarrec%2Fbenchmark%2Fretrieve_pmids%2Fextract_tg2005_ids.py) and [extract_relish_ids.py](src%2Fnarrec%2Fbenchmark%2Fretrieve_pmids%2Fextract_relish_ids.py).
+# Create Benchmark document ID lists
+Extract document ids for each benchmark via [extract Genomic IDs](src/narrec/benchmark/retrieve_pmids/extract_tg2005_ids.py), [extract RELISH IDs](src/narrec/benchmark/retrieve_pmids/extract_relish_ids.py),
+and [extract PM2020 IDs](src/narrec/benchmark/retrieve_pmids/extract_pm2019_ids.py)
 These scripts will extract document id for Genomics 2005 and relish.
