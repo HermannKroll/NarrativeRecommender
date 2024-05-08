@@ -79,6 +79,33 @@ If you use PyCharm for development purposes, make sure that you mark [src](src) 
 Then PyCharm is able to complete and run code. 
 
 
+## Flask Edge Debugging / Recommendation Service
+Make sure that your Python path is set and the correct environment is activated.
+
+Run the edge debug server via:
+```
+cd src/narrec/scoring/flask/
+flask --app edge_debug run
+```
+
+
+Run the recommendation server via:
+```
+cd src/narrec/
+flask --app recommender_app run
+```
+
+
+Bind the server port to your local port:
+```
+ssh -N -f -L localhost:5000:localhost:5000 USER@SERVER_IP
+```
+
+Open a browser:
+```
+http://localhost:5000/37895839
+```
+
 
 # Create Benchmark id lists
 execute [extract_tg2005_ids.py](src%2Fnarrec%2Fbenchmark%2Fretrieve_pmids%2Fextract_tg2005_ids.py) and [extract_relish_ids.py](src%2Fnarrec%2Fbenchmark%2Fretrieve_pmids%2Fextract_relish_ids.py).
