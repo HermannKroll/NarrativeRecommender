@@ -4,6 +4,13 @@ This repository belongs to our TPDL2024 submission. Code is still updated and no
 We cannot share the actual Narrative Service database which is required for the recommendation process (legal and space reasons).
 However, we hope that our implementation may shed light on details which are not described in the paper. 
 
+# Implementation Details
+- [First Stages](src/narrec/firststage): [FSConcept](src/narrec/firststage/fsconcept.py), [FSNode](src/narrec/firststage/fsnode.py) and [FSCore](src/narrec/firststage/fscore.py)
+- [CoreOverlap](src/narrec/recommender/coreoverlap.py) and GraphRec is [coreoverlap + BM25](src/narrec/recommender/graph_base_fallback_bm25.py)
+- [BM25 Index Creation](src/narrec/firststage/create_bm25_index.py) and [BM25 First Stage](src/narrec/firststage/bm25abstract.py) and [BM25 ReScoring](src/narrec/scoring/BM25Scorer.py)
+- [Edge Scoring](src/narrec/scoring/edge.py) and [Node Scoring](src/narrec/scoring/concept.py)
+- [Evaluation](src/narrec/analysis/evaluation.py) and [Analysis Scripts](src/narrec/analysis)
+- [Explanation Generation and Recommender App](src/narrec/recommender_app.py)
 
 ## Getting Started
 This project requires to clone it with sub repositories:
@@ -13,7 +20,7 @@ This project requires to clone it with sub repositories:
 
 Therefore, please clone the project via:
 ```
-git clone --recurse-submodules git@github.com:HermannKroll/NarrativeRecommender.git
+git clone --recurse-submodules https://github.com/HermannKroll/NarrativeRecommender.git
 ```
 
 Update the repository:
