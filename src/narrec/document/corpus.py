@@ -1,5 +1,5 @@
-import json
 import logging
+
 import math
 from tqdm import tqdm
 
@@ -30,15 +30,7 @@ class DocumentCorpus:
 
     def load_all_support_into_memory(self):
         session = SessionExtended.get()
-        # print('Caching all predication inverted index support entries...')
-        # total = session.query(PredicationInvertedIndex).count()
-        # q = session.query(PredicationInvertedIndex.subject_id,
-        #                   PredicationInvertedIndex.relation,
-        #                   PredicationInvertedIndex.object_id,
-        #                   PredicationInvertedIndex.support)
-        # for row in tqdm(q, desc="Loading db data...", total=total):
-        #     statement = row.subject_id, row.relation, row.object_id
-        #     self.cache_statement2count[statement] = row.support
+
         print('Caching all concept inverted index support entries...')
         total = session.query(TagInvertedIndex).count()
         q = session.query(TagInvertedIndex.entity_id,
