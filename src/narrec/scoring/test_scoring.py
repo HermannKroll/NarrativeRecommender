@@ -1,7 +1,7 @@
 from narrant.entity.entityresolver import EntityResolver
 from narrec.backend.retriever import DocumentRetriever
 from narrec.document.corpus import DocumentCorpus
-from narrec.scoring.edge import score_edge_sentence, score_edge
+from narrec.scoring.edge import score_edge_by_tf_and_concept_idf
 
 retriever = DocumentRetriever()
 corpus = DocumentCorpus(["PubMed"])
@@ -15,11 +15,6 @@ for edge in doc.graph:
               edge[1],
               resolver.get_name_for_var_ent_id(edge[2], None),)
 
-    score = round(score_edge(edge, doc, corpus), 2)
-    print(f'tfidf+conf:            {score} <<----  {t_edge}')
-    print()
-    score = round(score_edge_sentence(edge, doc, corpus), 2)
-    print(f'tfidf+conf+sentence:   {score} <<----  {t_edge}')
-
-    print()
+    score = round(score_edge_by_tf_and_concept_idf(edge, doc, corpus), 2)
+    print(f'tfidf+conf+coverage:            {score} <<----  {t_edge}')
     print()
