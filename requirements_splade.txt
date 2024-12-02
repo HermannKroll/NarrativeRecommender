@@ -1,0 +1,3 @@
+ransformers torch
+git+https://github.com/naver/splade.git
+faiss-gpu

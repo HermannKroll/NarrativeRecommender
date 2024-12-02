@@ -31,6 +31,7 @@ from narrec.recommender.jaccard import Jaccard
 from narrec.recommender.jaccard_combined import JaccardCombinedWeighted
 from narrec.recommender.jaccard_concepts_weighted import JaccardConceptWeighted
 from narrec.recommender.jaccard_graph_weighted import JaccardGraphWeighted
+from narrec.recommender.splade import SpladeRecommender
 from narrec.recommender.statementoverlap import StatementOverlap
 from narrec.run_config import BENCHMARKS, DO_RECOMMENDATION, MULTIPROCESSING, LOAD_FULL_IDF_CACHE, \
     ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS, RERUN_FIRST_STAGES, FS_DOCUMENT_CUTOFF_HARD
@@ -122,6 +123,7 @@ def process_benchmark(bench: Benchmark):
 
     # append after fall back (BM25 with BM25 fallback does not make sense)
     recommenders.append(BM25Recommender(bm25scorer=bm25_scorer))
+    recommenders.append(SpladeRecommender(bm25scorer=bm25_scorer))
 
     bench.load_benchmark_data()
     index_path = os.path.join(INDEX_DIR, bench.get_index_name())
