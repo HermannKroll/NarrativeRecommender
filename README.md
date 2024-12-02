@@ -3,7 +3,7 @@ This repository belongs to our workshop publication at [AI4LAC@JCDL2024](https:/
 You find a short version of our article on the workshop webpage and a technical report (long version) at arXiv. The links will be added as soon as they are available. 
 
 We cannot share the actual Narrative Service database which is required for the recommendation process (legal and space reasons).
-Please note that the repository has a dependency to our [Narrative Service](https://www.narrative.pubpharm.de) whose code is publicly available on [GitHub](https://github.com/HermannKroll/NarrativeIntelligence). 
+Please note that the repository has a dependency to our [Narrative Service](https://narrative.pubpharm.de) whose code is publicly available on [GitHub](https://github.com/HermannKroll/NarrativeIntelligence). 
 Unfortunately, we cannot publish the pre-processed document data (the extracted graph information).
 However, we hope that our implementation may shed light on details which are not described in the paper. 
 
