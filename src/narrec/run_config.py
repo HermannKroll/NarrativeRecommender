@@ -6,18 +6,18 @@ from narrec.benchmark.relishdrug import RelishDrugBenchmark
 ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS = True
 
 FIRST_STAGES = [
-   # "Perfect",
-   # "BM25Title",
-   # "BM25Abstract",
-    #  "BM25Yake",
-   # "FSConcept",
-   # "FSConceptPlus",
+    "Perfect",
+    "BM25Title",
+    "BM25Abstract",
+    # "BM25Yake",
+    # "FSConcept",
+    # "FSConceptPlus",
     "FSConceptFlex",
-   # "FSNode",
-   # "FSNodeFlex",
-   # "FSCore",
-   # "FSCoreFlex",
-    #  "FSCoreOverlap",
+    # "FSNode",
+    "FSNodeFlex",
+    # "FSCore",
+    "FSCoreFlex",
+    # "FSCoreOverlap",
     # "FSCorePlusAbstractBM25",
     # "FSCorePlusTitleBM25",
     "PubMedRecommender"
@@ -34,7 +34,8 @@ RECOMMENDER_NAMES = [
     # "AlignedNodesRecommender",
     # "AlignedCoresRecommender",
     "CoreOverlap",
-    "BM25Recommender"
+    "BM25Recommender",
+    "SpladeRecommender"
 ]
 
 if ADD_GRAPH_BASED_BM25_FALLBACK_RECOMMENDERS:
@@ -45,7 +46,7 @@ BENCHMARKS = [
     PM2020Benchmark(),
     Genomics2005(),
     RelishBenchmark(),
- #   RelishDrugBenchmark()
+    # RelishDrugBenchmark()
 ]
 
 # cold start + 3 runs
@@ -81,3 +82,7 @@ print(f'Document FS cutoff: {FS_DOCUMENT_CUTOFF}')
 print(f'Document FS cutoff Hard: {FS_DOCUMENT_CUTOFF_HARD}')
 print(f'Node similarity t.: {NODE_SIMILARITY_THRESHOLD}')
 print('--' * 60)
+
+import os
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
