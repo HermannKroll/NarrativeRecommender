@@ -1,4 +1,4 @@
-# NarrativeRecommender
+# Building an Explainable Graph-based Biomedical Paper Recommendation System
 This repository belongs to our TPDL2024 submission. Code is still updated and not fully documented.
 
 We cannot share the actual Narrative Service database which is required for the recommendation process (legal and space reasons).
