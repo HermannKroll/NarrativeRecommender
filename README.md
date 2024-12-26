@@ -1,6 +1,6 @@
 # Building an Explainable Graph-based Biomedical Paper Recommendation System
 This repository belongs to our workshop publication at [AI4LAC@JCDL2024](https://zhanghaoxuan1999.github.io/JCDL2024-AI4LAC-workshop/). 
-You find a short version of our article on the workshop webpage and a technical report (long version) at arXiv. The links will be added as soon as they are available. 
+You find a short version of our article on the workshop webpage and a technical report (long version) at [arXiv](https://arxiv.org/abs/2412.15229). The links will be added as soon as they are available. 
 
 We cannot share the actual Narrative Service database which is required for the recommendation process (legal and space reasons).
 Please note that the repository has a dependency to our [Narrative Service](https://narrative.pubpharm.de) whose code is publicly available on [GitHub](https://github.com/HermannKroll/NarrativeIntelligence). 
